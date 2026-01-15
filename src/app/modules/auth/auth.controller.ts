@@ -76,7 +76,17 @@ const forget_password = catchAsync(async (req, res) => {
     data: null,
   });
 });
+const verify_reset_code = catchAsync(async (req, res) => {
+  const { email, code } = req.body;
+  const result = await auth_services.verify_reset_code_from_db(email, code);
 
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Code verified successfully",
+    data: result, // resetToken
+  });
+});
 const reset_password = catchAsync(async (req, res) => {
   const { token, newPassword, email } = req.body;
   const result = await auth_services.reset_password_into_db(
@@ -123,6 +133,7 @@ export const auth_controllers = {
   change_password,
   reset_password,
   forget_password,
+  verify_reset_code,
   verified_account,
   get_new_verification_link,
 };

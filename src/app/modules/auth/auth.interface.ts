@@ -17,6 +17,8 @@ export type TAccount = {
   activeRole?: string;
   refreshToken?: string;
   isVerified?: boolean;
+  resetPasswordCode?: String;
+  resetPasswordExpire?: Date;
 };
 
 export interface TRegisterPayload extends TAccount {

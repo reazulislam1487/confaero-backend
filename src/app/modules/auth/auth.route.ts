@@ -55,6 +55,13 @@ authRoute.post(
   RequestValidator(auth_validation.forgotPassword),
   auth_controllers.forget_password
 );
+
+authRoute.post(
+  "/verify-reset-code",
+  RequestValidator(auth_validation.verifyResetCode),
+  auth_controllers.verify_reset_code
+);
+
 authRoute.post(
   "/reset-password",
   RequestValidator(auth_validation.resetPassword),
