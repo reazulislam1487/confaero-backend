@@ -26,6 +26,7 @@ export type TAccount = {
 
 export interface TRegisterPayload extends TAccount {
   name: string;
+  confirmPassword: string;
 }
 
 export type TLoginPayload = {

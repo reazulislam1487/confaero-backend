@@ -9,7 +9,7 @@ import { Account_Model } from "./auth.schema";
 import httpStatus from "http-status";
 import bcrypt from "bcrypt";
 import { TUser } from "../user/user.interface";
-import { User_Model } from "../user/user.schema";
+import { User_Model, UserProfile_Model } from "../user/user.schema";
 import mongoose from "mongoose";
 import { jwtHelpers, JwtPayloadType } from "../../utils/JWT";
 import { configs } from "../../configs";
@@ -24,7 +24,12 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
     session.startTransaction();
 
     // 1. validation (later section)
-    if (!payload?.email || !payload?.password || !payload?.name) {
+    if (
+      !payload?.email ||
+      !payload?.password ||
+      !payload?.confirmPassword ||
+      !payload?.name
+    ) {
       throw new AppError("All fields are required", httpStatus.BAD_REQUEST);
     }
 
@@ -37,6 +42,13 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
 
     if (isExistAccount) {
       throw new AppError("Account already exist!!", httpStatus.BAD_REQUEST);
+    }
+
+    if (payload.password !== payload.confirmPassword) {
+      throw new AppError(
+        "New password and confirm password do not match",
+        httpStatus.BAD_REQUEST
+      );
     }
 
     // 3. hash password
@@ -60,6 +72,12 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
     };
 
     await User_Model.create([userPayload], { session });
+
+    // 2️ User profile create
+    await UserProfile_Model.create({
+      accountId: newAccount[0]._id,
+      name: payload.name,
+    });
 
     // 6. COMMIT (VERY IMPORTANT)
     await session.commitTransaction();
