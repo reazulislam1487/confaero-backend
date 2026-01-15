@@ -1,20 +1,23 @@
+export type Role =
+  | "SUPER_ADMIN"
+  | "ORGANIZER"
+  | "ATTENDEE"
+  | "SPEAKER"
+  | "EXHIBITOR"
+  | "STAFF"
+  | "SPONSOR"
+  | "VOLUNTEER"
+  | "ABSTRACT_REVIEWER"
+  | "TRACK_CHAIR";
+
 export type TAccount = {
   email: string;
   password: string;
   lastPasswordChange?: Date;
   isDeleted?: boolean;
   accountStatus?: "ACTIVE" | "INACTIVE" | "SUSPENDED";
-  role?:
-    | "ORGANIZER"
-    | "ATTENDEE"
-    | "SPEAKER"
-    | "EXHIBITOR"
-    | "STAFF"
-    | "SPONSOR"
-    | "VOLUNTEER"
-    | "ABSTRACT_REVIEWER"
-    | "TRACK_CHAIR";
-  activeRole?: string;
+  role?: Role[];
+  activeRole?: Role;
   refreshToken?: string;
   isVerified?: boolean;
   resetPasswordCode?: String;
@@ -32,16 +35,7 @@ export type TLoginPayload = {
 
 export type TJwtUser = {
   email: string;
-  activeRole?:
-    | "ORGANIZER"
-    | "ATTENDEE"
-    | "SPEAKER"
-    | "EXHIBITOR"
-    | "STAFF"
-    | "SPONSOR"
-    | "VOLUNTEER"
-    | "ABSTRACT_REVIEWER"
-    | "TRACK_CHAIR";
+  activeRole?: Role;
 };
 
 export type TChangePasswordPayload = {

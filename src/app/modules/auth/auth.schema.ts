@@ -5,10 +5,13 @@ const authSchema = new Schema<TAccount>(
   {
     email: { type: String, required: true },
     password: { type: String, required: true },
-    lastPasswordChange: { type: String },
+    lastPasswordChange: { type: Date },
     isDeleted: { type: Boolean, default: false },
     accountStatus: { type: String, default: "ACTIVE" },
-    role: { type: [String], default: "ATTENDEE" },
+    role: {
+      type: [String],
+      default: ["ATTENDEE"],
+    },
     activeRole: { type: String, default: "ATTENDEE" },
     refreshToken: { type: String },
     isVerified: { type: Boolean, default: false },

@@ -5,6 +5,7 @@ import { jwtHelpers, JwtPayloadType } from "../utils/JWT";
 import { Account_Model } from "../modules/auth/auth.schema";
 
 type Role =
+  | "SUPER_ADMIN"
   | "ORGANIZER"
   | "ATTENDEE"
   | "SPEAKER"
