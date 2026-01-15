@@ -173,6 +173,18 @@ const change_password_from_db = async (
   if (!isCorrectPassword) {
     throw new AppError("Old password is incorrect", httpStatus.UNAUTHORIZED);
   }
+  if (isCorrectPassword && payload.oldPassword === payload.newPassword) {
+    throw new AppError(
+      "Old password and new password can not be same",
+      httpStatus.BAD_REQUEST
+    );
+  }
+  if (payload.newPassword !== payload.currentPassword) {
+    throw new AppError(
+      "New password and confirm password do not match",
+      httpStatus.BAD_REQUEST
+    );
+  }
 
   const hashedPassword: string = await bcrypt.hash(payload.newPassword, 10);
   await Account_Model.findOneAndUpdate(
@@ -248,7 +260,8 @@ const verify_reset_code_from_db = async (email: string, code: string) => {
 const reset_password_into_db = async (
   token: string,
   email: string,
-  newPassword: string
+  newPassword: string,
+  confirmPassword: string
 ) => {
   let decodedData: JwtPayload;
   try {
@@ -263,6 +276,12 @@ const reset_password_into_db = async (
     );
   }
 
+  if (newPassword !== confirmPassword) {
+    throw new AppError(
+      "New password and confirm password do not match",
+      httpStatus.BAD_REQUEST
+    );
+  }
   const isAccountExists = await isAccountExist(email);
 
   const hashedPassword: string = await bcrypt.hash(newPassword, 10);

@@ -72,7 +72,7 @@ const forget_password = catchAsync(async (req, res) => {
   manageResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Reset password link sent to your email!",
+    message: "Verification code sent to your email",
     data: null,
   });
 });
@@ -88,11 +88,12 @@ const verify_reset_code = catchAsync(async (req, res) => {
   });
 });
 const reset_password = catchAsync(async (req, res) => {
-  const { token, newPassword, email } = req.body;
+  const { token, newPassword, confirmPassword, email } = req.body;
   const result = await auth_services.reset_password_into_db(
     token,
     email,
-    newPassword
+    newPassword,
+    confirmPassword
   );
   manageResponse(res, {
     statusCode: httpStatus.OK,

@@ -27,6 +27,7 @@ const verifyResetCode = z.object({
 const resetPassword = z.object({
   token: z.string(),
   newPassword: z.string(),
+  confirmPassword: z.string(),
   email: z.string(),
 });
 
