@@ -126,6 +126,35 @@ const get_new_verification_link = catchAsync(async (req, res) => {
   });
 });
 
+const delete_account = catchAsync(async (req, res) => {
+  const user = req.user!;
+  const { currentPassword } = req.body;
+
+  await auth_services.delete_account_from_db(user, currentPassword);
+
+  // optional: clear refresh token
+  res.clearCookie("refreshToken");
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Account deleted successfully",
+    data: null,
+  });
+});
+const change_role = catchAsync(async (req, res) => {
+  const user = req.user!;
+  const { role } = req.body;
+
+  const result = await auth_services.change_role_from_db(user, role);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Role changed successfully",
+    data: result, // new access token
+  });
+});
 export const auth_controllers = {
   register_user,
   login_user,
@@ -137,4 +166,6 @@ export const auth_controllers = {
   verify_reset_code,
   verified_account,
   get_new_verification_link,
+  delete_account,
+  change_role,
 };

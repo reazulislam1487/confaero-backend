@@ -376,6 +376,64 @@ const get_new_verification_link_from_db = async (email: string) => {
   return null;
 };
 
+// DELETE ACCOUNT
+const delete_account_from_db = async (
+  user: JwtPayloadType,
+  currentPassword: string
+) => {
+  const account = await Account_Model.findOne({
+    email: user.email,
+  });
+  if (!account) {
+    throw new AppError("Account not found", httpStatus.NOT_FOUND);
+  }
+
+  const isPasswordMatch = await bcrypt.compare(
+    currentPassword,
+    account.password
+  );
+
+  if (!isPasswordMatch) {
+    throw new AppError(
+      "Current password is incorrect",
+      httpStatus.UNAUTHORIZED
+    );
+  }
+
+  await User_Model.findOneAndDelete({ accountId: account._id });
+  await Account_Model.findByIdAndDelete(account._id);
+  return null;
+};
+const change_role_from_db = async (user: JwtPayloadType, role: any) => {
+  const account = await Account_Model.findOne({
+    email: user.email,
+  });
+
+  if (!account) {
+    throw new AppError("Account not found", httpStatus.NOT_FOUND);
+  }
+
+  // optional: prevent same role
+  if (account.activeRole === role) {
+    throw new AppError("Role already active", httpStatus.BAD_REQUEST);
+  }
+
+  account.activeRole = role;
+  await account.save();
+
+  // 🔥 generate new access token
+  const accessToken = jwtHelpers.generateToken(
+    {
+      email: account.email,
+      activeRole: role,
+    },
+    configs.jwt.access_token as Secret,
+    configs.jwt.access_expires as string
+  );
+
+  return { accessToken, activeRole: role };
+};
+
 export const auth_services = {
   register_user_into_db,
   login_user_from_db,
@@ -387,4 +445,6 @@ export const auth_services = {
   verified_account_into_db,
   get_new_verification_link_from_db,
   verify_reset_code_from_db,
+  delete_account_from_db,
+  change_role_from_db,
 };

@@ -4,6 +4,7 @@ import { authSwaggerDocs } from "./app/modules/auth/auth.swagger";
 import { userSwaggerDocs } from "./app/modules/user/user.swagger";
 import { profileSwaggerDocs } from "./app/modules/profile/profile.swagger";
 import { superAdminSwaggerDocs } from "./app/modules/superAdmin/superAdmin.swagger";
+import { organizerSwaggerDocs } from "./app/modules/organizer/organizer.swagger";
 
 export const swaggerOptions = {
   definition: {
@@ -19,7 +20,8 @@ export const swaggerOptions = {
 
       ...profileSwaggerDocs,
       ...superAdminSwaggerDocs,
-    },
+    
+            ...organizerSwaggerDocs,},
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]

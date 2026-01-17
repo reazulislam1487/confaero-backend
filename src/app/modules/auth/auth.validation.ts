@@ -36,6 +36,23 @@ const verified_account = z.object({
   token: z.string({ message: "Token is Required!!" }),
 });
 
+const deleteAccount = z.object({
+  currentPassword: z.string().min(6),
+});
+
+const changeRole = z.object({
+  role: z.enum([
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ]),
+});
 export const auth_validation = {
   register_validation,
   login_validation,
@@ -44,4 +61,6 @@ export const auth_validation = {
   verifyResetCode,
   resetPassword,
   verified_account,
+  deleteAccount,
+  changeRole,
 };

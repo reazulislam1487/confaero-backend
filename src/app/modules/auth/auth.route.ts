@@ -78,4 +78,37 @@ authRoute.post(
   RequestValidator(auth_validation.forgotPassword),
   auth_controllers.get_new_verification_link
 );
+
+authRoute.delete(
+  "/delete-account",
+  auth(
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR"
+  ),
+  RequestValidator(auth_validation.deleteAccount),
+  auth_controllers.delete_account
+);
+authRoute.post(
+  "/change-role",
+  auth(
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR"
+  ),
+  RequestValidator(auth_validation.changeRole),
+  auth_controllers.change_role
+);
 export default authRoute;
