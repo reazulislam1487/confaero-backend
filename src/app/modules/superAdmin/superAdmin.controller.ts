@@ -14,4 +14,21 @@ const create_new_organizer = catchAsync(async (req, res) => {
   });
 });
 
-export const super_admin_controller = { create_new_organizer };
+const create_event_by_super_admin = catchAsync(async (req, res) => {
+  const payload = req.body;
+
+  const result = await super_admin_service.create_event_by_super_admin_into_db(
+    payload
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Event created and organizers assigned successfully",
+    data: result,
+  });
+});
+export const super_admin_controller = {
+  create_new_organizer,
+  create_event_by_super_admin,
+};

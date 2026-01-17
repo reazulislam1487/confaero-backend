@@ -1,3 +1,4 @@
+
 import { Schema, model } from "mongoose";
 import { TOrganizer } from "./superAdmin.interface";
 

@@ -10,6 +10,23 @@ const create_organizer = z.object({
     .min(2, "Organization name must be at least 2 characters"),
 });
 
+const create_event = z.object({
+  title: z.string().min(2),
+  website: z.string().url().optional(),
+  organizerEmails: z.array(z.string().email()).min(1),
+
+  location: z.string().min(2),
+  googleMapLink: z.string().url().optional(),
+
+  startDate: z.string(),
+  endDate: z.string(),
+
+  expectedAttendee: z.number().optional(),
+  boothSlot: z.number().optional(),
+  details: z.string().optional(),
+});
+
 export const super_admin_validations = {
   create_organizer,
+  create_event,
 };

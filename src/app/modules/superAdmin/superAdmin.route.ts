@@ -12,5 +12,11 @@ super_admin_router.post(
   RequestValidator(super_admin_validations.create_organizer),
   super_admin_controller.create_new_organizer
 );
+super_admin_router.post(
+  "/create/event",
+  auth("SUPER_ADMIN"),
+  RequestValidator(super_admin_validations.create_event),
+  super_admin_controller.create_event_by_super_admin
+);
 
 export default super_admin_router;
