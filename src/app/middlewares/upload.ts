@@ -5,7 +5,12 @@ const allowedTypes = [
   "image/jpeg",
   "image/png",
   "image/webp",
+  // PDF
   "application/pdf",
+
+  // CSV (IMPORTANT)
+  "text/csv",
+  "application/vnd.ms-excel",
 ];
 
 export const upload = multer({
