@@ -1,4 +1,3 @@
-
 import { Schema, model } from "mongoose";
 import { TOrganizer } from "./superAdmin.interface";
 
@@ -25,7 +24,7 @@ const organizerSchema = new Schema<TOrganizer>(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 export const Organizer_Model = model<TOrganizer>("organizer", organizerSchema);

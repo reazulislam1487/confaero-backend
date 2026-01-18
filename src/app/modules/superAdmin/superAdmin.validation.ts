@@ -24,6 +24,8 @@ const create_event = z.object({
   expectedAttendee: z.number().optional(),
   boothSlot: z.number().optional(),
   details: z.string().optional(),
+  floorMapImageUrl: z.array(z.string().url()).optional(),
+  agenda: z.array(z.string()).optional(),
 });
 
 export const super_admin_validations = {

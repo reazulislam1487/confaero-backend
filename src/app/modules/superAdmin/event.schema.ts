@@ -16,8 +16,24 @@ const eventSchema = new Schema(
 
     organizers: [{ type: Types.ObjectId, ref: "Account", required: true }],
     organizerEmails: [{ type: String }],
+    bannerImageUrl: { type: String },
+    floorMapImageUrl: [{ type: String }],
+    agenda: {
+      sessions: {
+        type: [
+          {
+            title: String,
+            floorMapLocation: String,
+            date: String,
+            time: String,
+            details: String,
+          },
+        ],
+        default: [],
+      },
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Event_Model = model("Event", eventSchema);

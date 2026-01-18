@@ -37,7 +37,7 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
     const isExistAccount = await Account_Model.findOne(
       { email: payload.email },
       null,
-      { session }
+      { session },
     );
 
     if (isExistAccount) {
@@ -47,7 +47,7 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
     if (payload.password !== payload.confirmPassword) {
       throw new AppError(
         "New password and confirm password do not match",
-        httpStatus.BAD_REQUEST
+        httpStatus.BAD_REQUEST,
       );
     }
 
@@ -102,7 +102,7 @@ const login_user_from_db = async (payload: TLoginPayload) => {
 
   const isPasswordMatch = await bcrypt.compare(
     payload.password,
-    isExistAccount.password
+    isExistAccount.password,
   );
   if (!isPasswordMatch) {
     throw new AppError("Invalid password", httpStatus.UNAUTHORIZED);
@@ -113,7 +113,7 @@ const login_user_from_db = async (payload: TLoginPayload) => {
       activeRole: isExistAccount.activeRole,
     },
     configs.jwt.access_token as Secret,
-    configs.jwt.access_expires as string
+    configs.jwt.access_expires as string,
   );
 
   const refreshToken = jwtHelpers.generateToken(
@@ -122,7 +122,7 @@ const login_user_from_db = async (payload: TLoginPayload) => {
       activeRole: isExistAccount.activeRole,
     },
     configs.jwt.refresh_token as Secret,
-    configs.jwt.refresh_expires as string
+    configs.jwt.refresh_expires as string,
   );
   return {
     accessToken: accessToken,
@@ -148,7 +148,7 @@ const refresh_token_from_db = async (token: string) => {
   try {
     decodedData = jwtHelpers.verifyToken(
       token,
-      configs.jwt.refresh_token as Secret
+      configs.jwt.refresh_token as Secret,
     );
   } catch (err) {
     throw new Error("You are not authorized!");
@@ -166,7 +166,7 @@ const refresh_token_from_db = async (token: string) => {
       role: userData!.role,
     },
     configs.jwt.access_token as Secret,
-    configs.jwt.access_expires as string
+    configs.jwt.access_expires as string,
   );
 
   return accessToken;
@@ -179,13 +179,13 @@ const change_password_from_db = async (
     oldPassword: string;
     newPassword: string;
     currentPassword: string;
-  }
+  },
 ) => {
   const isExistAccount = await isAccountExist(user?.email);
 
   const isCorrectPassword: boolean = await bcrypt.compare(
     payload.oldPassword,
-    isExistAccount.password
+    isExistAccount.password,
   );
 
   if (!isCorrectPassword) {
@@ -194,13 +194,13 @@ const change_password_from_db = async (
   if (isCorrectPassword && payload.oldPassword === payload.newPassword) {
     throw new AppError(
       "Old password and new password can not be same",
-      httpStatus.BAD_REQUEST
+      httpStatus.BAD_REQUEST,
     );
   }
   if (payload.newPassword !== payload.currentPassword) {
     throw new AppError(
       "New password and confirm password do not match",
-      httpStatus.BAD_REQUEST
+      httpStatus.BAD_REQUEST,
     );
   }
 
@@ -210,7 +210,7 @@ const change_password_from_db = async (
     {
       password: hashedPassword,
       lastPasswordChange: Date(),
-    }
+    },
   );
   return "Password changed successful.";
 };
@@ -231,7 +231,7 @@ const forget_password_from_db = async (email: string) => {
       activeRole: isAccountExists.activeRole,
     },
     configs.jwt.reset_secret as Secret,
-    configs.jwt.reset_expires as string
+    configs.jwt.reset_expires as string,
   );
 
   const resetPasswordLink = `${configs.jwt.front_end_url}/reset?token=${resetToken}&email=${isAccountExists.email}`;
@@ -269,7 +269,7 @@ const verify_reset_code_from_db = async (email: string, code: string) => {
   const resetToken = jwtHelpers.generateToken(
     { email },
     configs.jwt.reset_secret as Secret,
-    "10m"
+    "10m",
   );
 
   return { resetToken };
@@ -279,25 +279,25 @@ const reset_password_into_db = async (
   token: string,
   email: string,
   newPassword: string,
-  confirmPassword: string
+  confirmPassword: string,
 ) => {
   let decodedData: JwtPayload;
   try {
     decodedData = jwtHelpers.verifyToken(
       token,
-      configs.jwt.reset_secret as Secret
+      configs.jwt.reset_secret as Secret,
     );
   } catch (err) {
     throw new AppError(
       "Your reset link is expire. Submit new link request!!",
-      httpStatus.UNAUTHORIZED
+      httpStatus.UNAUTHORIZED,
     );
   }
 
   if (newPassword !== confirmPassword) {
     throw new AppError(
       "New password and confirm password do not match",
-      httpStatus.BAD_REQUEST
+      httpStatus.BAD_REQUEST,
     );
   }
   const isAccountExists = await isAccountExist(email);
@@ -309,7 +309,7 @@ const reset_password_into_db = async (
     {
       password: hashedPassword,
       lastPasswordChange: Date(),
-    }
+    },
   );
   return "Password reset successfully!";
 };
@@ -318,7 +318,7 @@ const verified_account_into_db = async (token: string) => {
   try {
     const { email } = jwtHelpers.verifyToken(
       token,
-      configs.jwt.verified_token as string
+      configs.jwt.verified_token as string,
     );
     // check account is already verified or blocked
     const isExistAccount = await Account_Model.findOne({ email });
@@ -332,7 +332,7 @@ const verified_account_into_db = async (token: string) => {
     const result = await Account_Model.findOneAndUpdate(
       { email },
       { isVerified: true },
-      { new: true }
+      { new: true },
     );
 
     return result;
@@ -349,7 +349,7 @@ const get_new_verification_link_from_db = async (email: string) => {
       email,
     },
     configs.jwt.verified_token as Secret,
-    "5m"
+    "5m",
   );
   const verificationLink = `${configs.jwt.front_end_url}/verified?token=${verifiedToken}`;
   await sendMail({
@@ -379,7 +379,7 @@ const get_new_verification_link_from_db = async (email: string) => {
 // DELETE ACCOUNT
 const delete_account_from_db = async (
   user: JwtPayloadType,
-  currentPassword: string
+  currentPassword: string,
 ) => {
   const account = await Account_Model.findOne({
     email: user.email,
@@ -390,13 +390,13 @@ const delete_account_from_db = async (
 
   const isPasswordMatch = await bcrypt.compare(
     currentPassword,
-    account.password
+    account.password,
   );
 
   if (!isPasswordMatch) {
     throw new AppError(
       "Current password is incorrect",
-      httpStatus.UNAUTHORIZED
+      httpStatus.UNAUTHORIZED,
     );
   }
 
@@ -428,7 +428,7 @@ const change_role_from_db = async (user: JwtPayloadType, role: any) => {
       activeRole: role,
     },
     configs.jwt.access_token as Secret,
-    configs.jwt.access_expires as string
+    configs.jwt.access_expires as string,
   );
 
   return { accessToken, activeRole: role };

@@ -1,5 +1,14 @@
+// organizer.validation.ts
 import { z } from "zod";
 
-const create = z.object({});
+export const organizer_validations = {
+  update_event: z
+    .object({
+      details: z.string().optional(),
+      website: z.string().optional(),
 
-export const organizer_validations = { create };
+      // agenda comes as string (multipart/form-data)
+      agenda: z.string().optional(),
+    })
+    .refine((d) => Object.keys(d).length > 0),
+};

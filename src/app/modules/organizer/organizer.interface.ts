@@ -1,3 +1,1 @@
-export type T_Organizer = {
-
-}
+export type T_Organizer = {};

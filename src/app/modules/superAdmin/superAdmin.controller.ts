@@ -5,7 +5,7 @@ import { super_admin_service } from "./superAdmin.service";
 
 const create_new_organizer = catchAsync(async (req, res) => {
   const result = await super_admin_service.create_new_organizer_into_db(
-    req.body
+    req.body,
   );
 
   manageResponse(res, {
@@ -15,6 +15,38 @@ const create_new_organizer = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+// const create_event_by_super_admin = catchAsync(async (req, res) => {
+//   const uploaded = (req as any).uploadedFiles || {};
+
+//   const payload = {
+//     ...req.body,
+//     floorMapImageUrl: uploaded.floorMaps
+//       ? Array.isArray(uploaded.floorMaps)
+//         ? uploaded.floorMaps
+//         : [uploaded.floorMaps]
+//       : [],
+//     bannerImageUrl: uploaded.bannerImage
+//       ? Array.isArray(uploaded.bannerImage)
+//         ? uploaded.bannerImage
+//         : [uploaded.bannerImage]
+//       : [],
+//     organizerEmails: req.body.organizerEmails
+//       ? JSON.parse(req.body.organizerEmails)
+//       : [],
+//     agenda: req.body.agenda ? JSON.parse(req.body.agenda) : [],
+//   };
+
+//   const result =
+//     await super_admin_service.create_event_by_super_admin_into_db(payload);
+
+//   manageResponse(res, {
+//     statusCode: httpStatus.CREATED,
+//     success: true,
+//     message: "Event created successfully",
+//     data: result,
+//   });
+// });
 
 const create_event_by_super_admin = catchAsync(async (req, res) => {
   const result = await super_admin_service.create_event_by_super_admin_into_db(
@@ -43,7 +75,7 @@ const get_all_organizers = catchAsync(async (req, res) => {
 
 const get_specific_organizer = catchAsync(async (req, res) => {
   const result = await super_admin_service.get_specific_organizer_from_db(
-    req.params.id
+    req.params.id,
   );
 
   manageResponse(res, {
@@ -56,7 +88,7 @@ const get_specific_organizer = catchAsync(async (req, res) => {
 
 const get_all_events_of_organizer = catchAsync(async (req, res) => {
   const result = await super_admin_service.get_all_events_of_organizer_from_db(
-    req.params.id
+    req.params.id,
   );
 
   manageResponse(res, {
@@ -73,7 +105,7 @@ const get_specific_event_of_organizer = catchAsync(async (req, res) => {
   const result =
     await super_admin_service.get_specific_event_of_organizer_from_db(
       organizerId,
-      eventId
+      eventId,
     );
 
   manageResponse(res, {
@@ -116,7 +148,7 @@ const get_all_users = catchAsync(async (req, res) => {
 });
 const get_user_details = catchAsync(async (req, res) => {
   const result = await super_admin_service.get_user_details_from_db(
-    req.params.userId
+    req.params.userId,
   );
 
   manageResponse(res, {
@@ -139,7 +171,7 @@ const suspend_user = catchAsync(async (req, res) => {
 
 const get_event_overview = catchAsync(async (req, res) => {
   const result = await super_admin_service.get_event_overview_from_db(
-    req.params.eventId
+    req.params.eventId,
   );
 
   manageResponse(res, {

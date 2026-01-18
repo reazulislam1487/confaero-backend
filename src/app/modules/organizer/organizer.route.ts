@@ -1,14 +1,20 @@
 import { Router } from "express";
-import RequestValidator from "../../middlewares/request_validator";
+import auth from "../../middlewares/auth";
 import { organizer_controller } from "./organizer.controller";
-import { organizer_validations } from "./organizer.validation";
+import { upload } from "../../middlewares/upload";
 
-const organizer_router = Router();
+const router = Router();
 
-organizer_router.post(
-  "/create",
-  RequestValidator(organizer_validations.create),
-  organizer_controller.create_new_organizer
+router.get("/events", auth("ORGANIZER"), organizer_controller.get_my_events);
+
+router.patch(
+  "/events/:eventId",
+  auth("ORGANIZER"),
+  upload.fields([
+    { name: "banner", maxCount: 1 },
+    { name: "floorMapImages", maxCount: 10 },
+  ]),
+  organizer_controller.update_my_event,
 );
 
-export default organizer_router;
+export default router;

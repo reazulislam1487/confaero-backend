@@ -7,14 +7,31 @@ import { AppError } from "../../utils/app_error";
 import { User_Model, UserProfile_Model } from "../user/user.schema";
 import { isAccountExist } from "../../utils/isAccountExist";
 import formatDateRange from "../../utils/formatDateRange";
+import sendMail from "../../utils/mail_sender";
 
 type TCreateOrganizerPayload = {
   email: string;
   organizationName: string;
 };
 
+type TCreateEventPayload = {
+  title: string;
+  organizerEmails: string[];
+  location: string;
+  startDate: string;
+  endDate: string;
+  website?: string;
+  googleMapLink?: string;
+  expectedAttendee?: number;
+  boothSlot?: number;
+  details?: string;
+  bannerImageUrl?: string;
+  floorMapImageUrl?: string[];
+  agenda?: string[];
+};
+
 const create_new_organizer_into_db = async (
-  payload: TCreateOrganizerPayload
+  payload: TCreateOrganizerPayload,
 ) => {
   const session = await mongoose.startSession();
 
@@ -24,7 +41,7 @@ const create_new_organizer_into_db = async (
     const account = await Account_Model.findOne(
       { email: payload.email },
       null,
-      { session }
+      { session },
     );
 
     if (!account) {
@@ -34,7 +51,7 @@ const create_new_organizer_into_db = async (
     if (account.role?.includes("ORGANIZER")) {
       throw new AppError(
         "User is already an organizer",
-        httpStatus.BAD_REQUEST
+        httpStatus.BAD_REQUEST,
       );
     }
 
@@ -50,7 +67,7 @@ const create_new_organizer_into_db = async (
           verifiedBySuperAdmin: true,
         },
       ],
-      { session }
+      { session },
     );
 
     await session.commitTransaction();
@@ -68,21 +85,8 @@ const create_new_organizer_into_db = async (
   }
 };
 
-type TCreateEventPayload = {
-  title: string;
-  organizerEmails: string[];
-  location: string;
-  startDate: string;
-  endDate: string;
-  website?: string;
-  googleMapLink?: string;
-  expectedAttendee?: number;
-  boothSlot?: number;
-  details?: string;
-};
-
 const create_event_by_super_admin_into_db = async (
-  payload: TCreateEventPayload
+  payload: TCreateEventPayload,
 ) => {
   const session = await mongoose.startSession();
 
@@ -96,7 +100,7 @@ const create_event_by_super_admin_into_db = async (
       if (uniqueEmails.has(email)) {
         throw new AppError(
           `Duplicate organizer email: ${email}`,
-          httpStatus.BAD_REQUEST
+          httpStatus.BAD_REQUEST,
         );
       }
       uniqueEmails.add(email);
@@ -108,7 +112,7 @@ const create_event_by_super_admin_into_db = async (
       if (!account) {
         throw new AppError(
           `Account not found for email: ${email}`,
-          httpStatus.NOT_FOUND
+          httpStatus.NOT_FOUND,
         );
       }
 
@@ -125,7 +129,7 @@ const create_event_by_super_admin_into_db = async (
               verifiedBySuperAdmin: true,
             },
           ],
-          { session }
+          { session },
         );
       }
 
@@ -146,10 +150,48 @@ const create_event_by_super_admin_into_db = async (
           details: payload.details,
           organizers: organizerAccountIds,
           organizerEmails: payload.organizerEmails,
+          bannerImageUrl: payload.bannerImageUrl ?? "",
+          floorMapImageUrl: payload.floorMapImageUrl ?? [],
+          agenda: payload.agenda ?? [],
         },
       ],
-      { session }
+      { session },
     );
+
+    const dashboardUrl =
+      process.env.FRONTEND_DASHBOARD_URL || "http://localhost:3000/dashboard";
+    const emailTemplate = `
+  <p>Your event has been successfully created.</p>
+
+  <p>
+    You can now log in to the platform using your <strong>existing email and password</strong>
+    by visiting the link below:
+  </p>
+
+  <p>
+    <a href="${dashboardUrl}" target="_blank">
+      Go to Dashboard
+    </a>
+  </p>
+
+  <p>
+    From the dashboard, you will be able to manage your event details, agenda, and other settings.
+  </p>
+
+  <p>
+    If you face any issues while logging in, please contact our support team.
+  </p>
+
+  <br/>
+
+  <p>Thank you for being part of our platform.</p>
+`;
+    await sendMail({
+      to: payload.organizerEmails[0],
+      subject: "Password Reset Code!",
+      textBody: "Your password is successfully reset.",
+      htmlBody: emailTemplate,
+    });
 
     await session.commitTransaction();
     return event[0];
@@ -195,7 +237,7 @@ const get_all_events_of_organizer_from_db = async (organizerId: any) => {
     organizers: organizer.accountId,
   })
     .select(
-      "title location startDate endDate website expectedAttendee boothSlot"
+      "title location startDate endDate website expectedAttendee boothSlot",
     )
     .sort({ startDate: -1 })
     .lean();
@@ -203,7 +245,7 @@ const get_all_events_of_organizer_from_db = async (organizerId: any) => {
 
 const get_specific_event_of_organizer_from_db = async (
   organizerId: any,
-  eventId: any
+  eventId: any,
 ) => {
   const organizer = await Organizer_Model.findById(organizerId).lean();
 
@@ -216,14 +258,14 @@ const get_specific_event_of_organizer_from_db = async (
     organizers: organizer.accountId,
   })
     .select(
-      "title location startDate endDate website googleMapLink expectedAttendee boothSlot details"
+      "title location startDate endDate website googleMapLink expectedAttendee boothSlot details",
     )
     .lean();
 
   if (!event) {
     throw new AppError(
       "Event not found or access denied",
-      httpStatus.NOT_FOUND
+      httpStatus.NOT_FOUND,
     );
   }
 
@@ -234,7 +276,7 @@ const get_all_events_from_db = async (limit?: number) => {
   const query = Event_Model.find()
     .sort({ createdAt: -1 })
     .select(
-      "title location startDate endDate website expectedAttendee boothSlot"
+      "title location startDate endDate website expectedAttendee boothSlot",
     );
 
   if (limit) {
@@ -269,7 +311,7 @@ const get_all_users_from_db = async ({
     .lean();
 
   const profileMap = new Map(
-    profiles.map((profile) => [profile.accountId!.toString(), profile])
+    profiles.map((profile) => [profile.accountId!.toString(), profile]),
   );
 
   return accounts.map((account) => ({

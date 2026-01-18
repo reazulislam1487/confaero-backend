@@ -7,6 +7,8 @@ import globalErrorHandler from "./app/middlewares/global_error_handler";
 import notFound from "./app/middlewares/not_found_api";
 import appRouter from "./routes";
 import { swaggerOptions } from "./swaggerOptions";
+import { upload } from "./app/middlewares/upload";
+import { uploadToS3 } from "./app/utils/s3";
 
 // define app
 const app = express();
@@ -19,7 +21,7 @@ app.use(
     origin: ["http://localhost:3000"],
     methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
     credentials: true,
-  })
+  }),
 );
 app.use(express.json({ limit: "100mb" }));
 app.use(express.raw());
@@ -36,6 +38,20 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
+app.post("/test-upload", upload.single("file"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: "No file found" });
+  }
+
+  const url = await uploadToS3(req.file, "test");
+
+  res.status(200).json({
+    success: true,
+    fileName: req.file.originalname,
+    fileType: req.file.mimetype,
+    url,
+  });
+});
 // global error handler
 app.use(globalErrorHandler);
 app.use(notFound);
