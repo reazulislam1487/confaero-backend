@@ -50,7 +50,7 @@ const create_new_organizer = catchAsync(async (req, res) => {
 
 const create_event_by_super_admin = catchAsync(async (req, res) => {
   const result = await super_admin_service.create_event_by_super_admin_into_db(
-    req.body
+    req.body,
   );
 
   manageResponse(res, {
@@ -130,6 +130,20 @@ const get_all_events = catchAsync(async (req, res) => {
   });
 });
 
+// a event deatil
+
+const get_event_details = catchAsync(async (req, res) => {
+  const result = await super_admin_service.get_single_event_details_from_db(
+    req.params.eventId,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Event details fetched successfully!",
+    data: result,
+  });
+});
 const get_all_users = catchAsync(async (req, res) => {
   const { limit, page, search } = req.query;
 
@@ -206,4 +220,5 @@ export const super_admin_controller = {
   suspend_user,
   get_event_overview,
   get_dashboard_overview,
+  get_event_details,
 };

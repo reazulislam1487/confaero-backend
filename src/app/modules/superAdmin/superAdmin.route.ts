@@ -33,31 +33,18 @@ super_admin_router.post(
   super_admin_controller.create_event_by_super_admin,
 );
 
-// super_admin_router.post(
-//   "/create/event",
-//   auth("SUPER_ADMIN"),
-//   multiUploadHandler(
-//     [
-//       { name: "banner", maxCount: 1 },
-//       { name: "floorMaps", maxCount: 10 },
-//     ],
-//     "events",
-//   ),
-//   super_admin_controller.create_event_by_super_admin,
-// );
-
 super_admin_router.get(
   "/organizers/:id/events",
   auth("SUPER_ADMIN"),
   super_admin_controller.get_all_events_of_organizer,
 );
 
+super_admin_router.get("/events", super_admin_controller.get_all_events);
+// get details of a specific event
 super_admin_router.get(
-  "/events",
-  auth("SUPER_ADMIN"),
-  super_admin_controller.get_all_events,
+  "/events/:eventId",
+  super_admin_controller.get_event_details,
 );
-
 super_admin_router.get(
   "/organizers/:organizerId/events/:eventId",
   auth("SUPER_ADMIN"),

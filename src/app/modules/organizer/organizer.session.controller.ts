@@ -119,4 +119,5 @@ export const organizer_session_controllers = {
   update_session,
   delete_session,
   upload_sessions_csv,
+  
 };

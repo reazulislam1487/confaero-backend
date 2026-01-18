@@ -286,6 +286,17 @@ const get_all_events_from_db = async (limit?: number) => {
   return query.lean();
 };
 
+//
+const get_event_details_from_db = async (eventId: any) => {
+  const event = await Event_Model.findById(eventId).lean();
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  return event;
+};
+
 type TGetAllUsersParams = {
   limit?: number;
   page?: number;
@@ -500,6 +511,15 @@ const get_dashboard_overview_from_db = async () => {
   };
 };
 
+const get_single_event_details_from_db = async (eventId: any) => {
+  const event = await Event_Model.findById(eventId).lean();
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  return event;
+};
 export const super_admin_service = {
   create_new_organizer_into_db,
   create_event_by_super_admin_into_db,
@@ -513,4 +533,6 @@ export const super_admin_service = {
   suspend_user_from_db,
   get_event_overview_from_db,
   get_dashboard_overview_from_db,
+  get_event_details_from_db,
+  get_single_event_details_from_db,
 };
