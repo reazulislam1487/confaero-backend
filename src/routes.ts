@@ -7,10 +7,12 @@ import organizerSessionRoute from "./app/modules/organizer/organizer.session.rou
 import organizerRoute from "./app/modules/organizer/organizer.route";
 import attendeeRoute from './app/modules/attendee/attendee.route';
 import qrRoute from './app/modules/qr/qr.route';
+import invitationRoute from './app/modules/invitation/invitation.route';
 
 const appRouter = Router();
 
 const moduleRoutes = [
+    { path: "/invitation", route: invitationRoute },
     { path: "/qr", route: qrRoute },
     { path: "/attendee", route: attendeeRoute },
   { path: "/organizer", route: organizerRoute },

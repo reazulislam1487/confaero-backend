@@ -32,6 +32,19 @@ const eventSchema = new Schema(
         default: [],
       },
     },
+    participants: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: "user",
+        },
+        role: {
+          type: String,
+          enum: ["attendee", "speaker", "organizer"],
+          default: "attendee",
+        },
+      },
+    ],
   },
   { timestamps: true },
 );

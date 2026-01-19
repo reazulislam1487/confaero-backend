@@ -7,6 +7,7 @@ import { superAdminSwaggerDocs } from "./app/modules/superAdmin/superAdmin.swagg
 import { organizerSwaggerDocs } from "./app/modules/organizer/organizer.swagger";
 import { attendeeSwaggerDocs } from "./app/modules/attendee/attendee.swagger";
 import { qrSwaggerDocs } from "./app/modules/qr/qr.swagger";
+import { invitationSwaggerDocs } from "./app/modules/invitation/invitation.swagger";
 
 export const swaggerOptions = {
   definition: {
@@ -26,7 +27,8 @@ export const swaggerOptions = {
       ...organizerSwaggerDocs,
       ...attendeeSwaggerDocs,
     
-            ...qrSwaggerDocs,},
+            ...qrSwaggerDocs,
+            ...invitationSwaggerDocs,},
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]

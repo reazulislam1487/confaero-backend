@@ -2,6 +2,8 @@ import { Event_Model } from "../superAdmin/event.schema";
 import { attendee_model } from "./attendee.schema";
 import { Types } from "mongoose";
 import jwt from "jsonwebtoken";
+import { AppError } from "../../utils/app_error";
+import httpStatus from "http-status";
 
 const get_all_upcoming_events_from_db = async () => {
   const now = new Date();
@@ -14,6 +16,33 @@ const register_attendee_into_event = async (
 ) => {
   const exists = await attendee_model.findOne({ user: userId, event: eventId });
   if (exists) return exists;
+
+  const event = await Event_Model.findById(eventId);
+  if (!event) {
+    throw new AppError("Account not found", httpStatus.NOT_FOUND);
+  }
+
+  // already joined check
+  const alreadyJoined = event.participants.find(
+    (p: any) => p.userId.toString() === userId.toString(),
+  );
+
+  if (alreadyJoined) {
+    throw new AppError(
+      "You already registered for this event",
+      httpStatus.NOT_FOUND,
+    );
+  }
+
+  // push participant
+  await Event_Model.findByIdAndUpdate(eventId, {
+    $push: {
+      participants: {
+        userId,
+        role: "attendee",
+      },
+    },
+  });
 
   return attendee_model.create({
     user: userId,
