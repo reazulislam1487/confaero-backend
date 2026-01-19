@@ -5,10 +5,14 @@ import profileRoute from "./app/modules/profile/profile.route";
 import superAdminRoute from "./app/modules/superAdmin/superAdmin.route";
 import organizerSessionRoute from "./app/modules/organizer/organizer.session.route";
 import organizerRoute from "./app/modules/organizer/organizer.route";
+import attendeeRoute from './app/modules/attendee/attendee.route';
+import qrRoute from './app/modules/qr/qr.route';
 
 const appRouter = Router();
 
 const moduleRoutes = [
+    { path: "/qr", route: qrRoute },
+    { path: "/attendee", route: attendeeRoute },
   { path: "/organizer", route: organizerRoute },
   { path: "/organizer-sessions", route: organizerSessionRoute },
   { path: "/superAdmin", route: superAdminRoute },

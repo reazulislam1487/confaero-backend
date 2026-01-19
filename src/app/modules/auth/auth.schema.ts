@@ -17,11 +17,15 @@ const authSchema = new Schema<TAccount>(
     isVerified: { type: Boolean, default: false },
     resetPasswordCode: { type: String },
     resetPasswordExpire: { type: Date },
+    activeEvent: {
+      type: Schema.Types.ObjectId,
+      ref: "Event",
+    },
   },
   {
     versionKey: false,
     timestamps: true,
-  }
+  },
 );
 
 export const Account_Model = model("account", authSchema);

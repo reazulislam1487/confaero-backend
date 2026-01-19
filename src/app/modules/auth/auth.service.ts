@@ -16,6 +16,7 @@ import { configs } from "../../configs";
 import { JwtPayload, Secret } from "jsonwebtoken";
 import sendMail from "../../utils/mail_sender";
 import { isAccountExist } from "../../utils/isAccountExist";
+import { id } from "zod/v4/locales";
 // register user
 const register_user_into_db = async (payload: TRegisterPayload) => {
   const session = await mongoose.startSession();
@@ -110,6 +111,7 @@ const login_user_from_db = async (payload: TLoginPayload) => {
   const accessToken = jwtHelpers.generateToken(
     {
       email: isExistAccount.email,
+      id: isExistAccount._id,
       activeRole: isExistAccount.activeRole,
     },
     configs.jwt.access_token as Secret,
@@ -119,6 +121,7 @@ const login_user_from_db = async (payload: TLoginPayload) => {
   const refreshToken = jwtHelpers.generateToken(
     {
       email: isExistAccount.email,
+      id: isExistAccount._id,
       activeRole: isExistAccount.activeRole,
     },
     configs.jwt.refresh_token as Secret,
@@ -163,7 +166,8 @@ const refresh_token_from_db = async (token: string) => {
   const accessToken = jwtHelpers.generateToken(
     {
       email: userData!.email,
-      role: userData!.role,
+      id: userData!._id,
+      activeRole: userData!.activeRole,
     },
     configs.jwt.access_token as Secret,
     configs.jwt.access_expires as string,
@@ -425,6 +429,7 @@ const change_role_from_db = async (user: JwtPayloadType, role: any) => {
   const accessToken = jwtHelpers.generateToken(
     {
       email: account.email,
+      id: account._id,
       activeRole: role,
     },
     configs.jwt.access_token as Secret,
@@ -433,6 +438,9 @@ const change_role_from_db = async (user: JwtPayloadType, role: any) => {
 
   return { accessToken, activeRole: role };
 };
+
+
+
 
 export const auth_services = {
   register_user_into_db,

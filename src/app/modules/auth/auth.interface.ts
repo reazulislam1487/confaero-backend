@@ -22,6 +22,7 @@ export type TAccount = {
   isVerified?: boolean;
   resetPasswordCode?: String;
   resetPasswordExpire?: Date;
+  activeEvent?: any;
 };
 
 export interface TRegisterPayload extends TAccount {

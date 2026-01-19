@@ -93,7 +93,7 @@ const reset_password = catchAsync(async (req, res) => {
     token,
     email,
     newPassword,
-    confirmPassword
+    confirmPassword,
   );
   manageResponse(res, {
     statusCode: httpStatus.OK,
@@ -116,7 +116,7 @@ const verified_account = catchAsync(async (req, res) => {
 
 const get_new_verification_link = catchAsync(async (req, res) => {
   const result = await auth_services.get_new_verification_link_from_db(
-    req?.body?.email
+    req?.body?.email,
   );
   manageResponse(res, {
     statusCode: httpStatus.OK,

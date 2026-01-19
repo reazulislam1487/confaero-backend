@@ -5,6 +5,8 @@ import { userSwaggerDocs } from "./app/modules/user/user.swagger";
 import { profileSwaggerDocs } from "./app/modules/profile/profile.swagger";
 import { superAdminSwaggerDocs } from "./app/modules/superAdmin/superAdmin.swagger";
 import { organizerSwaggerDocs } from "./app/modules/organizer/organizer.swagger";
+import { attendeeSwaggerDocs } from "./app/modules/attendee/attendee.swagger";
+import { qrSwaggerDocs } from "./app/modules/qr/qr.swagger";
 
 export const swaggerOptions = {
   definition: {
@@ -20,8 +22,11 @@ export const swaggerOptions = {
 
       ...profileSwaggerDocs,
       ...superAdminSwaggerDocs,
+
+      ...organizerSwaggerDocs,
+      ...attendeeSwaggerDocs,
     
-            ...organizerSwaggerDocs,},
+            ...qrSwaggerDocs,},
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]
@@ -42,10 +47,5 @@ export const swaggerOptions = {
       },
     ],
   },
-  apis: [
-    path.join(
-      __dirname,
-      configs.env === "production" ? "./**/*.js" : "./**/*.ts"
-    ),
-  ],
+  apis: ["./src/app.ts"],
 };

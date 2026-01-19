@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import app from "./app";
 import { configs } from "./app/configs";
 import seedSuperAdmin from "./app/utils/seeders/superAdmin.seeder";
+import { generateQRCode } from "./app/utils/qrCode.ts/qrCodeGenerate";
 async function main() {
   await mongoose.connect(configs.db_url!);
 
