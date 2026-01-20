@@ -2,10 +2,13 @@ import { Types } from "mongoose";
 
 export type TInvitationStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "EXPIRED";
 export type TInvitationRole =
-  | "ATTENDEE"
+  | "SPEAKER"
   | "EXHIBITOR"
+  | "STAFF"
+  | "SPONSOR"
   | "VOLUNTEER"
-  | "SPEAKER";
+  | "ABSTRACT_REVIEWER"
+  | "TRACK_CHAIR";
 
 export type T_Invitation = {
   eventId: Types.ObjectId;

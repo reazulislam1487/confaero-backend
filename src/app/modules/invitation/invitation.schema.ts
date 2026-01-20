@@ -22,7 +22,15 @@ const invitation_schema = new Schema(
 
     role: {
       type: String,
-      enum: ["ATTENDEE", "EXHIBITOR", "VOLUNTEER", "SPEAKER"],
+      enum: [
+        "SPEAKER",
+        "STAFF",
+        "EXHIBITOR",
+        "VOLUNTEER",
+        "TRACK_CHAIR",
+        "SPONSOR",
+        "ABSTRACT_REVIEWER",
+      ],
       required: true,
     },
 

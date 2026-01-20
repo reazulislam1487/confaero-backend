@@ -124,7 +124,10 @@ const get_event_invitations = async (eventId: any, query: any) => {
     filter.email = { $regex: search, $options: "i" };
   }
 
-  const skip = (Number(page) - 1) * Number(limit);
+  const currentPage = Math.max(Number(page), 1);
+  const perPage = Math.max(Number(limit), 1);
+
+  const skip = (currentPage - 1) * perPage;
 
   // 1️⃣ Invitations
   const invitations = await invitation_model
@@ -132,8 +135,7 @@ const get_event_invitations = async (eventId: any, query: any) => {
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(Number(limit))
-    .lean(); // 🔥 important
-
+    .lean(); 
   const total = await invitation_model.countDocuments(filter);
 
   // 2️⃣ Emails → Accounts
