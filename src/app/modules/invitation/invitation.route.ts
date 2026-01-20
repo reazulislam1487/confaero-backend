@@ -32,5 +32,25 @@ invitation_router.get(
   eventAccess(),
   invitation_controller.get_my_invitations,
 );
+invitation_router.get(
+  "/event/:eventId",
+  auth("ORGANIZER"),
+  eventAccess(),
+  invitation_controller.get_event_invitations,
+);
+
+invitation_router.post(
+  "/:invitationId/resend/:eventId",
+  auth("ORGANIZER"),
+  eventAccess(),
+  invitation_controller.resend_invitation,
+);
+
+invitation_router.delete(
+  "/:invitationId/:eventId",
+  auth("ORGANIZER"),
+  eventAccess(),
+  invitation_controller.delete_invitation,
+);
 
 export default invitation_router;
