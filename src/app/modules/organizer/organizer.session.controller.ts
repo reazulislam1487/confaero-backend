@@ -5,7 +5,6 @@ import catchAsync from "../../utils/catch_async";
 import * as session_service from "./organizer.session.service";
 import { AppError } from "../../utils/app_error";
 import { csv } from "csvtojson";
-import { JwtPayloadType } from "../../utils/JWT";
 
 const get_sessions = catchAsync(async (req: Request, res: Response) => {
   const result = await session_service.get_sessions(

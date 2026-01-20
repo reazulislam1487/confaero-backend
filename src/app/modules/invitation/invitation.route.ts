@@ -52,5 +52,18 @@ invitation_router.delete(
   eventAccess(),
   invitation_controller.delete_invitation,
 );
+invitation_router.get(
+  "/:eventId/sessions",
+  auth("ORGANIZER"),
+  eventAccess(),
+  invitation_controller.get_event_sessions,
+);
 
+// 🔹 make speaker directly (NO invitation)
+invitation_router.post(
+  "/:eventId/make-speaker",
+  auth("ORGANIZER"),
+  eventAccess(),
+  invitation_controller.make_speaker,
+);
 export default invitation_router;

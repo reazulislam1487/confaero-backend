@@ -102,6 +102,39 @@ const delete_invitation = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const get_event_sessions = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+
+  const result = await invitation_service.get_event_sessions(eventId);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Event sessions fetched successfully",
+    data: result,
+  });
+});
+
+// 🔹 MAKE SPEAKER (direct)
+const make_speaker = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  const organizerId = req.user?.id;
+  const { email, sessionIndex } = req.body;
+
+  const result = await invitation_service.make_speaker(
+    organizerId,
+    eventId,
+    email,
+    sessionIndex,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Speaker assigned successfully",
+    data: result,
+  });
+});
 
 export const invitation_controller = {
   create_new_invitation,
@@ -111,4 +144,6 @@ export const invitation_controller = {
   get_event_invitations,
   resend_invitation,
   delete_invitation,
+  get_event_sessions,
+  make_speaker,
 };

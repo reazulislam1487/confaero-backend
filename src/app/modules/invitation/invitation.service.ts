@@ -135,7 +135,7 @@ const get_event_invitations = async (eventId: any, query: any) => {
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(Number(limit))
-    .lean(); 
+    .lean();
   const total = await invitation_model.countDocuments(filter);
 
   // 2️⃣ Emails → Accounts
@@ -247,6 +247,100 @@ const delete_invitation = async (invitationId: any) => {
     removedRole: invitation.role,
   };
 };
+
+// 🔹 GET sessions for dropdown
+const get_event_sessions = async (eventId: any) => {
+  const event = (await Event_Model.findById(eventId, {
+    "agenda.sessions": 1,
+  }).lean()) as any;
+
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  return event.agenda?.sessions?.map((session: any, index: any) => ({
+    index, // 🔥 dropdown value
+    title: session.title,
+    date: session.date,
+    time: session.time,
+    floorMapLocation: session.floorMapLocation,
+  }));
+};
+
+// 🔹 MAKE SPEAKER (NO invitation)
+const make_speaker = async (
+  organizerId: any,
+  eventId: any,
+  email: string,
+  sessionIndex: number,
+) => {
+  const normalizedEmail = email.toLowerCase();
+
+  const alreadyInvited = await invitation_model.findOne({
+    eventId,
+    email,
+    status: "ACCEPTED",
+  });
+
+  if (alreadyInvited) {
+    throw new Error("User already invited");
+  }
+
+  // 1️⃣ Find account
+  const account = await Account_Model.findOne({
+    email: normalizedEmail,
+  });
+
+  if (!account) {
+    throw new Error("Account not found with this email");
+  }
+
+  // 2️⃣ Get event & validate sessionIndex
+  const event = await Event_Model.findById(eventId);
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  const agenda = event.agenda as any;
+  if (sessionIndex < 0 || sessionIndex >= agenda.sessions.length) {
+    throw new Error("Invalid session selected");
+  }
+
+  // 3️⃣ Add speaker to event
+  await Event_Model.updateOne(
+    { _id: new Types.ObjectId(eventId) },
+    {
+      $addToSet: {
+        participants: {
+          accountId: account._id,
+          role: "SPEAKER",
+          sessionIndex,
+        },
+      },
+    },
+  );
+
+  // 4️⃣ Update account role
+  await Account_Model.findByIdAndUpdate(account._id, {
+    $addToSet: { role: "SPEAKER" },
+    activeRole: "SPEAKER",
+  });
+
+  await invitation_model.create({
+    organizerId,
+    eventId,
+    email,
+    role: "SPEAKER",
+    status: "ACCEPTED",
+  });
+
+  return {
+    email: account.email,
+    role: "SPEAKER",
+    session: (event.agenda as any)!.sessions[sessionIndex],
+  };
+};
+
 export const invitation_service = {
   create_invitation,
   accept_invitation,
@@ -255,4 +349,6 @@ export const invitation_service = {
   get_event_invitations,
   resend_invitation,
   delete_invitation,
+  get_event_sessions,
+  make_speaker,
 };
