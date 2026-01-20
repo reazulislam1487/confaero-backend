@@ -33,9 +33,8 @@ const update_my_event_in_db = async (user: any, eventId: any, payload: any) => {
     throw new AppError("Forbidden", httpStatus.FORBIDDEN);
   }
 
-  /* ---------- AGENDA FIX ---------- */
   if (payload.__session) {
-    // 👇 SAFE CAST ONLY agenda
+    //  SAFE CAST ONLY agenda
     const agenda = (event.agenda ?? { sessions: [] }) as TAgenda;
 
     agenda.sessions = agenda.sessions || [];
@@ -44,6 +43,7 @@ const update_my_event_in_db = async (user: any, eventId: any, payload: any) => {
     event.agenda = agenda;
     delete payload.__session;
   }
+  event.participants = [];
 
   /* ---------- LOCKED ---------- */
   delete payload.title;

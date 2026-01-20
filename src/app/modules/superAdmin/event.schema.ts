@@ -34,9 +34,9 @@ const eventSchema = new Schema(
     },
     participants: [
       {
-        userId: {
+        accountId: {
           type: Schema.Types.ObjectId,
-          ref: "user",
+          ref: "account",
         },
         role: {
           type: String,

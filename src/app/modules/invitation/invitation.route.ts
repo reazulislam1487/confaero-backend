@@ -1,30 +1,36 @@
 import { Router } from "express";
-import RequestValidator from "../../middlewares/request_validator";
 import auth from "../../middlewares/auth";
 import { invitation_controller } from "./invitation.controller";
-import { invitation_validations } from "./invitation.validation";
+import eventAccess from "../../middlewares/eventAccess.middleware";
 
 const invitation_router = Router();
 
 invitation_router.post(
-  "/create",
+  "/create/:eventId",
   auth("ORGANIZER"),
-  RequestValidator(invitation_validations.create),
-  invitation_controller.create_new_invitation
+  eventAccess(),
+  invitation_controller.create_new_invitation,
 );
 
-invitation_router.post(
-  "/accept",
-  auth(),
-  RequestValidator(invitation_validations.accept),
-  invitation_controller.accept_invitation
+invitation_router.patch(
+  "/:invitationId/accept/:eventId",
+  auth("ATTENDEE"),
+  eventAccess(),
+  invitation_controller.accept_invitation,
 );
 
-invitation_router.post(
-  "/reject",
-  auth(),
-  RequestValidator(invitation_validations.reject),
-  invitation_controller.reject_invitation
+invitation_router.patch(
+  "/:invitationId/reject/:eventId",
+  auth("ATTENDEE"),
+  eventAccess(),
+  invitation_controller.reject_invitation,
+);
+
+invitation_router.get(
+  "/my-invitations/:eventId",
+  auth("ATTENDEE"),
+  eventAccess(),
+  invitation_controller.get_my_invitations,
 );
 
 export default invitation_router;

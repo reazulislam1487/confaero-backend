@@ -1,46 +1,35 @@
 import { Schema, model } from "mongoose";
-import { T_Invitation } from "./invitation.interface";
 
-const invitation_schema = new Schema<T_Invitation>(
+const invitation_schema = new Schema(
   {
     eventId: {
       type: Schema.Types.ObjectId,
       required: true,
       index: true,
     },
+
     organizerId: {
       type: Schema.Types.ObjectId,
       required: true,
     },
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+
     email: {
       type: String,
       required: true,
       lowercase: true,
       index: true,
     },
+
     role: {
       type: String,
-      required: true,
       enum: ["ATTENDEE", "EXHIBITOR", "VOLUNTEER", "SPEAKER"],
-    },
-    token: {
-      type: String,
       required: true,
-      unique: true,
     },
+
     status: {
       type: String,
+      enum: ["PENDING", "ACCEPTED", "REJECTED"],
       default: "PENDING",
-      enum: ["PENDING", "ACCEPTED", "REJECTED", "EXPIRED"],
-    },
-    expiresAt: {
-      type: Date,
-      required: true,
     },
   },
   { timestamps: true },

@@ -12,6 +12,8 @@ export type TUser = {
     timeZone?: string;
   };
   accountId?: Types.ObjectId;
+  role?: string[];
+  activeRole?: string;
 };
 
 export type TUserProfile = {

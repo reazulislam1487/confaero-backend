@@ -3,7 +3,6 @@ import manageResponse from "../../utils/manage_response";
 import httpStatus from "http-status";
 import { organizer_service } from "./organizer.service";
 import { uploadToS3 } from "../../utils/s3";
-import { Event_Model } from "../superAdmin/event.schema";
 import { AppError } from "../../utils/app_error";
 
 const get_my_events = catchAsync(async (req, res) => {
@@ -25,13 +24,13 @@ const update_my_event = catchAsync(async (req, res) => {
     floorMapImages?: Express.Multer.File[];
   };
 
-  // 🔹 Banner image
+  //  Banner image
   if (files?.banner?.[0]) {
     const bannerUrl = await uploadToS3(files.banner[0], "events/banner");
     payload.bannerImageUrl = bannerUrl;
   }
 
-  // 🔹 Floor map multiple images
+  //  Floor map multiple images
   if (files?.floorMapImages?.length) {
     const urls = await Promise.all(
       files.floorMapImages.map((file) => uploadToS3(file, "events/floormap")),
@@ -44,7 +43,7 @@ const update_my_event = catchAsync(async (req, res) => {
     try {
       payload.__session = JSON.parse(req.body.agenda);
 
-      // 🔥 THIS LINE WAS MISSING
+      //  THIS LINE WAS MISSING
       delete payload.agenda;
     } catch {
       throw new AppError("Invalid agenda JSON", httpStatus.BAD_REQUEST);

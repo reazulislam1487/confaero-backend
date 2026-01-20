@@ -22,17 +22,20 @@ const eventAccess = () => async (req: any, res: any, next: NextFunction) => {
     });
   }
 
-  const registration = await attendee_model.findOne({
-    user: userId,
-    event: eventId,
-    status: "VERIFIED",
-  });
-  if (!registration) {
-    return res.status(httpStatus.FORBIDDEN).json({
-      success: false,
-      message: "You do not have access to this event",
-    });
+  if (req.user.role !== "ATTENDEE") {
+    return next();
   }
+  // const registration = await attendee_model.findOne({
+  //   user: userId,
+  //   event: eventId,
+  //   status: "VERIFIED",
+  // });
+  // if (!registration) {
+  //   return res.status(httpStatus.FORBIDDEN).json({
+  //     success: false,
+  //     message: "You do not have access to this event",
+  //   });
+  // }
 
   next();
 };
