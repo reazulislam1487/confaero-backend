@@ -41,16 +41,15 @@ const eventSchema = new Schema(
         role: {
           type: String,
           enum: [
-            "attendee",
-            "speaker",
-            "organizer",
-            "exhibitor",
-            "volunteer",
-            "track_chair",
-            "sponsor",
-            "abstract_reviewer",
+            "SPEAKER",
+            "STAFF",
+            "EXHIBITOR",
+            "VOLUNTEER",
+            "TRACK_CHAIR",
+            "SPONSOR",
+            "ABSTRACT_REVIEWER",
           ],
-          default: "attendee",
+          default: "ATTENDEE",
         },
         sessionIndex: {
           type: Number, //  agenda.sessions[index]

@@ -20,12 +20,14 @@ router.get(
 router.post(
   "/events/:eventId/sessions",
   auth("ORGANIZER"),
+  upload.single("floorMap"),
   organizer_session_controllers.add_session,
 );
 
 router.patch(
   "/events/:eventId/sessions/:sessionId",
   auth("ORGANIZER"),
+  upload.single("floorMap"),
   organizer_session_controllers.update_session,
 );
 

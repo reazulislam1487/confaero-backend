@@ -56,7 +56,6 @@ export const get_single_session = async (
 
   return session;
 };
-
 export const add_session = async (
   user: any,
   eventId: any,
@@ -106,7 +105,8 @@ export const delete_session = async (
   await event.save();
   return event.agenda.sessions;
 };
-const bulk_add_sessions = async (
+
+export const bulk_add_sessions = async (
   user: any,
   eventId: string,
   sessions: any[],
@@ -116,4 +116,5 @@ const bulk_add_sessions = async (
   await event.save();
   return event.agenda.sessions;
 };
-export { bulk_add_sessions };
+
+// export { bulk_add_sessions };
