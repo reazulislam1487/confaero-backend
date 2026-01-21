@@ -14,6 +14,28 @@ const update_profile = catchAsync(async (req, res) => {
   });
 });
 
+const delete_resume = catchAsync(async (req, res) => {
+  const result = await user_services.delete_resume_from_db(req);
+
+  manageResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Resume deleted successfully.",
+    data: result,
+  });
+});
+const get_my_profile = catchAsync(async (req, res) => {
+  const result = await user_services.get_my_profile_from_db(req);
+
+  manageResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Profile fetched successfully.",
+    data: result,
+  });
+});
 export const user_controllers = {
   update_profile,
+  delete_resume,
+  get_my_profile,
 };

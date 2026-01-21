@@ -8,6 +8,7 @@ import { organizerSwaggerDocs } from "./app/modules/organizer/organizer.swagger"
 import { attendeeSwaggerDocs } from "./app/modules/attendee/attendee.swagger";
 import { qrSwaggerDocs } from "./app/modules/qr/qr.swagger";
 import { invitationSwaggerDocs } from "./app/modules/invitation/invitation.swagger";
+import { noteSwaggerDocs } from "./app/modules/note/note.swagger";
 
 export const swaggerOptions = {
   definition: {
@@ -28,7 +29,8 @@ export const swaggerOptions = {
       ...attendeeSwaggerDocs,
     
             ...qrSwaggerDocs,
-            ...invitationSwaggerDocs,},
+            ...invitationSwaggerDocs,
+            ...noteSwaggerDocs,},
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]
