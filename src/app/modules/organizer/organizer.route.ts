@@ -26,4 +26,19 @@ router.patch(
   organizer_controller.update_my_event,
 );
 
+// delete
+router.delete(
+  "/attendee/:eventId/:accountId",
+  auth("ORGANIZER"),
+  eventAccess(),
+  organizer_controller.remove_attendee,
+);
+
+router.get(
+  "/attendee/:eventId/:accountId",
+  auth("ORGANIZER"),
+  eventAccess(),
+  organizer_controller.get_attendee_details,
+);
+
 export default router;

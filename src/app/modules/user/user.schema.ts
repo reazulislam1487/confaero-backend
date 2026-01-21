@@ -18,7 +18,7 @@ const user_schema = new Schema<TUser>(
   {
     versionKey: false,
     timestamps: true,
-  }
+  },
 );
 
 export const User_Model = model("user", user_schema);
@@ -84,5 +84,5 @@ const userProfileSchema = new Schema({
 });
 export const UserProfile_Model = model<TUserProfile>(
   "user_profile",
-  userProfileSchema
+  userProfileSchema,
 );

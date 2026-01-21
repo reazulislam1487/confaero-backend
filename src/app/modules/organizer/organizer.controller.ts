@@ -65,7 +65,10 @@ const update_my_event = catchAsync(async (req, res) => {
 });
 
 const get_all_register = catchAsync(async (req, res) => {
-  const result = await organizer_service.get_all_register_from_db(req.user);
+  const result = await organizer_service.get_all_register_from_db(
+    req.user,
+    req.query,
+  );
   manageResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -73,8 +76,44 @@ const get_all_register = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const remove_attendee = catchAsync(async (req, res) => {
+  const { eventId, accountId } = req.params;
+
+  const result = await organizer_service.remove_attendee_from_event(
+    req.user,
+    eventId,
+    accountId,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Attendee removed successfully",
+    data: result,
+  });
+});
+
+const get_attendee_details = catchAsync(async (req, res) => {
+  const { eventId, accountId } = req.params;
+
+  const result = await organizer_service.get_attendee_details_from_db(
+    req.user,
+    eventId,
+    accountId,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Attendee details fetched successfully",
+    data: result,
+  });
+});
 export const organizer_controller = {
   get_my_events,
   update_my_event,
   get_all_register,
+  remove_attendee,
+  get_attendee_details,
 };

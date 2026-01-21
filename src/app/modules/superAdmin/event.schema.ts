@@ -41,6 +41,7 @@ const eventSchema = new Schema(
         role: {
           type: String,
           enum: [
+            "ATTENDEE",
             "SPEAKER",
             "STAFF",
             "EXHIBITOR",

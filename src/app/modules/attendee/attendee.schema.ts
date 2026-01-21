@@ -3,7 +3,7 @@ import { T_Attendee_Registration } from "./attendee.interface";
 
 const attendee_schema = new Schema<T_Attendee_Registration>(
   {
-    user: { type: Schema.Types.ObjectId, ref: "account", required: true },
+    account: { type: Schema.Types.ObjectId, ref: "account", required: true },
     event: { type: Schema.Types.ObjectId, ref: "Event", required: true },
     status: {
       type: String,

@@ -4,6 +4,7 @@ import { AppError } from "../../utils/app_error";
 import { User_Model, UserProfile_Model } from "../user/user.schema";
 import { Account_Model } from "../auth/auth.schema";
 import { attendee_model } from "../attendee/attendee.schema";
+import { invitation_model } from "../invitation/invitation.schema";
 type TSession = {
   title: string;
   floorMapLocation?: string;
@@ -56,71 +57,240 @@ const update_my_event_in_db = async (user: any, eventId: any, payload: any) => {
   return event;
 };
 
-const get_all_register_from_db = async (user: any) => {
+const get_all_register_from_db = async (
+  user: any,
+  query: {
+    page?: number;
+    limit?: number;
+    role?: string;
+    search?: string;
+  },
+) => {
   if (!user?.email) {
     throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
   }
 
-  // 1️⃣ organizer er event gula
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const skip = (page - 1) * limit;
+  const roleFilter = query.role;
+  const search = query.search?.trim();
+
   const events = await Event_Model.find({
     organizerEmails: user.email,
-  }).select("_id");
+  }).select("_id participants");
 
-  const eventIds = events.map((e: any) => e._id);
+  if (!events.length) {
+    return { data: [], meta: { page, limit, total: 0 } };
+  }
 
-  // 2️⃣ attendee registrations
-  const registrations = await attendee_model
-    .find({
-      event: { $in: eventIds },
-      status: "VERIFIED",
-    })
-    .populate({
-      path: "user",
-      select: "name accountId",
-    })
-    .populate({
-      path: "event",
-      select: "title",
-    });
+  let participants = events.flatMap((event: any) =>
+    event.participants.map((p: any) => ({
+      eventId: event._id,
+      accountId: p.accountId,
+      role: p.role,
+    })),
+  );
 
-  // 3️⃣ accountIds collect
-  const accountIds = registrations.map((r: any) => r.user?.accountId);
+  if (roleFilter) {
+    participants = participants.filter((p) => p.role == roleFilter);
+  }
 
-  // 4️⃣ accounts
+  if (!participants.length) {
+    return { data: [], meta: { page, limit, total: 0 } };
+  }
+
+  const accountIds = participants.map((p) => p.accountId);
+
   const accounts = await Account_Model.find({
     _id: { $in: accountIds },
   }).select("email");
 
-  // 5️⃣ profiles
+  const users = await User_Model.find({
+    accountId: { $in: accountIds },
+  }).select("name accountId");
+
   const profiles = await UserProfile_Model.find({
     accountId: { $in: accountIds },
   }).select("location accountId");
 
-  // 6️⃣ maps
   const accountMap = new Map(accounts.map((a: any) => [a._id.toString(), a]));
+
+  const userMap = new Map(users.map((u: any) => [u.accountId.toString(), u]));
 
   const profileMap = new Map(
     profiles.map((p: any) => [p.accountId.toString(), p]),
   );
 
-  // 7️⃣ FINAL response
-  return registrations.map((r: any) => {
-    const accId = r.user?.accountId?.toString();
+  let rows = participants.map((p) => {
+    const accId = p.accountId.toString();
 
     return {
-      userId: r.user?._id,
-      name: r.user?.name,
-      email: accountMap.get(accId)?.email,
-      address: profileMap.get(accId)?.location,
-      status: r.status,
-      eventId: r.event?._id,
-      eventTitle: r.event?.title,
+      accountId: accId,
+      name: userMap.get(accId)?.name || null,
+      email: accountMap.get(accId)?.email || null,
+      address: profileMap.get(accId)?.location || null,
+      role: p.role,
+      eventId: p.eventId,
     };
   });
+
+  if (search) {
+    const regex = new RegExp(search, "i");
+    rows = rows.filter(
+      (r) => regex.test(r.name || "") || regex.test(r.email || ""),
+    );
+  }
+
+  const total = rows.length;
+  const paginated = rows.slice(skip, skip + limit);
+
+  return {
+    data: paginated,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+// delete
+const remove_attendee_from_event = async (
+  user: any,
+  eventId: any,
+  accountId: any,
+) => {
+  if (!user?.email) {
+    throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
+  }
+
+  const event = await Event_Model.findOne({
+    _id: eventId,
+    organizerEmails: user.email,
+  });
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  const participant = event.participants.find(
+    (p: any) => p.accountId.toString() === accountId.toString(),
+  );
+
+  if (!participant) {
+    throw new AppError("Participant not found", httpStatus.NOT_FOUND);
+  }
+
+  const removedRole = participant.role;
+
+  await attendee_model.deleteOne({
+    user: accountId,
+    event: eventId,
+  });
+
+  event.participants = event.participants.filter(
+    (p: any) => p.accountId.toString() !== accountId.toString(),
+  );
+
+  await event.save();
+
+  const account = await Account_Model.findById(accountId);
+  if (!account) {
+    throw new AppError("Account not found", httpStatus.NOT_FOUND);
+  }
+
+  account.role = account.role!.filter((r: string) => r !== removedRole);
+
+  if (account.activeRole === removedRole) {
+    account.activeRole = account.role.length > 0 ? account.role[0] : "ATTENDEE";
+  }
+
+  await account.save();
+
+  // 🔹 ALSO remove from invitation model (FINAL FIX)
+  await invitation_model.deleteMany({
+    eventId: eventId,
+    email: account.email,
+  });
+  return {
+    accountId,
+    eventId,
+    removedRole,
+    activeRole: account.activeRole,
+  };
+};
+// get details
+const get_attendee_details_from_db = async (
+  user: any,
+  eventId: any,
+  accountId: any,
+) => {
+  if (!user?.email) {
+    throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
+  }
+
+  const event = await Event_Model.findOne({
+    _id: eventId,
+    organizerEmails: user.email,
+  }).select("participants");
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  const participant = event.participants.find(
+    (p: any) => p.accountId.toString() === accountId.toString(),
+  );
+
+  if (!participant) {
+    throw new AppError("Participant not found", httpStatus.NOT_FOUND);
+  }
+
+  const account = await Account_Model.findById(accountId).select(
+    "email role activeRole",
+  );
+
+  if (!account) {
+    throw new AppError("Account not found", httpStatus.NOT_FOUND);
+  }
+
+  const profile = await UserProfile_Model.findOne({
+    accountId: accountId,
+  });
+
+  if (!profile) {
+    throw new AppError("User profile not found", httpStatus.NOT_FOUND);
+  }
+
+  return {
+    accountId,
+    roleInEvent: participant.role,
+    account: {
+      email: account.email,
+      roles: account.role,
+      activeRole: account.activeRole,
+    },
+    profile: {
+      name: profile.name,
+      avatar: profile.avatar,
+      about: profile.about,
+      contact: profile.contact,
+      location: profile.location,
+      education: profile.education,
+      affiliations: profile.affiliations,
+      resume: profile.resume,
+      socialLinks: profile.socialLinks,
+      personalWebsites: profile.personalWebsites,
+    },
+  };
 };
 
 export const organizer_service = {
   get_my_events_from_db,
   update_my_event_in_db,
   get_all_register_from_db,
+  remove_attendee_from_event,
+  get_attendee_details_from_db,
 };

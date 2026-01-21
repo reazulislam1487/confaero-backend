@@ -22,11 +22,14 @@ export type TUserProfile = {
   name: string;
   avatar?: string;
 
-  affiliation?: {
+  affiliations?: {
     company?: string;
     role?: string;
   };
-
+  resume?: {
+    url: string;
+    updatedAt: Date;
+  };
   education?: {
     institute?: string;
     degree?: string;
