@@ -64,7 +64,17 @@ const update_my_event = catchAsync(async (req, res) => {
   });
 });
 
+const get_all_register = catchAsync(async (req, res) => {
+  const result = await organizer_service.get_all_register_from_db(req.user);
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Organizer events fetched",
+    data: result,
+  });
+});
 export const organizer_controller = {
   get_my_events,
   update_my_event,
+  get_all_register,
 };

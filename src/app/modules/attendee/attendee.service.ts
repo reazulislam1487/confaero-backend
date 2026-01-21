@@ -35,11 +35,20 @@ const register_attendee_into_event = async (
   }
 
   // push participant
+  // await Event_Model.findByIdAndUpdate(eventId, {
+  //   $push: {
+  //     participants: {
+  //       userId,
+  //       role: "ATTENDEE",
+  //     },
+  //   },
+  // });
   await Event_Model.findByIdAndUpdate(eventId, {
     $push: {
       participants: {
-        userId,
-        role: "attendee",
+        accountId: userId,
+        role: "ATTENDEE",
+        sessionIndex: 0,
       },
     },
   });
