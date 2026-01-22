@@ -7,7 +7,6 @@ import auth from "../../middlewares/auth";
 
 const speaker_router = Router();
 
-
 // get speakers of an event (dashboard → speakers)
 speaker_router.get(
   "/event/:eventId",
@@ -15,6 +14,13 @@ speaker_router.get(
   eventAccess(),
   // RequestValidator(speaker_validations.get_event_speakers),
   speaker_controller.get_event_speakers,
+);
+
+speaker_router.get(
+  "/event/:eventId/:speakerAccountId",
+  auth("ATTENDEE"),
+  eventAccess(),
+  speaker_controller.get_event_speaker_details,
 );
 
 export default speaker_router;

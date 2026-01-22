@@ -5,7 +5,16 @@ import { Event_Model } from "../modules/superAdmin/event.schema";
 
 const eventAccess = () => async (req: any, res: any, next: NextFunction) => {
   const { eventId } = req.params;
+
   const userId = req.user.id;
+
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
   if (!eventId) {
     return res.status(400).json({
       success: false,
