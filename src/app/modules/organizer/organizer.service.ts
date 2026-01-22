@@ -45,7 +45,6 @@ const update_my_event_in_db = async (user: any, eventId: any, payload: any) => {
     event.agenda = agenda;
     delete payload.__session;
   }
-  event.participants = [];
 
   /* ---------- LOCKED ---------- */
   delete payload.title;

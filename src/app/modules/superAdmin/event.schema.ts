@@ -53,7 +53,8 @@ const eventSchema = new Schema(
           default: "ATTENDEE",
         },
         sessionIndex: {
-          type: Number, //  agenda.sessions[index]
+          type: [Number],
+          default: [],
         },
       },
     ],

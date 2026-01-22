@@ -53,6 +53,7 @@ const accept_invitation = async (
         participants: {
           accountId: userId,
           role: invitation.role,
+          sessionIndex: [],
         },
       },
     },
@@ -202,6 +203,9 @@ const resend_invitation = async (invitationId: any) => {
   //     <p>Please login to your dashboard to accept or reject.</p>
   //   `,
   // });
+
+  invitation.status = "PENDING";
+  await invitation.save();
 
   return invitation;
 };

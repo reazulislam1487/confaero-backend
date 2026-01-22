@@ -31,21 +31,21 @@ const eventAccess = () => async (req: any, res: any, next: NextFunction) => {
     });
   }
 
-  if (req.user.activeRole !== "ATTENDEE") {
-    return next();
-  }
-  const registration = await attendee_model.findOne({
-    account: userId,
-    event: eventId,
-    status: "VERIFIED",
-  });
-  if (!registration) {
-    return res.status(httpStatus.FORBIDDEN).json({
-      success: false,
-      message: "You do not have access to this event",
-    });
-  }
-
+  // if (req.user.activeRole == "ATTENDEE") {
+  //   // return next();
+  //   const registration = await attendee_model.findOne({
+  //     account: userId,
+  //     event: eventId,
+  //     status: "VERIFIED",
+  //   });
+  //   if (!registration) {
+  //     return res.status(httpStatus.FORBIDDEN).json({
+  //       success: false,
+  //       message: "You do not have access to this event",
+  //     });
+  //   }
+  //   return next();
+  // }
   next();
 };
 

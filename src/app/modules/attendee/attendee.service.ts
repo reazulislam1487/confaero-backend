@@ -39,7 +39,7 @@ const register_attendee_into_event = async (
       participants: {
         accountId: userId,
         role: "ATTENDEE",
-        sessionIndex: 0,
+        sessionIndex: [],
       },
     },
   });

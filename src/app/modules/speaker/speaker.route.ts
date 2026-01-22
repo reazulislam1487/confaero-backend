@@ -10,7 +10,7 @@ const speaker_router = Router();
 // get speakers of an event (dashboard → speakers)
 speaker_router.get(
   "/event/:eventId",
-  auth("ATTENDEE"),
+  auth("ATTENDEE", "SPEAKER"),
   eventAccess(),
   // RequestValidator(speaker_validations.get_event_speakers),
   speaker_controller.get_event_speakers,
