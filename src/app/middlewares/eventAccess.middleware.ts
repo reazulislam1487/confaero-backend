@@ -22,22 +22,57 @@ const eventAccess = () => async (req: any, res: any, next: NextFunction) => {
     });
   }
 
-  if (req.user.role !== "ATTENDEE") {
+  if (req.user.activeRole !== "ATTENDEE") {
     return next();
   }
-  // const registration = await attendee_model.findOne({
-  //   user: userId,
-  //   event: eventId,
-  //   status: "VERIFIED",
-  // });
-  // if (!registration) {
-  //   return res.status(httpStatus.FORBIDDEN).json({
-  //     success: false,
-  //     message: "You do not have access to this event",
-  //   });
-  // }
+  const registration = await attendee_model.findOne({
+    account: userId,
+    event: eventId,
+    status: "VERIFIED",
+  });
+  if (!registration) {
+    return res.status(httpStatus.FORBIDDEN).json({
+      success: false,
+      message: "You do not have access to this event",
+    });
+  }
 
   next();
 };
 
 export default eventAccess;
+
+/*
+
+Extra if needed
+
+const requireEventAccess = (allowedRoles = []) => {
+  return async (req, res, next) => {
+    const userId = req.user.id;
+    const { eventId } = req.params;
+
+    const participant = await EventParticipant.findOne({
+      userId,
+      eventId,
+    });
+
+    if (!participant) {
+      return res.status(403).json({
+        message: "You are not part of this event",
+      });
+    }
+
+    if (
+      allowedRoles.length &&
+      !allowedRoles.includes(participant.role)
+    ) {
+      return res.status(403).json({
+        message: "Access denied for your role",
+      });
+    }
+
+    req.eventRole = participant.role;
+    next();
+  };
+};
+*/

@@ -24,7 +24,7 @@ const register_attendee_into_event = async (
 
   // already joined check
   const alreadyJoined = event.participants.find(
-    (p: any) => p.userId.toString() === userId.toString(),
+    (p: any) => p.accountId.toString() === userId.toString(),
   );
 
   if (alreadyJoined) {
