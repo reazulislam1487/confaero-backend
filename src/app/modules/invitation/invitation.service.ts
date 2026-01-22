@@ -59,20 +59,6 @@ const accept_invitation = async (
     },
   );
 
-  // 6️ Ensure role is ARRAY (VERY IMPORTANT)
-  // if (!Array.isArray(user.role)) {
-  //   user.role = [];
-  // }
-
-  // // 7️ Prevent duplicate role
-  // if (user.role.includes(invitation.role)) {
-  //   throw new Error(`User is already a ${invitation.role}`);
-  // }
-
-  // // 8️ Update user roles
-  // user.role.push(invitation.role);
-  // user.activeRole = invitation.role;
-  // added role
   await Account_Model.findByIdAndUpdate(
     userId,
     {
@@ -81,6 +67,12 @@ const accept_invitation = async (
     },
     { new: true },
   );
+
+  // 4️⃣ Update account role
+  // await Account_Model.findByIdAndUpdate(account._id, {
+  //   $addToSet: { role: "SPEAKER" },
+  //   activeRole: "SPEAKER",
+  // });
 
   return invitation;
 };
