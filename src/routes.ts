@@ -9,12 +9,14 @@ import attendeeRoute from "./app/modules/attendee/attendee.route";
 import qrRoute from "./app/modules/qr/qr.route";
 import invitationRoute from "./app/modules/invitation/invitation.route";
 import noteRoute from "./app/modules/note/note.route";
-import speakerRoute from './app/modules/speaker/speaker.route';
+import speakerRoute from "./app/modules/speaker/speaker.route";
+import resouceRoute from "./app/modules/resouce/resouce.route";
 
 const appRouter = Router();
 
 const moduleRoutes = [
-    { path: "/speaker", route: speakerRoute },
+  { path: "/resouce", route: resouceRoute },
+  { path: "/speaker", route: speakerRoute },
   { path: "/note", route: noteRoute },
   { path: "/invitation", route: invitationRoute },
   { path: "/qr", route: qrRoute },
