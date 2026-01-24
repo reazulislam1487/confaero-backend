@@ -1,10 +1,5 @@
 import { AppError } from "../../utils/app_error";
-import {
-  TAccount,
-  TChangePasswordPayload,
-  TLoginPayload,
-  TRegisterPayload,
-} from "./auth.interface";
+import { TAccount, TLoginPayload, TRegisterPayload } from "./auth.interface";
 import { Account_Model } from "./auth.schema";
 import httpStatus from "http-status";
 import bcrypt from "bcrypt";
@@ -16,8 +11,6 @@ import { configs } from "../../configs";
 import { JwtPayload, Secret } from "jsonwebtoken";
 import sendMail from "../../utils/mail_sender";
 import { isAccountExist } from "../../utils/isAccountExist";
-import { id } from "zod/v4/locales";
-import { includes } from "zod";
 // register user
 const register_user_into_db = async (payload: TRegisterPayload) => {
   const session = await mongoose.startSession();
