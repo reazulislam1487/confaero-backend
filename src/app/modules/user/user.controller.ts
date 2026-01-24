@@ -14,6 +14,17 @@ const update_profile = catchAsync(async (req, res) => {
   });
 });
 
+const update_organizer_profile = catchAsync(async (req, res) => {
+  const result = await user_services.update_organizer_profile_into_db(req);
+
+  manageResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Profile updated successfully.",
+    data: result,
+  });
+});
+
 const delete_resume = catchAsync(async (req, res) => {
   const result = await user_services.delete_resume_from_db(req);
 
@@ -34,8 +45,22 @@ const get_my_profile = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const get_or_profile = catchAsync(async (req, res) => {
+  const result = await user_services.get_or_from_db(req);
+
+  manageResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Profile fetched successfully.",
+    data: result,
+  });
+});
+
 export const user_controllers = {
   update_profile,
   delete_resume,
   get_my_profile,
+  update_organizer_profile,
+  get_or_profile,
 };

@@ -47,6 +47,12 @@ const update_user = z.object({
   personalWebsites: z.array(z.string().url()).optional(),
 });
 
+const update_organizer_profile = z.object({
+  name: z.string().min(2).optional(),
+  phone: z.string().min(6).optional(),
+});
+
 export const user_validations = {
   update_user,
+  update_organizer_profile,
 };
