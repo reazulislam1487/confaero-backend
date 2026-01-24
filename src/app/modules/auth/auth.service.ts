@@ -17,6 +17,7 @@ import { JwtPayload, Secret } from "jsonwebtoken";
 import sendMail from "../../utils/mail_sender";
 import { isAccountExist } from "../../utils/isAccountExist";
 import { id } from "zod/v4/locales";
+import { includes } from "zod";
 // register user
 const register_user_into_db = async (payload: TRegisterPayload) => {
   const session = await mongoose.startSession();
@@ -416,7 +417,12 @@ const change_role_from_db = async (user: JwtPayloadType, role: any) => {
   if (!account) {
     throw new AppError("Account not found", httpStatus.NOT_FOUND);
   }
-
+  if (!account.role!.includes(role)) {
+    throw new AppError(
+      "You are not allowed to switch to this role",
+      httpStatus.FORBIDDEN,
+    );
+  }
   // optional: prevent same role
   if (account.activeRole === role) {
     throw new AppError("Role already active", httpStatus.BAD_REQUEST);
@@ -425,7 +431,7 @@ const change_role_from_db = async (user: JwtPayloadType, role: any) => {
   account.activeRole = role;
   await account.save();
 
-  // 🔥 generate new access token
+  //  generate new access token
   const accessToken = jwtHelpers.generateToken(
     {
       email: account.email,
@@ -439,8 +445,21 @@ const change_role_from_db = async (user: JwtPayloadType, role: any) => {
   return { accessToken, activeRole: role };
 };
 
+const get_my_roles_from_db = async (user: JwtPayloadType) => {
+  const account = await Account_Model.findOne(
+    { email: user.email },
+    { role: 1, activeRole: 1 },
+  ).lean();
 
+  if (!account) {
+    throw new AppError("Account not found", httpStatus.NOT_FOUND);
+  }
 
+  return {
+    roles: account.role, // all assigned roles
+    activeRole: account.activeRole, // current active role
+  };
+};
 
 export const auth_services = {
   register_user_into_db,
@@ -455,4 +474,5 @@ export const auth_services = {
   verify_reset_code_from_db,
   delete_account_from_db,
   change_role_from_db,
+  get_my_roles_from_db,
 };
