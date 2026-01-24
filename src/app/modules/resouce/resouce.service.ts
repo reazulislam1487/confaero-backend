@@ -1,8 +1,8 @@
 import { QNA_Model } from "./qna.model";
 import { Poll_Model } from "./poll.model";
 import { PollResponse_Model } from "./pollResponse.model";
-import { Survey_Model } from "./survey.model";
 import { SurveyResponse_Model } from "./surveyResponse.model";
+import { Types } from "mongoose";
 
 /* ===================== QNA ===================== */
 
@@ -29,20 +29,122 @@ const submitPoll = async (pollId: any, userId: any, index: number) => {
   });
 };
 
+/* ===================== UPDATE ===================== */
+const updatePoll = (pollId: any, eventId: any, payload: any) => {
+  return Poll_Model.findOneAndUpdate({ _id: pollId, eventId }, payload, {
+    new: true,
+  });
+};
+
+/* ===================== DELETE ===================== */
+const deletePoll = async (pollId: any, eventId: any) => {
+  await Poll_Model.findOneAndDelete({ _id: pollId, eventId });
+  await PollResponse_Model.deleteMany({ pollId });
+};
+
+/* ===================== VIEW VOTES ===================== */
+const getPollVotes = async (pollId: any, eventId: any) => {
+  const poll = await Poll_Model.findOne({
+    _id: pollId,
+    eventId,
+  }).lean();
+
+  if (!poll) return null;
+
+  const totalVotes = poll.options.reduce((sum, opt) => sum + opt.voteCount, 0);
+
+  const options = poll.options.map((opt) => ({
+    text: opt.text,
+    votes: opt.voteCount,
+    percentage:
+      totalVotes === 0 ? 0 : Math.round((opt.voteCount / totalVotes) * 100),
+  }));
+
+  return {
+    pollId,
+    question: poll.question,
+    totalVotes,
+    options,
+  };
+};
+
 /* ===================== SURVEY ===================== */
 
-const createSurvey = (payload: any) => Survey_Model.create(payload);
+const submitSurvey = async (eventId: any, userId: any, payload: any) => {
+  return SurveyResponse_Model.create({
+    eventId,
+    userId,
+    rating: payload.rating,
+    helpful: payload.helpful,
+    suggestion: payload.suggestion,
+  });
+};
 
-const submitSurvey = (payload: any) => SurveyResponse_Model.create(payload);
+/* ================= ANALYTICS ================= */
+
+const getSurveyAnalytics = async (eventId: any, page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+  const eventObjectId = new Types.ObjectId(eventId);
+
+  const submissions = await SurveyResponse_Model.find({
+    eventId: eventObjectId,
+  })
+    .populate("userId", "name email")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .lean();
+
+  const totalResponses = await SurveyResponse_Model.countDocuments({
+    eventId: eventObjectId,
+  });
+
+  const avgAgg = await SurveyResponse_Model.aggregate([
+    { $match: { eventId: eventObjectId } },
+    {
+      $group: {
+        _id: null,
+        avgRating: { $avg: "$rating" },
+      },
+    },
+  ]);
+
+  const positiveCount = await SurveyResponse_Model.countDocuments({
+    eventId: eventObjectId,
+    helpful: true,
+  });
+
+  return {
+    summary: {
+      totalResponses,
+      averageRating:
+        avgAgg.length > 0 ? Number(avgAgg[0].avgRating.toFixed(1)) : 0,
+      positiveFeedback:
+        totalResponses === 0
+          ? 0
+          : Math.round((positiveCount / totalResponses) * 100),
+    },
+    submissions,
+    meta: {
+      page,
+      limit,
+      total: totalResponses,
+    },
+  };
+};
 
 /* ===================== FETCH ===================== */
 
-const getEventResources = async (eventId: any) => {
+const getQnas = async (eventId: any) => {
   const qna = await QNA_Model.find({ eventId, isActive: true });
-  const polls = await Poll_Model.find({ eventId, isActive: true });
-  const surveys = await Survey_Model.find({ eventId, isActive: true });
 
-  return { qna, polls, surveys };
+  return qna;
+};
+
+const getPolls = async (eventId: any) => {
+  const polls = await Poll_Model.find({ eventId, isActive: true });
+
+  return polls;
 };
 
 export const resouce_service = {
@@ -51,7 +153,11 @@ export const resouce_service = {
   deleteQna,
   createPoll,
   submitPoll,
-  createSurvey,
   submitSurvey,
-  getEventResources,
+  getSurveyAnalytics,
+  getPolls,
+  getQnas,
+  updatePoll,
+  deletePoll,
+  getPollVotes,
 };

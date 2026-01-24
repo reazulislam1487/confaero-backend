@@ -27,22 +27,34 @@ export type T_PollResponse = {
   selectedOptionIndex: number;
 };
 
+export type T_SurveyQuestionType = "rating" | "yes_no" | "text";
+
 export type T_SurveyQuestion = {
   label: string;
-  type: "rating" | "yes_no" | "text";
+  type: T_SurveyQuestionType;
   required: boolean;
+  order: number;
 };
 
 export type T_Survey = {
   eventId: Types.ObjectId;
   title: string;
+  description?: string;
   questions: T_SurveyQuestion[];
   createdBy: Types.ObjectId;
   isActive: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export type T_SurveyResponse = {
-  surveyId: Types.ObjectId;
+  eventId: Types.ObjectId;
   userId: Types.ObjectId;
-  answers: any[];
+
+  rating: number; // 1–5
+  helpful: boolean; // yes / no
+  suggestion?: string; // optional (min 80 chars if provided)
+
+  createdAt?: Date;
+  updatedAt?: Date;
 };

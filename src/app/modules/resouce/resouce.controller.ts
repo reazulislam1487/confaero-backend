@@ -77,38 +77,90 @@ export const submit_poll = catchAsync(async (req, res) => {
     message: "Poll submitted successfully",
   });
 });
+/* ===================== UPDATE POLL ===================== */
+export const update_poll = catchAsync(async (req, res) => {
+  const { pollId, eventId } = req.params;
 
-/* ===================== SURVEY ===================== */
+  const result = await resouce_service.updatePoll(pollId, eventId, req.body);
 
-export const create_survey = catchAsync(async (req, res) => {
-  const { eventId } = req.params;
-
-  const result = await resouce_service.createSurvey({
-    eventId,
-    title: req.body.title,
-    questions: req.body.questions,
-    createdBy: req.user!.id,
-  });
+  if (!result) {
+    return manageResponse(res, {
+      statusCode: httpStatus.NOT_FOUND,
+      success: false,
+      message: "Poll not found for this event",
+    });
+  }
 
   manageResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Survey created successfully",
+    message: "Poll updated successfully",
     data: result,
   });
 });
 
-export const submit_survey = catchAsync(async (req, res) => {
-  const result = await resouce_service.submitSurvey({
-    surveyId: req.body.surveyId,
-    userId: req.user!.id,
-    answers: req.body.answers,
-  });
+/* ===================== DELETE POLL ===================== */
+export const delete_poll = catchAsync(async (req, res) => {
+  const { pollId, eventId } = req.params;
+
+  await resouce_service.deletePoll(pollId, eventId);
 
   manageResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Survey submitted successfully",
+    message: "Poll deleted successfully",
+  });
+});
+
+/* ===================== VIEW POLL VOTES ===================== */
+export const view_poll_votes = catchAsync(async (req, res) => {
+  const { pollId, eventId } = req.params;
+
+  const result = await resouce_service.getPollVotes(pollId, eventId);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Poll votes fetched successfully",
+    data: result,
+  });
+});
+
+/* ===================== SURVEY ===================== */
+
+export const submit_survey = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+
+  const result = await resouce_service.submitSurvey(
+    eventId,
+    req.user!.id,
+    req.body,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Feedback submitted successfully",
+    data: result,
+  });
+});
+
+/* ================= ORGANIZER VIEW ================= */
+
+export const get_survey_analytics = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  const { page = 1, limit = 10 } = req.query;
+
+  const result = await resouce_service.getSurveyAnalytics(
+    eventId,
+    Number(page),
+    Number(limit),
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Survey analytics fetched successfully",
     data: result,
   });
 });
@@ -118,12 +170,36 @@ export const submit_survey = catchAsync(async (req, res) => {
 export const get_event_resources = catchAsync(async (req, res) => {
   const { eventId } = req.params;
 
-  const result = await resouce_service.getEventResources(eventId);
+  const result = await resouce_service.getQnas(eventId);
 
   manageResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Event resources fetched successfully",
+    message: "qna fetched successfully",
+    data: result,
+  });
+});
+export const get_event_qna = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+
+  const result = await resouce_service.getQnas(eventId);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "qna fetched successfully",
+    data: result,
+  });
+});
+export const get_event_poll = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+
+  const result = await resouce_service.getPolls(eventId);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "qna fetched successfully",
     data: result,
   });
 });

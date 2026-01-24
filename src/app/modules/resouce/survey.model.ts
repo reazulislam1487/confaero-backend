@@ -1,21 +1,45 @@
 import { Schema, model } from "mongoose";
-import { T_Survey } from "./resouce.interface";
 
-const surveySchema = new Schema<T_Survey>(
+const surveyResponseSchema = new Schema(
   {
-    eventId: { type: Schema.Types.ObjectId, ref: "event", required: true },
-    title: String,
-    questions: [
-      {
-        label: String,
-        type: { type: String, enum: ["rating", "yes_no", "text"] },
-        required: Boolean,
-      },
-    ],
-    createdBy: { type: Schema.Types.ObjectId, ref: "account" },
-    isActive: { type: Boolean, default: true },
+    eventId: {
+      type: Schema.Types.ObjectId,
+      ref: "event",
+      required: true,
+      index: true,
+    },
+
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "account",
+      required: true,
+    },
+
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: true,
+    },
+
+    helpful: {
+      type: Boolean, // yes = true, no = false
+      required: true,
+    },
+
+    suggestion: {
+      type: String,
+      trim: true,
+      minlength: 80,
+    },
   },
   { timestamps: true },
 );
 
-export const Survey_Model = model("survey", surveySchema);
+// one feedback per user per event
+surveyResponseSchema.index({ eventId: 1, userId: 1 }, { unique: true });
+
+export const SurveyResponse_Model = model(
+  "survey_response",
+  surveyResponseSchema,
+);

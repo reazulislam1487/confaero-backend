@@ -7,3 +7,9 @@ const create_qna = z.object({
 });
 
 export const resouce_validations = { create_qna };
+
+export const submitSurveySchema = z.object({
+  rating: z.number().min(1).max(5),
+  helpful: z.boolean(),
+  suggestion: z.string().min(80).optional(),
+});
