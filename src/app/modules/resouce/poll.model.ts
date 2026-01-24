@@ -14,7 +14,7 @@ const pollSchema = new Schema<T_Poll>(
     createdBy: { type: Schema.Types.ObjectId, ref: "account" },
     isActive: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Poll_Model = model("poll", pollSchema);

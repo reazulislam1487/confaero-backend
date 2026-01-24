@@ -11,10 +11,12 @@ import invitationRoute from "./app/modules/invitation/invitation.route";
 import noteRoute from "./app/modules/note/note.route";
 import speakerRoute from "./app/modules/speaker/speaker.route";
 import resouceRoute from "./app/modules/resouce/resouce.route";
+import announcementRoute from "./app/modules/announcement/announcement.route";
 
 const appRouter = Router();
 
 const moduleRoutes = [
+  { path: "/announcement", route: announcementRoute },
   { path: "/resouce", route: resouceRoute },
   { path: "/speaker", route: speakerRoute },
   { path: "/note", route: noteRoute },

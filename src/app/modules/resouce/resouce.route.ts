@@ -6,7 +6,6 @@ import {
   create_poll,
   submit_poll,
   submit_survey,
-  get_event_resources,
   get_survey_analytics,
   get_event_poll,
   get_event_qna,
