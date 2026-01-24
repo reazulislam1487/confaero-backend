@@ -99,10 +99,41 @@ const delete_announcement = catchAsync(async (req, res) => {
   });
 });
 
+const get_all_announcement = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  const organizerId = req.user!.id;
+
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+  /*
+  limit =10
+  const page = 2
+  skip = 2-1 = 1 *10 
+  show = 10
+
+  */
+
+  const result = await announcement_service.get_all_event_announcements_from_db(
+    eventId,
+    organizerId,
+    { page, limit, skip },
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Announcements fetched successfully",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
 export const announcement_controller = {
   create_new_announcement,
   get_event_announcements,
   get_single_announcement,
   update_announcement,
   delete_announcement,
+  get_all_announcement,
 };

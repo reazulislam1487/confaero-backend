@@ -13,7 +13,7 @@ announcement_router.post(
   "/:eventId",
   auth("ORGANIZER"),
   eventAccess(),
-  RequestValidator(announcement_validations.create),
+  // RequestValidator(announcement_validations.create),
   upload.single("file"),
   announcement_controller.create_new_announcement,
 );
@@ -22,8 +22,15 @@ announcement_router.patch(
   "/:id/:eventId",
   auth("ORGANIZER"),
   eventAccess(),
-  RequestValidator(announcement_validations.update),
+  // RequestValidator(announcement_validations.update),
+  upload.single("file"),
   announcement_controller.update_announcement,
+);
+announcement_router.get(
+  "/get-all/:eventId",
+  auth("ORGANIZER"),
+  eventAccess(),
+  announcement_controller.get_all_announcement,
 );
 
 announcement_router.delete(
@@ -54,6 +61,7 @@ announcement_router.get(
   "/:id/:eventId",
   auth(
     "ATTENDEE",
+    "ORGANIZER",
     "SPEAKER",
     "EXHIBITOR",
     "STAFF",

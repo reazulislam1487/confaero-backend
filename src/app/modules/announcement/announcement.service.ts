@@ -36,10 +36,43 @@ const delete_announcement_from_db = async (id: any, eventId: any) => {
   });
 };
 
+const get_all_event_announcements_from_db = async (
+  eventId: any,
+  organizerId: any,
+  options: { page: number; limit: number; skip: number },
+) => {
+  const { limit, skip, page } = options;
+
+  const filter = {
+    eventId,
+    createdBy: organizerId,
+  };
+
+  const announcements = await announcement_model
+    .find(filter)
+    .select("_id title description createdAt")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .lean();
+
+  const total = await announcement_model.countDocuments(filter);
+
+  return {
+    data: announcements,
+    meta: {
+      page,
+      limit,
+      total,
+    },
+  };
+};
+
 export const announcement_service = {
   create_new_announcement_into_db,
   get_event_announcements_from_db,
   get_single_announcement_from_db,
   update_announcement_into_db,
   delete_announcement_from_db,
+  get_all_event_announcements_from_db,
 };
