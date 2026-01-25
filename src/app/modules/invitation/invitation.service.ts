@@ -17,6 +17,12 @@ const create_invitation = async (
     status: "PENDING",
   });
 
+  const user = await Account_Model.findOne({ email: payload.email });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
   if (alreadyInvited) {
     throw new Error("User already invited");
   }
