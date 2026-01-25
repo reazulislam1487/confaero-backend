@@ -195,6 +195,38 @@ const remove_from_my_agenda = catchAsync(
     });
   },
 );
+const get_single_agenda_session = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await session_service.get_single_agenda_session(
+      req.user,
+      req.params.eventId,
+      Number(req.params.sessionIndex),
+    );
+
+    manageResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Session details fetched successfully",
+      data: result,
+    });
+  },
+);
+const get_speaker_profile = catchAsync(async (req: Request, res: Response) => {
+  const { eventId, speakerId } = req.params;
+
+  const result = await session_service.get_speaker_profile_from_db(
+    req.user,
+    eventId,
+    speakerId,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Speaker profile fetched successfully",
+    data: result,
+  });
+});
 
 export const organizer_session_controllers = {
   get_sessions,
@@ -207,4 +239,6 @@ export const organizer_session_controllers = {
   get_my_agenda,
   add_to_my_agenda,
   remove_from_my_agenda,
+  get_single_agenda_session,
+  get_speaker_profile,
 };

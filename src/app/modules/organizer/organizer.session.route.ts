@@ -2,6 +2,7 @@ import { Router } from "express";
 import auth from "../../middlewares/auth";
 import { upload } from "../../middlewares/upload";
 import { organizer_session_controllers } from "./organizer.session.controller";
+import eventAccess from "../../middlewares/eventAccess.middleware";
 
 const router = Router();
 
@@ -57,6 +58,7 @@ router.get(
     "ABSTRACT_REVIEWER",
     "TRACK_CHAIR",
   ),
+  eventAccess(),
   organizer_session_controllers.get_all_sessions,
 );
 
@@ -72,6 +74,7 @@ router.get(
     "ABSTRACT_REVIEWER",
     "TRACK_CHAIR",
   ),
+  eventAccess(),
   organizer_session_controllers.get_my_agenda,
 );
 
@@ -87,6 +90,7 @@ router.post(
     "ABSTRACT_REVIEWER",
     "TRACK_CHAIR",
   ),
+  eventAccess(),
   organizer_session_controllers.add_to_my_agenda,
 );
 
@@ -102,7 +106,39 @@ router.delete(
     "ABSTRACT_REVIEWER",
     "TRACK_CHAIR",
   ),
+  eventAccess(),
   organizer_session_controllers.remove_from_my_agenda,
+);
+router.get(
+  "/events/:eventId/agenda/:sessionIndex",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  eventAccess(),
+  organizer_session_controllers.get_single_agenda_session,
+);
+
+router.get(
+  "/events/:eventId/speakers/:speakerId",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  eventAccess(),
+  organizer_session_controllers.get_speaker_profile,
 );
 
 export default router;

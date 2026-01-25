@@ -1,6 +1,7 @@
 import httpStatus from "http-status";
 import { Event_Model } from "../superAdmin/event.schema";
 import { AppError } from "../../utils/app_error";
+import { UserProfile_Model } from "../user/user.schema";
 
 type TSession = {
   title: string;
@@ -237,4 +238,82 @@ export const remove_from_my_agenda = async (
   await event.save();
   return participant.sessionIndex;
 };
+
+export const get_single_agenda_session = async (
+  user: any,
+  eventId: any,
+  sessionIndex: number,
+) => {
+  const event: any = await Event_Model.findById(eventId);
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  const session = event.agenda.sessions[sessionIndex];
+
+  if (!session) {
+    throw new AppError("Invalid session index", httpStatus.BAD_REQUEST);
+  }
+
+  const speakers = event.participants.filter((p: any) => p.role === "SPEAKER");
+
+  return {
+    session,
+    speakers,
+  };
+};
+
+// detail for speaker
+export const get_speaker_profile_from_db = async (
+  user: any,
+  eventId: any,
+  speakerId: any,
+) => {
+  // 🔹 Event check
+  const event: any = await Event_Model.findById(eventId);
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  // 🔹 Speaker participant check (event-wise)
+  const participant = event.participants.find(
+    (p: any) =>
+      p.role === "SPEAKER" && String(p.accountId) === String(speakerId),
+  );
+
+  if (!participant) {
+    throw new AppError("Speaker not found in this event", httpStatus.NOT_FOUND);
+  }
+
+  // 🔹 Speaker profile (from user_profile)
+  const profile = await UserProfile_Model.findOne({
+    accountId: speakerId,
+  });
+
+  if (!profile) {
+    throw new AppError("Speaker profile not found", httpStatus.NOT_FOUND);
+  }
+
+  // 🔹 Sessions where speaker is speaking
+  const speakingAt = participant.sessionIndex
+    .map((index: number) => event.agenda.sessions[index])
+    .filter(Boolean);
+
+  return {
+    speaker: {
+      accountId: profile.accountId,
+      name: profile.name,
+      avatar: profile.avatar,
+      about: profile.about,
+      location: profile.location,
+      affiliations: profile.affiliations,
+      socialLinks: profile.socialLinks,
+      personalWebsites: profile.personalWebsites,
+    },
+    speakingAt,
+  };
+};
+
 // export { bulk_add_sessions };
