@@ -117,4 +117,124 @@ export const bulk_add_sessions = async (
   return event.agenda.sessions;
 };
 
+// for agenda
+const get_event_fun = async (eventId: any) => {
+  const event = await Event_Model.findById(eventId);
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+  return event;
+};
+
+// 🔹 All Sessions
+export const get_all_sessions = async (user: any, eventId: any, query: any) => {
+  const event: any = await get_event_fun(eventId);
+
+  let sessions = event.agenda?.sessions || [];
+
+  if (query.date) {
+    sessions = sessions.filter((s: any) => s.date === query.date);
+  }
+
+  if (query.month) {
+    sessions = sessions.filter((s: any) => s.date?.startsWith(query.month));
+  }
+
+  return sessions;
+};
+
+// 🔹 My Agenda
+export const get_my_agenda = async (user: any, eventId: any, query: any) => {
+  const event: any = await get_event_fun(eventId);
+
+  // const participant = event.participants.find(
+  //   (p: any) => p.accountId === user.id,
+  // );
+  // ✅ FIX 1: proper ObjectId comparison
+  let participant = event.participants.find(
+    (p: any) => String(p.accountId) === String(user.id),
+  );
+  if (!participant) return [];
+
+  let sessions = participant.sessionIndex
+    .map((i: number) => event.agenda.sessions[i])
+    .filter(Boolean);
+
+  if (query.date) {
+    sessions = sessions.filter((s: any) => s.date === query.date);
+  }
+
+  if (query.month) {
+    sessions = sessions.filter((s: any) => s.date?.startsWith(query.month));
+  }
+
+  return sessions;
+};
+
+// 🔹 Bookmark
+export const add_to_my_agenda = async (
+  user: any,
+  eventId: any,
+  sessionIndex: number,
+) => {
+  const event: any = await get_event_fun(eventId);
+
+  if (!event.agenda.sessions[sessionIndex]) {
+    throw new AppError("Invalid session index", httpStatus.BAD_REQUEST);
+  }
+
+  // ✅ FIX 1: proper ObjectId comparison
+  let participant = event.participants.find(
+    (p: any) => String(p.accountId) === String(user.id),
+  );
+
+  // ✅ FIX 2: push via mongoose subdocument
+  if (!participant) {
+    event.participants.push({
+      accountId: user.id,
+      role: "ATTENDEE",
+      sessionIndex: [sessionIndex],
+    });
+
+    await event.save();
+    return [sessionIndex];
+  }
+
+  // ✅ Prevent duplicate
+  if (participant.sessionIndex.includes(sessionIndex)) {
+    throw new AppError("Session already bookmarked", httpStatus.CONFLICT);
+  }
+
+  participant.sessionIndex.push(sessionIndex);
+
+  // ✅ Ensure mongoose detects change
+  event.markModified("participants");
+  await event.save();
+
+  return participant.sessionIndex;
+};
+
+// 🔹 Unbookmark
+export const remove_from_my_agenda = async (
+  user: any,
+  eventId: any,
+  sessionIndex: number,
+) => {
+  const event: any = await get_event_fun(eventId);
+
+  let participant = event.participants.find(
+    (p: any) => String(p.accountId) === String(user.id),
+  );
+
+  if (!participant) {
+    throw new AppError("Nothing to remove", httpStatus.BAD_REQUEST);
+  }
+
+  participant.sessionIndex = participant.sessionIndex.filter(
+    (i: number) => i !== sessionIndex,
+  );
+
+  await event.save();
+  return participant.sessionIndex;
+};
 // export { bulk_add_sessions };

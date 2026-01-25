@@ -13,7 +13,11 @@ type T_Query = {
 /* =================================================
    EVENT SPEAKERS LIST (CLEAN & SAFE)
 ================================================= */
-const get_event_speakers_from_db = async (eventId: any, query: T_Query) => {
+const get_event_speakers_from_db = async (
+  eventId: any,
+  query: T_Query,
+  accountId?: any,
+) => {
   const page = Number(query.page) > 0 ? Number(query.page) : 1;
   const limit = Number(query.limit) > 0 ? Number(query.limit) : 10;
   const search = query.search?.trim() || "";

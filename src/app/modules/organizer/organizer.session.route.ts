@@ -44,4 +44,65 @@ router.post(
   organizer_session_controllers.upload_sessions_csv,
 );
 
+//for agenda
+router.get(
+  "/events/:eventId/agenda",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  organizer_session_controllers.get_all_sessions,
+);
+
+router.get(
+  "/events/:eventId/my-agenda",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  organizer_session_controllers.get_my_agenda,
+);
+
+router.post(
+  "/events/:eventId/my-agenda/:sessionIndex",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  organizer_session_controllers.add_to_my_agenda,
+);
+
+router.delete(
+  "/events/:eventId/my-agenda/:sessionIndex",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  organizer_session_controllers.remove_from_my_agenda,
+);
+
 export default router;

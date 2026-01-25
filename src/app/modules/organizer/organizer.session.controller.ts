@@ -131,6 +131,71 @@ const upload_sessions_csv = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
+// for agenda
+
+const get_all_sessions = catchAsync(async (req: Request, res: Response) => {
+  const result = await session_service.get_all_sessions(
+    req.user,
+    req.params.eventId,
+    req.query,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Agenda fetched successfully",
+    data: result,
+  });
+});
+
+const get_my_agenda = catchAsync(async (req: Request, res: Response) => {
+  const result = await session_service.get_my_agenda(
+    req.user,
+    req.params.eventId,
+    req.query,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "My agenda fetched successfully",
+    data: result,
+  });
+});
+
+const add_to_my_agenda = catchAsync(async (req: Request, res: Response) => {
+  const result = await session_service.add_to_my_agenda(
+    req.user,
+    req.params.eventId,
+    Number(req.params.sessionIndex),
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Session bookmarked",
+    data: result,
+  });
+});
+
+const remove_from_my_agenda = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await session_service.remove_from_my_agenda(
+      req.user,
+      req.params.eventId,
+      Number(req.params.sessionIndex),
+    );
+
+    manageResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Session removed from agenda",
+      data: result,
+    });
+  },
+);
+
 export const organizer_session_controllers = {
   get_sessions,
   get_single_session,
@@ -138,4 +203,8 @@ export const organizer_session_controllers = {
   update_session,
   delete_session,
   upload_sessions_csv,
+  get_all_sessions,
+  get_my_agenda,
+  add_to_my_agenda,
+  remove_from_my_agenda,
 };
