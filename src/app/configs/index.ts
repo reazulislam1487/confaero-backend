@@ -12,6 +12,7 @@ export const configs = {
     reset_expires: process.env.RESET_EXPIRES,
     front_end_url: process.env.FRONT_END_URL,
     verified_token: process.env.VERIFIED_TOKEN,
+    jwt_access_secret: process.env.JWT_ACCESS_SECRET,
   },
   db_url: process.env.DB_URL,
   email: {
@@ -29,5 +30,8 @@ export const configs = {
     access_key_id: process.env.AWS_ACCESS_KEY_ID,
     secret_access_key: process.env.AWS_SECRET_ACCESS_KEY,
     bucket_name: process.env.AWS_BUCKET_NAME,
+  },
+  new: {
+    jwt_access_secret: process.env.JWT_ACCESS_SECRET,
   },
 };

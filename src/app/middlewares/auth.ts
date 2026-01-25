@@ -56,6 +56,7 @@ const auth = (...roles: Role[]) => {
       //   throw new AppError("This account is not verified ", 401);
       // }
       req.user = verifiedUser as JwtPayloadType;
+
       next();
     } catch (err) {
       next(err);
