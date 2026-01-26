@@ -26,6 +26,17 @@ export const initSocket = (server: HTTPServer) => {
     socket.on("disconnect", () => {
       console.log(` User ${userId} disconnected`);
     });
+
+    //message for testing
+    socket.on("send-message", (payload: any) => {
+      console.log("📤 Message received:", payload);
+
+      io.to(`event:${eventId}`).emit("receive-message", {
+        senderId: userId,
+        text: payload.text,
+        time: new Date(),
+      });
+    });
   });
 
   return io;
