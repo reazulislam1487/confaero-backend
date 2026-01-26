@@ -20,19 +20,15 @@ const message_schema = new Schema<T_Message>(
       ref: "account",
       required: true,
     },
-    receiverId: {
-      type: Schema.Types.ObjectId,
-      ref: "account",
-      required: true,
-    },
     text: {
       type: String,
       required: true,
       trim: true,
     },
-    seen: {
-      type: Boolean,
-      default: false,
+    readBy: {
+      type: [Schema.Types.ObjectId],
+      ref: "account",
+      default: [],
     },
   },
   {

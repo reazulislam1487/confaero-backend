@@ -5,14 +5,14 @@ import { message_service } from "./message.service";
 import { AppError } from "../../utils/app_error";
 
 const send = catchAsync(async (req, res) => {
-  const { receiverId, text } = req.body;
-
   if (!req.user) {
     throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
   }
+
+  const { receiverId, text } = req.body;
   const { eventId } = req.params;
-  const { id } = req.user;
-  const userId = id;
+  const userId = req.user.id;
+
   const result = await message_service.send_message(
     userId,
     eventId,
@@ -32,7 +32,8 @@ const conversations = catchAsync(async (req, res) => {
   if (!req.user) {
     throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
   }
-  const { userId, eventId } = req.user;
+  const { eventId } = req.params;
+  const { id: userId } = req.user;
 
   const result = await message_service.get_conversations(userId, eventId);
 
@@ -48,8 +49,9 @@ const messages = catchAsync(async (req, res) => {
   if (!req.user) {
     throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
   }
+
   const { conversationId } = req.params;
-  const { userId } = req.user;
+  const userId = req.user.id;
 
   const result = await message_service.get_messages(conversationId, userId);
 
@@ -65,15 +67,16 @@ const seen = catchAsync(async (req, res) => {
   if (!req.user) {
     throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
   }
+
   const { conversationId } = req.params;
-  const { userId } = req.user;
+  const userId = req.user.id;
 
   await message_service.mark_seen(conversationId, userId);
 
   manageResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: "Seen updated",
+    message: "Messages marked as read",
   });
 });
 

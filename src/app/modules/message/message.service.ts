@@ -1,14 +1,22 @@
 import { Types } from "mongoose";
-import httpStatus from "http-status";
 import { conversation_model } from "./conversation.model";
-import { getIO } from "../../socket/socket";
 import { message_model } from "./message.schema";
+import { getIO } from "../../socket/socket";
+import { AppError } from "../../utils/app_error";
+import httpStatus from "http-status";
 
 const getOrCreateConversation = async (
   eventId: any,
   userA: any,
   userB: any,
 ) => {
+  // if (userA.equals(userB)) {
+  //   throw new AppError("Cannot chat with yourself", httpStatus.BAD_REQUEST);
+  // }
+
+  if (userA.toString() === userB.toString()) {
+    throw new AppError("Cannot chat with yourself", httpStatus.BAD_REQUEST);
+  }
   const participants = [userA, userB].sort();
 
   let conversation = await conversation_model.findOne({
@@ -27,9 +35,9 @@ const getOrCreateConversation = async (
 };
 
 const send_message = async (
-  userId: any,
+  userId: Types.ObjectId,
   eventId: any,
-  receiverId: any,
+  receiverId: Types.ObjectId,
   text: string,
 ) => {
   const conversation = await getOrCreateConversation(
@@ -37,13 +45,13 @@ const send_message = async (
     userId,
     receiverId,
   );
-  console.log(userId);
+
   const message = await message_model.create({
     eventId,
-    conversationId: conversation.id,
+    conversationId: conversation._id,
     senderId: userId,
-    receiverId,
     text,
+    readBy: [userId],
   });
 
   conversation.lastMessage = text;
@@ -57,29 +65,41 @@ const send_message = async (
 };
 
 const get_conversations = async (userId: any, eventId: any) => {
-  return conversation_model
+  const conversations = await conversation_model
     .find({
       eventId,
       participants: userId,
     })
-    .sort({ lastMessageAt: -1 });
+    .sort({ lastMessageAt: -1 })
+    .lean();
+
+  console.log(eventId, userId);
+
+  const results = await Promise.all(
+    conversations.map(async (conv) => {
+      const unreadCount = await message_model.countDocuments({
+        conversationId: conv._id,
+        readBy: { $ne: userId },
+      });
+
+      return { ...conv, unreadCount };
+    }),
+  );
+
+  return results;
 };
 
-const get_messages = async (conversationId: any, userId: any) => {
-  return message_model.find({
-    conversationId,
-    $or: [{ senderId: userId }, { receiverId: userId }],
-  });
+const get_messages = async (conversationId: any, userId: Types.ObjectId) => {
+  return message_model.find({ conversationId }).sort({ createdAt: 1 });
 };
 
 const mark_seen = async (conversationId: any, userId: any) => {
   await message_model.updateMany(
     {
       conversationId,
-      receiverId: userId,
-      seen: false,
+      readBy: { $ne: userId },
     },
-    { seen: true },
+    { $addToSet: { readBy: userId } },
   );
 };
 
