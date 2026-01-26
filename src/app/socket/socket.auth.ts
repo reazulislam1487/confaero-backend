@@ -1,10 +1,10 @@
 // src/socket/socket.auth.ts
 import { Socket } from "socket.io";
 import jwt from "jsonwebtoken";
-import httpStatus from "http-status";
-import { Account_Model } from "../modules/auth/auth.schema";
-import { AppError } from "../utils/app_error";
 import { configs } from "../configs";
+import { Account_Model } from "../modules/auth/auth.schema";
+import { Event_Model } from "../modules/superAdmin/event.schema";
+import { Types } from "mongoose";
 
 declare module "socket.io" {
   interface Socket {
@@ -24,35 +24,52 @@ const socketAuth = async (socket: Socket, next: any) => {
     const eventId = socket.handshake.auth?.eventId;
 
     if (!token || !eventId) {
+      console.error("❌ Missing token or eventId");
       return next(new Error("Missing token or eventId"));
     }
 
+    // ✅ SAME SECRET AS REST
     const decoded: any = jwt.verify(
       token,
-      configs.new.jwt_access_secret as string,
+      configs.jwt.jwt_access_secret as string,
     );
 
-    const account = await Account_Model.findOne({
-      _id: decoded.userId,
-      "events.eventId": eventId,
-    });
+    console.log("🧪 Decoded user:", decoded.id);
+    console.log("🧪 EventId:", eventId);
+
+    // ✅ Correct model
+    const account = await Account_Model.findById(decoded.id);
 
     if (!account) {
+      console.error("❌ Account not found");
+      return next(new Error("Account not found"));
+    }
+
+    const event = await Event_Model.findOne({
+      _id: new Types.ObjectId(eventId),
+      participants: {
+        $elemMatch: {
+          accountId: new Types.ObjectId(decoded.id),
+        },
+      },
+    });
+
+    if (!event) {
+      console.error("❌ User not part of event");
       return next(new Error("Event access denied"));
     }
 
     socket.user = {
-      userId: decoded.userId,
+      userId: decoded.id,
       activeRole: decoded.activeRole,
       eventId,
     };
 
     console.log("✅ SOCKET AUTH SUCCESS");
-
     next();
   } catch (error: any) {
     console.error("❌ SOCKET AUTH ERROR:", error.message);
-    next(new Error(error.message || "Socket auth failed"));
+    next(new Error(error.message));
   }
 };
 
