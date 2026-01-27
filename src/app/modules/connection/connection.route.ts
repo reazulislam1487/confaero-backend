@@ -1,14 +1,84 @@
 import { Router } from "express";
-import RequestValidator from "../../middlewares/request_validator";
+import auth from "../../middlewares/auth";
 import { connection_controller } from "./connection.controller";
-import { connection_validations } from "./connection.validation";
+import eventAccess from "../../middlewares/eventAccess.middleware";
 
 const connection_router = Router();
 
 connection_router.post(
-  "/create",
-  RequestValidator(connection_validations.create),
-  connection_controller.create_new_connection
+  "/request/:eventId",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  eventAccess(),
+  connection_controller.send_request,
+);
+
+connection_router.get(
+  "/requests",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  connection_controller.incoming_requests,
+);
+
+connection_router.patch(
+  "/requests/:id/accept",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  connection_controller.accept_request,
+);
+
+connection_router.get(
+  "/",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  connection_controller.get_connections,
+);
+
+connection_router.patch(
+  "/:id/bookmark",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  connection_controller.toggle_bookmark,
 );
 
 export default connection_router;
