@@ -13,6 +13,16 @@ const conversation_schema = new Schema<T_Conversation>({
     ref: "account",
     required: true,
   },
+  initiatedBy: {
+    type: Schema.Types.ObjectId,
+    ref: "account", // user A
+  },
+  status: {
+    type: String,
+    enum: ["pending", "active"],
+    default: "pending",
+  },
+  participantsKey: { type: String, required: true },
   lastMessage: {
     type: String,
     default: "",
@@ -23,6 +33,6 @@ const conversation_schema = new Schema<T_Conversation>({
   },
 });
 
-conversation_schema.index({ eventId: 1, participants: 1 }, { unique: true });
+conversation_schema.index({ eventId: 1, participantsKey: 1 }, { unique: true });
 
 export const conversation_model = model("conversation", conversation_schema);

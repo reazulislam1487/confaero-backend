@@ -11,7 +11,7 @@ declare module "socket.io" {
     user?: {
       userId: string;
       activeRole: string;
-      eventId: string;
+      eventId: any;
     };
   }
 }
@@ -19,9 +19,9 @@ declare module "socket.io" {
 const socketAuth = async (socket: Socket, next: any) => {
   try {
     console.log("🧪 SOCKET AUTH HIT");
-
-    const token = socket.handshake.auth?.token;
-    const eventId = socket.handshake.auth?.eventId;
+    // console.log("eventId", socket.handshake?.headers?.eventid);
+    const token = socket.handshake?.headers?.token;
+    const eventId = socket.handshake?.headers?.eventid;
 
     if (!token || !eventId) {
       console.error("❌ Missing token or eventId");
@@ -30,7 +30,7 @@ const socketAuth = async (socket: Socket, next: any) => {
 
     // ✅ SAME SECRET AS REST
     const decoded: any = jwt.verify(
-      token,
+      token as string,
       configs.jwt.jwt_access_secret as string,
     );
 
@@ -46,7 +46,7 @@ const socketAuth = async (socket: Socket, next: any) => {
     }
 
     const event = await Event_Model.findOne({
-      _id: new Types.ObjectId(eventId),
+      _id: new Types.ObjectId(eventId as string),
       participants: {
         $elemMatch: {
           accountId: new Types.ObjectId(decoded.id),

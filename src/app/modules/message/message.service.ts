@@ -1,35 +1,38 @@
 import { Types } from "mongoose";
 import { conversation_model } from "./conversation.model";
 import { message_model } from "./message.schema";
-import { getIO } from "../../socket/socket";
 import { AppError } from "../../utils/app_error";
 import httpStatus from "http-status";
+import { makeParticipantsKey } from "../../utils/participantsKey";
 
 const getOrCreateConversation = async (
-  eventId: any,
-  userA: any,
-  userB: any,
+  eventId: Types.ObjectId,
+  userA: Types.ObjectId,
+  userB: Types.ObjectId,
 ) => {
-  // if (userA.equals(userB)) {
-  //   throw new AppError("Cannot chat with yourself", httpStatus.BAD_REQUEST);
-  // }
-
   if (userA.toString() === userB.toString()) {
     throw new AppError("Cannot chat with yourself", httpStatus.BAD_REQUEST);
   }
-  const participants = [userA, userB].sort();
 
-  let conversation = await conversation_model.findOne({
-    eventId,
-    participants,
-  });
+  const participantsKey = makeParticipantsKey(userA, userB);
 
-  if (!conversation) {
-    conversation = await conversation_model.create({
-      eventId,
-      participants,
-    });
-  }
+  const participants = [userA.toString(), userB.toString()]
+    .sort()
+    .map((id) => new Types.ObjectId(id));
+
+  const conversation = await conversation_model.findOneAndUpdate(
+    { eventId, participantsKey },
+    {
+      $setOnInsert: {
+        eventId,
+        participants,
+        participantsKey,
+        initiatedBy: userA,
+        status: "pending",
+      },
+    },
+    { upsert: true, new: true },
+  );
 
   return conversation;
 };
@@ -56,11 +59,22 @@ const send_message = async (
 
   conversation.lastMessage = text;
   conversation.lastMessageAt = new Date();
+
+  if (
+    conversation.status === "pending" &&
+    conversation.initiatedBy &&
+    conversation.initiatedBy.toString() !== userId.toString()
+  ) {
+    conversation.status = "active";
+  }
+
   await conversation.save();
 
-  const io = getIO();
-  io.to(`event:${eventId}`).emit("message:new", message);
+  /*  socket connected krar jnno
+const io = getIO();
 
+io.to(`event:${eventId}`).emit("message:new", message);
+*/
   return message;
 };
 
