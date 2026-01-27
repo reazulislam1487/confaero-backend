@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { connection_model } from "./connection.schema";
+import { UserProfile_Model } from "../user/user.schema";
 
 type SendRequestPayload = {
   senderId: Types.ObjectId;
@@ -15,10 +16,12 @@ type SendRequestPayload = {
 const send_connection_request_into_db = async (payload: SendRequestPayload) => {
   const { senderId, receiverId, eventId, role, sessionsCount = 0 } = payload;
 
-  if (senderId.equals(receiverId)) {
+  //   if (senderId.equals(receiverId)) {
+  //
+  //   }
+  if (senderId === receiverId) {
     throw new Error("You cannot send connection request to yourself");
   }
-
   const exists = await connection_model.findOne({
     ownerAccountId: senderId,
     connectedAccountId: receiverId,
@@ -36,22 +39,83 @@ const send_connection_request_into_db = async (payload: SendRequestPayload) => {
   });
 };
 
-/**
- * GET INCOMING REQUESTS
- */
 const get_incoming_requests_from_db = async (accountId: Types.ObjectId) => {
-  return connection_model
-    .find({
-      connectedAccountId: accountId,
-      status: "pending",
-    })
+  const requests = await connection_model
+    .find(
+      {
+        connectedAccountId: accountId,
+        status: "pending",
+      },
+      {
+        ownerAccountId: 1,
+        isBookmarked: 1,
+        events: 1,
+      },
+    )
     .populate({
       path: "ownerAccountId",
-      populate: { path: "profile" },
+      select: "_id activeRole",
     })
-    .sort({ createdAt: -1 });
-};
+    .lean();
 
+  if (!requests || requests.length === 0) return [];
+
+  /**
+   * 2️⃣ Collect sender accountIds
+   */
+  const senderAccountIds = requests
+    .map((r) => r.ownerAccountId?._id)
+    .filter(Boolean);
+
+  /**
+   * 3️⃣ Fetch minimal profile data
+   */
+  const profiles = await UserProfile_Model.find(
+    { accountId: { $in: senderAccountIds } },
+    {
+      accountId: 1,
+      name: 1,
+      avatar: 1,
+      affiliations: 1,
+    },
+  ).lean();
+
+  /**
+   * 4️⃣ Create lookup map
+   */
+  const profileMap = new Map(
+    profiles.map((profile: any) => [profile.accountId.toString(), profile]),
+  );
+
+  /**
+   * 5️⃣ Shape final DTO (UI-ready)
+   */
+  return requests.map((req) => {
+    const ownerAccount = req.ownerAccountId as {
+      _id: Types.ObjectId;
+      activeRole?: string;
+    };
+
+    const profile = profileMap.get(ownerAccount._id.toString());
+
+    const eventInfo = Array.isArray(req.events) ? req.events[0] : null;
+
+    const currentAffiliation =
+      profile?.affiliations?.find((a: any) => a.isCurrent) ??
+      profile?.affiliations?.[0];
+
+    return {
+      id: req._id,
+      accountId: ownerAccount._id,
+      name: profile?.name ?? "",
+      avatar: profile?.avatar ?? null,
+      company: currentAffiliation?.company ?? "",
+      role: ownerAccount.activeRole ?? "",
+      sessionsCount: eventInfo?.sessionsCount ?? 0,
+      isBookmarked: req.isBookmarked ?? false,
+    };
+  });
+};
 /**
  * ACCEPT REQUEST
  */
