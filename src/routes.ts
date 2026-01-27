@@ -13,10 +13,12 @@ import speakerRoute from "./app/modules/speaker/speaker.route";
 import resouceRoute from "./app/modules/resouce/resouce.route";
 import announcementRoute from "./app/modules/announcement/announcement.route";
 import messageRoute from './app/modules/message/message.route';
+import connectionRoute from './app/modules/connection/connection.route';
 
 const appRouter = Router();
 
 const moduleRoutes = [
+    { path: "/connection", route: connectionRoute },
     { path: "/message", route: messageRoute },
   { path: "/announcement", route: announcementRoute },
   { path: "/resouce", route: resouceRoute },

@@ -78,30 +78,138 @@ io.to(`event:${eventId}`).emit("message:new", message);
   return message;
 };
 
-const get_conversations = async (userId: any, eventId: any) => {
-  const conversations = await conversation_model
-    .find({
-      eventId,
-      participants: userId,
-    })
-    .sort({ lastMessageAt: -1 })
-    .lean();
+const get_conversations = async (
+  userId: any,
+  eventId: any,
+  page = 1,
+  limit = 10,
+  search = "",
+) => {
+  const skip = (page - 1) * limit;
+  const userObjectId = new Types.ObjectId(userId);
 
-  console.log(eventId, userId);
+  const pipeline: any[] = [
+    {
+      $match: {
+        eventId: new Types.ObjectId(eventId),
+        participants: userObjectId,
+      },
+    },
+
+    // other participant
+    {
+      $addFields: {
+        otherParticipant: {
+          $first: {
+            $filter: {
+              input: "$participants",
+              as: "p",
+              cond: { $ne: ["$$p", userObjectId] },
+            },
+          },
+        },
+      },
+    },
+
+    // lookup profile
+    {
+      $lookup: {
+        from: "user_profiles", // ⚠️ ensure correct collection name
+        localField: "otherParticipant",
+        foreignField: "accountId",
+        as: "participantProfile",
+      },
+    },
+
+    { $unwind: "$participantProfile" },
+  ];
+
+  // 🔍 search by participant name
+  if (search) {
+    pipeline.push({
+      $match: {
+        "participantProfile.name": { $regex: search, $options: "i" },
+      },
+    });
+  }
+
+  // sort + pagination
+  pipeline.push(
+    { $sort: { lastMessageAt: -1 } },
+    { $skip: skip },
+    { $limit: limit },
+
+    // ✅ ONLY REQUIRED FIELDS
+    {
+      $project: {
+        lastMessage: 1,
+        lastMessageAt: 1,
+        participants: 1,
+        participantProfile: {
+          accountId: "$participantProfile.accountId",
+          name: "$participantProfile.name",
+          avatar: "$participantProfile.avatar",
+        },
+      },
+    },
+  );
+
+  const conversations = await conversation_model.aggregate(pipeline);
+
+  // total count (meta)
+  const countPipeline = pipeline.filter(
+    (stage) =>
+      !("$skip" in stage) && !("$limit" in stage) && !("$project" in stage),
+  );
+  countPipeline.push({ $count: "total" });
+
+  const countResult = await conversation_model.aggregate(countPipeline);
+  const total = countResult[0]?.total || 0;
 
   const results = await Promise.all(
-    conversations.map(async (conv) => {
+    conversations.map(async (conv: any) => {
       const unreadCount = await message_model.countDocuments({
         conversationId: conv._id,
-        readBy: { $ne: userId },
+        readBy: { $ne: userObjectId },
       });
 
       return { ...conv, unreadCount };
     }),
   );
 
-  return results;
+  return {
+    data: results,
+    meta: {
+      page,
+      limit,
+      total,
+    },
+  };
 };
+// const get_conversations = async (userId: any, eventId: any) => {
+//   const conversations = await conversation_model
+//     .find({
+//       eventId,
+//       participants: userId,
+//     })
+//     .sort({ lastMessageAt: -1 })
+//     .lean();
+
+//   console.log(eventId, userId);
+
+//   const results = await Promise.all(
+//     conversations.map(async (conv) => {
+//       const unreadCount = await message_model.countDocuments({
+//         conversationId: conv._id,
+//         readBy: { $ne: userId },
+//       });
+
+//       return { ...conv, unreadCount };
+//     }),
+//   );
+
+//   return results;
+// };
 
 const get_messages = async (conversationId: any, userId: Types.ObjectId) => {
   return message_model.find({ conversationId }).sort({ createdAt: 1 });

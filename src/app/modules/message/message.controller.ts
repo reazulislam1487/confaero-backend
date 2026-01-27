@@ -28,20 +28,45 @@ const send = catchAsync(async (req, res) => {
   });
 });
 
+// const conversations = catchAsync(async (req, res) => {
+//   if (!req.user) {
+//     throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
+//   }
+//   const { eventId } = req.params;
+//   const { id: userId } = req.user;
+
+//   const result = await message_service.get_conversations(userId, eventId);
+
+//   manageResponse(res, {
+//     success: true,
+//     statusCode: httpStatus.OK,
+//     message: "Conversations fetched",
+//     data: result,
+//   });
+// });
 const conversations = catchAsync(async (req, res) => {
   if (!req.user) {
     throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
   }
+
   const { eventId } = req.params;
   const { id: userId } = req.user;
+  const { page = "1", limit = "10", search = "" } = req.query;
 
-  const result = await message_service.get_conversations(userId, eventId);
+  const result = await message_service.get_conversations(
+    userId,
+    eventId,
+    Number(page),
+    Number(limit),
+    String(search),
+  );
 
   manageResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Conversations fetched",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 

@@ -13,6 +13,7 @@ import { speakerSwaggerDocs } from "./app/modules/speaker/speaker.swagger";
 import { resouceSwaggerDocs } from "./app/modules/resouce/resouce.swagger";
 import { announcementSwaggerDocs } from "./app/modules/announcement/announcement.swagger";
 import { messageSwaggerDocs } from "./app/modules/message/message.swagger";
+import { connectionSwaggerDocs } from "./app/modules/connection/connection.swagger";
 
 export const swaggerOptions = {
   definition: {
@@ -38,7 +39,8 @@ export const swaggerOptions = {
             ...speakerSwaggerDocs,
             ...resouceSwaggerDocs,
             ...announcementSwaggerDocs,
-            ...messageSwaggerDocs,},
+            ...messageSwaggerDocs,
+            ...connectionSwaggerDocs,},
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]
