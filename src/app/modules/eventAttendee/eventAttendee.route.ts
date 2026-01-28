@@ -36,4 +36,19 @@ event_attendee_router.get(
   eventAccess(),
   event_attendee_controller.getEventAttendeeDetail,
 );
+event_attendee_router.patch(
+  "/events/:eventId/attendees/:accountId/bookmark",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  eventAccess(),
+  event_attendee_controller.toggle_bookmark,
+);
 export default event_attendee_router;

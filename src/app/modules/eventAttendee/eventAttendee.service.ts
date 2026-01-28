@@ -2,6 +2,8 @@ import { Types } from "mongoose";
 import { connection_model } from "../connection/connection.schema";
 import { UserProfile_Model } from "../user/user.schema";
 import { Event_Model } from "../superAdmin/event.schema";
+import { EventAttendeeBookmark_Model } from "./eventAttendee.schema";
+import { boolean } from "zod";
 
 type AttendeeProfile = {
   accountId: Types.ObjectId;
@@ -80,24 +82,18 @@ const get_event_attendees_from_db = async (
 
   const profileMap = new Map(profiles.map((p) => [p.accountId.toString(), p]));
 
-  /* 4️⃣ Bookmark info */
-  const bookmarks = await connection_model
-    .find(
-      {
-        ownerAccountId: viewerId,
-        connectedAccountId: { $in: accountIds },
-        status: "accepted",
-        isBookmarked: true,
-        "events.eventId": eventId,
-      },
-      { connectedAccountId: 1 },
-    )
-    .lean();
+  const bookmarks = await EventAttendeeBookmark_Model.find(
+    {
+      viewerAccountId: viewerId,
+      eventId,
+      attendeeAccountId: { $in: accountIds },
+    },
+    { attendeeAccountId: 1 },
+  ).lean();
 
   const bookmarkedSet = new Set(
-    bookmarks.map((b: any) => b.connectedAccountId.toString()),
+    bookmarks.map((b) => b.attendeeAccountId.toString()),
   );
-
   /* 5️⃣ Final mapping */
   const attendees = participants
     .map((p: any) => {
@@ -112,6 +108,7 @@ const get_event_attendees_from_db = async (
 
       if (filters.bookmarked && !isBookmarked) return null;
       return {
+        id: p._id,
         accountId: p.accountId,
         name: profile.name ?? "",
         avatar: profile.avatar ?? null,
@@ -165,19 +162,11 @@ const get_event_attendee_detail_from_db = async (
     },
   ).lean()) as UserProfileLean | null;
 
-  /* 3️⃣ Bookmark status (optional connection) */
-  const connection = await connection_model
-    .findOne(
-      {
-        ownerAccountId: viewerAccountId,
-        connectedAccountId: attendeeAccountId,
-        status: "accepted",
-        "events.eventId": eventId,
-      },
-      { isBookmarked: 1 },
-    )
-    .lean();
-
+  const bookmark = await EventAttendeeBookmark_Model.findOne({
+    viewerAccountId,
+    attendeeAccountId,
+    eventId,
+  }).lean();
   /* 4️⃣ Permissions */
   const canMessage = true; // same event → socket allowed
   const canEmail = Boolean(profile?.contact?.email);
@@ -189,16 +178,15 @@ const get_event_attendee_detail_from_db = async (
 
   /* 6️⃣ SAME RESPONSE SHAPE */
   return {
-    id: attendeeAccountId, // frontend expects id
+    // frontend expects id
     accountId: attendeeAccountId,
-
     name: profile?.name ?? "",
     avatar: profile?.avatar ?? null,
     company: currentAffiliation?.company ?? "",
 
     role: participant?.role ?? "",
     sessionsCount: participant?.sessionIndex!.length ?? 0,
-    isBookmarked: connection?.isBookmarked ?? false,
+    isBookmarked: Boolean(bookmark),
 
     contact: {
       email: profile?.contact?.email ?? null,
@@ -212,8 +200,33 @@ const get_event_attendee_detail_from_db = async (
     },
   };
 };
+const toggle_bookmark_into_db = async (
+  viewerAccountId: Types.ObjectId,
+  attendeeAccountId: any,
+  eventId: any,
+) => {
+  const existing = await EventAttendeeBookmark_Model.findOne({
+    viewerAccountId,
+    attendeeAccountId,
+    eventId,
+  });
+
+  if (existing) {
+    await existing.deleteOne();
+    return { isBookmarked: false };
+  }
+
+  await EventAttendeeBookmark_Model.create({
+    viewerAccountId,
+    attendeeAccountId,
+    eventId,
+  });
+
+  return { isBookmarked: true };
+};
 
 export const event_attendee_service = {
   get_event_attendees_from_db,
   get_event_attendee_detail_from_db,
+  toggle_bookmark_into_db,
 };

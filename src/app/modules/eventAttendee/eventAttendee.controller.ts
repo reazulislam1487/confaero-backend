@@ -40,7 +40,24 @@ const getEventAttendeeDetail = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const toggle_bookmark = catchAsync(async (req, res) => {
+  const { eventId, accountId } = req.params;
+  const result = await event_attendee_service.toggle_bookmark_into_db(
+    req.user!.id,
+    accountId,
+    eventId,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Bookmark updated",
+    data: result,
+  });
+});
 export const event_attendee_controller = {
   getEventAttendees,
   getEventAttendeeDetail,
+  toggle_bookmark,
 };
