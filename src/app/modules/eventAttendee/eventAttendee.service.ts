@@ -149,7 +149,6 @@ const get_event_attendee_detail_from_db = async (
   const participant = event.participants.find(
     (p: any) => p.accountId.toString() === attendeeAccountId.toString(),
   );
-  console.log(participant);
   /* 2️⃣ Profile load (same as connectionDetails) */
   const profile = (await UserProfile_Model.findOne(
     { accountId: attendeeAccountId },
