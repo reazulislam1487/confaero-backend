@@ -9,20 +9,20 @@ import attendeeRoute from "./app/modules/attendee/attendee.route";
 import qrRoute from "./app/modules/qr/qr.route";
 import invitationRoute from "./app/modules/invitation/invitation.route";
 import noteRoute from "./app/modules/note/note.route";
-import speakerRoute from "./app/modules/speaker/speaker.route";
 import resouceRoute from "./app/modules/resouce/resouce.route";
 import announcementRoute from "./app/modules/announcement/announcement.route";
 import messageRoute from './app/modules/message/message.route';
 import connectionRoute from './app/modules/connection/connection.route';
+import eventAttendeeRoute from './app/modules/eventAttendee/eventAttendee.route';
 
 const appRouter = Router();
 
 const moduleRoutes = [
+    { path: "/eventAttendee", route: eventAttendeeRoute },
     { path: "/connection", route: connectionRoute },
     { path: "/message", route: messageRoute },
   { path: "/announcement", route: announcementRoute },
   { path: "/resouce", route: resouceRoute },
-  { path: "/speaker", route: speakerRoute },
   { path: "/note", route: noteRoute },
   { path: "/invitation", route: invitationRoute },
   { path: "/qr", route: qrRoute },
