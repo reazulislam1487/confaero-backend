@@ -120,7 +120,6 @@ const get_event_attendees_from_db = async (
     })
     .filter(Boolean);
 
-  /* 6️⃣ Summary counts */
   return {
     total: attendees.length,
     bookmarked: attendees.filter((a: any) => a.isBookmarked).length,
