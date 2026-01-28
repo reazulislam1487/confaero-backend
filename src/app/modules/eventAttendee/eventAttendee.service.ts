@@ -33,7 +33,7 @@ type UserProfileLean = {
 type EventParticipant = {
   accountId: Types.ObjectId;
   role: string;
-  sessionsCount?: number;
+  sessionIndex?: number[];
 };
 const get_event_attendees_from_db = async (
   eventId: Types.ObjectId,
@@ -197,7 +197,7 @@ const get_event_attendee_detail_from_db = async (
     company: currentAffiliation?.company ?? "",
 
     role: participant?.role ?? "",
-    sessionsCount: participant?.sessionsCount ?? 0,
+    sessionsCount: participant?.sessionIndex!.length ?? 0,
     isBookmarked: connection?.isBookmarked ?? false,
 
     contact: {
