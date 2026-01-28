@@ -19,9 +19,13 @@ const send_connection_request_into_db = async (payload: SendRequestPayload) => {
   //   if (senderId.equals(receiverId)) {
   //
   //   }
-  if (senderId === receiverId) {
+
+  if (senderId.toString() === receiverId.toString()) {
     throw new Error("You cannot send connection request to yourself");
   }
+  // if (senderId === receiverId) {
+  //   throw new Error("You cannot send connection request to yourself");
+  // }
   const exists = await connection_model.findOne({
     ownerAccountId: senderId,
     connectedAccountId: receiverId,
@@ -133,12 +137,10 @@ const accept_connection_request_into_db = async (
     throw new Error("Connection request not found");
   }
 
-  // update original request
   request.status = "accepted";
   request.lastConnectedAt = new Date();
   await request.save();
 
-  // create reverse connection
   await connection_model.create({
     ownerAccountId: receiverId,
     connectedAccountId: request.ownerAccountId,
@@ -150,9 +152,6 @@ const accept_connection_request_into_db = async (
   return request;
 };
 
-/**
- * GET ACCEPTED CONNECTION LIST
- */
 const get_all_connections_from_db = async (
   accountId: Types.ObjectId,
   filter?: string,
@@ -162,26 +161,61 @@ const get_all_connections_from_db = async (
     status: "accepted",
   };
 
-  if (filter === "favorite") {
-    query.isBookmarked = true;
-  }
-
+  if (filter === "favorite") query.isBookmarked = true;
   if (filter && filter !== "all" && filter !== "favorite") {
     query["events.role"] = filter;
   }
 
-  return connection_model
-    .find(query)
+  const connections = await connection_model
+    .find(query, {
+      connectedAccountId: 1,
+      events: 1,
+      isBookmarked: 1,
+    })
     .populate({
       path: "connectedAccountId",
-      populate: { path: "profile" },
+      select: "_id activeRole",
     })
-    .sort({ lastConnectedAt: -1 });
+    .lean();
+
+  if (!connections.length) return [];
+
+  const accountIds = connections.map((c) => (c.connectedAccountId as any)._id);
+
+  const profiles = await UserProfile_Model.find(
+    { accountId: { $in: accountIds } },
+    { accountId: 1, name: 1, avatar: 1, affiliations: 1 },
+  ).lean();
+
+  const profileMap = new Map(
+    profiles.map((p: any) => [p.accountId.toString(), p]),
+  );
+
+  return connections.map((conn) => {
+    const acc = conn.connectedAccountId as {
+      _id: Types.ObjectId;
+      activeRole?: string;
+    };
+
+    const profile = profileMap.get(acc._id.toString());
+    const eventInfo = conn.events?.[0];
+
+    const currentAffiliation =
+      profile?.affiliations?.find((a: any) => a.isCurrent) ??
+      profile?.affiliations?.[0];
+
+    return {
+      accountId: acc._id,
+      name: profile?.name ?? "",
+      avatar: profile?.avatar ?? null,
+      company: currentAffiliation?.company ?? "",
+      role: eventInfo?.role ?? acc.activeRole ?? "",
+      sessionsCount: eventInfo?.sessionsCount ?? 0,
+      isBookmarked: conn.isBookmarked ?? false,
+    };
+  });
 };
 
-/**
- * TOGGLE BOOKMARK
- */
 const toggle_bookmark_into_db = async (
   accountId: Types.ObjectId,
   connectionId: Types.ObjectId,
