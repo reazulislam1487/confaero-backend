@@ -50,10 +50,12 @@ const accept_request = catchAsync(async (req, res) => {
 
 const get_connections = catchAsync(async (req, res) => {
   const filter = req.query.filter as string;
+  const search = req.query.search as string;
 
   const result = await connection_service.get_all_connections_from_db(
     req.user!.id,
     filter,
+    search,
   );
 
   manageResponse(res, {
@@ -81,6 +83,19 @@ const toggle_bookmark = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const get_connection_detail = catchAsync(async (req, res) => {
+  const result = await connection_service.get_connection_detail_from_db(
+    req.params.connectionId as any,
+    req.user!.id,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Connection detail retrieved",
+    data: result,
+  });
+});
 
 export const connection_controller = {
   send_request,
@@ -88,4 +103,5 @@ export const connection_controller = {
   accept_request,
   get_connections,
   toggle_bookmark,
+  get_connection_detail,
 };

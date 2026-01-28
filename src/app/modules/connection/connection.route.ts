@@ -80,5 +80,18 @@ connection_router.patch(
   ),
   connection_controller.toggle_bookmark,
 );
-
+connection_router.get(
+  "/:connectionId",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  connection_controller.get_connection_detail,
+);
 export default connection_router;

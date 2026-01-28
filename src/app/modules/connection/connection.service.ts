@@ -9,6 +9,24 @@ type SendRequestPayload = {
   role: string;
   sessionsCount?: number;
 };
+type Affiliation = {
+  company?: string;
+  position?: string;
+  isCurrent?: boolean;
+};
+
+type UserProfileLean = {
+  name?: string;
+  avatar?: string;
+  affiliations?: Affiliation[];
+  contact?: {
+    email?: string;
+    phone?: string;
+  };
+  location?: {
+    address?: string;
+  };
+};
 
 /**
  * SEND CONNECTION REQUEST
@@ -155,6 +173,7 @@ const accept_connection_request_into_db = async (
 const get_all_connections_from_db = async (
   accountId: Types.ObjectId,
   filter?: string,
+  search?: string,
 ) => {
   const query: any = {
     ownerAccountId: accountId,
@@ -182,39 +201,56 @@ const get_all_connections_from_db = async (
 
   const accountIds = connections.map((c) => (c.connectedAccountId as any)._id);
 
-  const profiles = await UserProfile_Model.find(
-    { accountId: { $in: accountIds } },
-    { accountId: 1, name: 1, avatar: 1, affiliations: 1 },
-  ).lean();
+  // 🔍 profile query with optional search
+  const profileQuery: any = {
+    accountId: { $in: accountIds },
+  };
+
+  if (search) {
+    profileQuery.name = { $regex: search, $options: "i" };
+  }
+
+  const profiles = await UserProfile_Model.find(profileQuery, {
+    accountId: 1,
+    name: 1,
+    avatar: 1,
+    affiliations: 1,
+  }).lean();
+
+  if (!profiles.length) return [];
 
   const profileMap = new Map(
     profiles.map((p: any) => [p.accountId.toString(), p]),
   );
 
-  return connections.map((conn) => {
-    const acc = conn.connectedAccountId as {
-      _id: Types.ObjectId;
-      activeRole?: string;
-    };
+  return connections
+    .filter((conn) =>
+      profileMap.has((conn.connectedAccountId as any)._id.toString()),
+    )
+    .map((conn) => {
+      const acc = conn.connectedAccountId as {
+        _id: Types.ObjectId;
+        activeRole?: string;
+      };
 
-    const profile = profileMap.get(acc._id.toString());
-    const eventInfo = conn.events?.[0];
+      const profile = profileMap.get(acc._id.toString());
+      const eventInfo = conn.events?.[0];
 
-    const currentAffiliation =
-      profile?.affiliations?.find((a: any) => a.isCurrent) ??
-      profile?.affiliations?.[0];
+      const currentAffiliation =
+        profile?.affiliations?.find((a: any) => a.isCurrent) ??
+        profile?.affiliations?.[0];
 
-    return {
-      id: conn._id,
-      accountId: acc._id,
-      name: profile?.name ?? "",
-      avatar: profile?.avatar ?? null,
-      company: currentAffiliation?.company ?? "",
-      role: eventInfo?.role ?? acc.activeRole ?? "",
-      sessionsCount: eventInfo?.sessionsCount ?? 0,
-      isBookmarked: conn.isBookmarked ?? false,
-    };
-  });
+      return {
+        id: conn._id,
+        accountId: acc._id,
+        name: profile?.name ?? "",
+        avatar: profile?.avatar ?? null,
+        company: currentAffiliation?.company ?? "",
+        role: eventInfo?.role ?? acc.activeRole ?? "",
+        sessionsCount: eventInfo?.sessionsCount ?? 0,
+        isBookmarked: conn.isBookmarked ?? false,
+      };
+    });
 };
 
 const toggle_bookmark_into_db = async (
@@ -237,10 +273,93 @@ const toggle_bookmark_into_db = async (
   return connection;
 };
 
+const get_connection_detail_from_db = async (
+  connectionId: Types.ObjectId,
+  requesterId: Types.ObjectId,
+) => {
+  // 1️⃣ Connection load (SECURE)
+  const connection = await connection_model
+    .findOne(
+      {
+        _id: connectionId,
+        ownerAccountId: requesterId,
+        status: "accepted",
+      },
+      {
+        connectedAccountId: 1,
+        events: 1,
+        isBookmarked: 1,
+      },
+    )
+    .populate({
+      path: "connectedAccountId",
+      select: "_id activeRole",
+    })
+    .lean();
+
+  if (!connection) {
+    throw new Error("Connection not found");
+  }
+
+  const connectedAccount = connection.connectedAccountId as {
+    _id: Types.ObjectId;
+    activeRole?: string;
+  };
+
+  // 2️⃣ Profile load (CONTACT INFO HERE ✅)
+  const profile = (await UserProfile_Model.findOne(
+    { accountId: connectedAccount._id },
+    {
+      name: 1,
+      avatar: 1,
+      affiliations: 1,
+      contact: 1,
+      location: 1,
+    },
+  ).lean()) as UserProfileLean | null;
+
+  // 3️⃣ Affiliation resolve
+  const currentAffiliation =
+    profile?.affiliations?.find((a) => a.isCurrent) ??
+    profile?.affiliations?.[0];
+
+  const eventInfo = connection.events?.[0];
+
+  // 4️⃣ Permissions
+  const canMessage = Boolean(eventInfo); // same event
+  const canEmail = Boolean(profile?.contact?.email);
+
+  // 5️⃣ Final response (UI READY)
+  return {
+    id: connection._id,
+    accountId: connectedAccount._id,
+
+    name: profile?.name ?? "",
+    avatar: profile?.avatar ?? null,
+    company: currentAffiliation?.company ?? "",
+
+    role: eventInfo?.role ?? connectedAccount.activeRole ?? "",
+    sessionsCount: eventInfo?.sessionsCount ?? 0,
+    isBookmarked: connection.isBookmarked ?? false,
+
+    contact: {
+      email: profile?.contact?.email ?? null,
+      phone: profile?.contact?.phone ?? null,
+      location: profile?.location?.address ?? null,
+    },
+
+    actions: {
+      canMessage,
+      canEmail,
+    },
+  };
+};
+
 export const connection_service = {
   send_connection_request_into_db,
   get_incoming_requests_from_db,
   accept_connection_request_into_db,
   get_all_connections_from_db,
   toggle_bookmark_into_db,
+  get_connection_detail_from_db,
 };
