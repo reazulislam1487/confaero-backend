@@ -50,6 +50,7 @@ const get_event_attendees_from_db = async (
   if (!event) throw new Error("Event not found");
 
   let participants = event.participants || [];
+  //   console.log(participants);
 
   /* 2️⃣ Role filter */
   if (filters.role && filters.role !== "all") {
@@ -110,14 +111,13 @@ const get_event_attendees_from_db = async (
       const isBookmarked = bookmarkedSet.has(p.accountId.toString());
 
       if (filters.bookmarked && !isBookmarked) return null;
-
       return {
         accountId: p.accountId,
         name: profile.name ?? "",
         avatar: profile.avatar ?? null,
         company: currentAffiliation?.company ?? "",
         role: p.role,
-        sessionsCount: p.sessionsCount ?? 0,
+        sessionsCount: p.sessionIndex.length ?? 0,
         isBookmarked,
       };
     })
