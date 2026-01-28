@@ -1,14 +1,23 @@
 import { Router } from "express";
-import RequestValidator from "../../middlewares/request_validator";
 import { event_attendee_controller } from "./eventAttendee.controller";
-import { event_attendee_validations } from "./eventAttendee.validation";
+import auth from "../../middlewares/auth";
+import eventAccess from "../../middlewares/eventAccess.middleware";
 
 const event_attendee_router = Router();
 
-event_attendee_router.post(
-  "/create",
-  RequestValidator(event_attendee_validations.create),
-  event_attendee_controller.create_new_event_attendee
+event_attendee_router.get(
+  "/events/:eventId/attendees",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  eventAccess(),
+  event_attendee_controller.getEventAttendees,
 );
-
 export default event_attendee_router;
