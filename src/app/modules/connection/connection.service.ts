@@ -205,6 +205,7 @@ const get_all_connections_from_db = async (
       profile?.affiliations?.[0];
 
     return {
+      id: conn._id,
       accountId: acc._id,
       name: profile?.name ?? "",
       avatar: profile?.avatar ?? null,
