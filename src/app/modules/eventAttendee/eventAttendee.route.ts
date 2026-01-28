@@ -20,4 +20,20 @@ event_attendee_router.get(
   eventAccess(),
   event_attendee_controller.getEventAttendees,
 );
+
+event_attendee_router.get(
+  "/events/:eventId/attendees/:accountId",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  eventAccess(),
+  event_attendee_controller.getEventAttendeeDetail,
+);
 export default event_attendee_router;

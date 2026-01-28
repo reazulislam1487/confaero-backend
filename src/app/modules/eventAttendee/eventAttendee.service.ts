@@ -12,7 +12,29 @@ type AttendeeProfile = {
     isCurrent?: boolean;
   }[];
 };
+type Affiliation = {
+  company?: string;
+  position?: string;
+  isCurrent?: boolean;
+};
 
+type UserProfileLean = {
+  name?: string;
+  avatar?: string;
+  affiliations?: Affiliation[];
+  contact?: {
+    email?: string;
+    phone?: string;
+  };
+  location?: {
+    address?: string;
+  };
+};
+type EventParticipant = {
+  accountId: Types.ObjectId;
+  role: string;
+  sessionsCount?: number;
+};
 const get_event_attendees_from_db = async (
   eventId: Types.ObjectId,
   viewerId: Types.ObjectId,
@@ -108,5 +130,90 @@ const get_event_attendees_from_db = async (
     attendees,
   };
 };
+const get_event_attendee_detail_from_db = async (
+  eventId: Types.ObjectId,
+  attendeeAccountId: Types.ObjectId,
+  viewerAccountId: Types.ObjectId,
+) => {
+  /* 1️⃣ Validate attendee belongs to event */
+  const event = (await Event_Model.findOne(
+    {
+      _id: eventId,
+      "participants.accountId": attendeeAccountId,
+    },
+    { participants: 1 },
+  ).lean()) as {
+    participants: EventParticipant[];
+  } | null;
+  if (!event) {
+    throw new Error("Attendee not part of this event");
+  }
 
-export const event_attendee_service = { get_event_attendees_from_db };
+  const participant = event.participants.find(
+    (p: any) => p.accountId.toString() === attendeeAccountId.toString(),
+  );
+  console.log(participant);
+  /* 2️⃣ Profile load (same as connectionDetails) */
+  const profile = (await UserProfile_Model.findOne(
+    { accountId: attendeeAccountId },
+    {
+      name: 1,
+      avatar: 1,
+      affiliations: 1,
+      contact: 1,
+      location: 1,
+    },
+  ).lean()) as UserProfileLean | null;
+
+  /* 3️⃣ Bookmark status (optional connection) */
+  const connection = await connection_model
+    .findOne(
+      {
+        ownerAccountId: viewerAccountId,
+        connectedAccountId: attendeeAccountId,
+        status: "accepted",
+        "events.eventId": eventId,
+      },
+      { isBookmarked: 1 },
+    )
+    .lean();
+
+  /* 4️⃣ Permissions */
+  const canMessage = true; // same event → socket allowed
+  const canEmail = Boolean(profile?.contact?.email);
+
+  /* 5️⃣ Affiliation resolve */
+  const currentAffiliation =
+    profile?.affiliations?.find((a) => a.isCurrent) ??
+    profile?.affiliations?.[0];
+
+  /* 6️⃣ SAME RESPONSE SHAPE */
+  return {
+    id: attendeeAccountId, // frontend expects id
+    accountId: attendeeAccountId,
+
+    name: profile?.name ?? "",
+    avatar: profile?.avatar ?? null,
+    company: currentAffiliation?.company ?? "",
+
+    role: participant?.role ?? "",
+    sessionsCount: participant?.sessionsCount ?? 0,
+    isBookmarked: connection?.isBookmarked ?? false,
+
+    contact: {
+      email: profile?.contact?.email ?? null,
+      phone: profile?.contact?.phone ?? null,
+      location: profile?.location?.address ?? null,
+    },
+
+    actions: {
+      canMessage,
+      canEmail,
+    },
+  };
+};
+
+export const event_attendee_service = {
+  get_event_attendees_from_db,
+  get_event_attendee_detail_from_db,
+};

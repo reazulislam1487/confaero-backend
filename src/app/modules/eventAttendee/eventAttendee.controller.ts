@@ -24,5 +24,23 @@ const getEventAttendees = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const getEventAttendeeDetail = catchAsync(async (req, res) => {
+  const { eventId, accountId } = req.params;
 
-export const event_attendee_controller = { getEventAttendees };
+  const result = await event_attendee_service.get_event_attendee_detail_from_db(
+    eventId as any,
+    accountId as any,
+    req.user!.id,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Event attendee detail retrieved",
+    data: result,
+  });
+});
+export const event_attendee_controller = {
+  getEventAttendees,
+  getEventAttendeeDetail,
+};
