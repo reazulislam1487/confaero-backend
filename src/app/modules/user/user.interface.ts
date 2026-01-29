@@ -54,6 +54,9 @@ export type TUserProfile = {
     platform: string;
     url: string;
   }[];
+  lastSeen: {
+    type: Date;
+  };
 
   personalWebsites?: string[];
 };

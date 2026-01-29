@@ -65,5 +65,20 @@ router.patch(
   eventAccess(),
   message_organizer_controller.mark_notification_read,
 );
-
+router.get(
+  "/presence/:userId/:eventId",
+  auth(
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  eventAccess(),
+  message_organizer_controller.get_user_presence,
+);
 export default router;

@@ -153,6 +153,7 @@ const get_conversations = async (
           accountId: "$participantProfile.accountId",
           name: "$participantProfile.name",
           avatar: "$participantProfile.avatar",
+          lastSeen: "$participantProfile.lastSeen",
         },
       },
     },

@@ -3,6 +3,9 @@ import { Event_Model } from "../superAdmin/event.schema";
 import { conversation_model } from "../message/conversation.model";
 import { message_model } from "../message/message.schema";
 import { organizer_notification_model } from "./messageOrganizer.schema";
+import { AppError } from "../../utils/app_error";
+import { UserProfile_Model } from "../user/user.schema";
+import httpStatus from "http-status";
 
 /**
  * CHAT STATS
@@ -101,6 +104,7 @@ const get_conversations = async (
           accountId: "$profile.accountId",
           name: "$profile.name",
           avatar: "$profile.avatar",
+          lastSeen: "$profile.lastSeen",
         },
       },
     },
@@ -173,6 +177,54 @@ const mark_notification_read = async (id: any, organizerId: any) => {
     { new: true },
   );
 };
+const get_user_presence = async (accountId: any, eventId: any) => {
+  const userObjectId = new Types.ObjectId(accountId);
+  const eventObjectId = new Types.ObjectId(eventId);
+
+  // 1️⃣ Load profile
+  const profile = await UserProfile_Model.findOne(
+    { accountId: userObjectId },
+    {
+      name: 1,
+      avatar: 1,
+      lastSeen: 1,
+    },
+  ).lean();
+
+  if (!profile) {
+    throw new AppError("User profile not found", httpStatus.NOT_FOUND);
+  }
+
+  // 2️⃣ Resolve role from event
+  const event = await Event_Model.findOne(
+    {
+      _id: eventObjectId,
+      participants: {
+        $elemMatch: {
+          accountId: userObjectId,
+        },
+      },
+    },
+    {
+      "participants.$": 1,
+    },
+  ).lean();
+
+  if (!event || !event.participants?.length) {
+    throw new AppError("User not part of this event", httpStatus.FORBIDDEN);
+  }
+
+  const role = (event as any).participants[0].role;
+
+  // 3️⃣ Final response (UI READY)
+  return {
+    accountId: profile.accountId,
+    name: profile.name ?? "",
+    avatar: profile.avatar ?? null,
+    role,
+    lastSeen: profile.lastSeen ?? null,
+  };
+};
 
 export const message_organizer_service = {
   get_chat_stats,
@@ -181,4 +233,5 @@ export const message_organizer_service = {
   mark_seen,
   get_notifications,
   mark_notification_read,
+  get_user_presence,
 };

@@ -64,8 +64,7 @@ const messages = catchAsync(async (req, res) => {
 
   const { conversationId } = req.params;
 
-  const result =
-    await message_organizer_service.get_messages(conversationId);
+  const result = await message_organizer_service.get_messages(conversationId);
 
   manageResponse(res, {
     success: true,
@@ -130,13 +129,35 @@ const mark_notification_read = catchAsync(async (req, res) => {
   const { id } = req.params;
   const organizerId = req.user.id;
 
-  const result =
-    await message_organizer_service.mark_notification_read(id, organizerId);
+  const result = await message_organizer_service.mark_notification_read(
+    id,
+    organizerId,
+  );
 
   manageResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Notification marked as read",
+    data: result,
+  });
+});
+
+const get_user_presence = catchAsync(async (req, res) => {
+  if (!req.user) {
+    throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
+  }
+
+  const { userId, eventId } = req.params;
+
+  const result = await message_organizer_service.get_user_presence(
+    userId,
+    eventId,
+  );
+
+  manageResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "User presence fetched",
     data: result,
   });
 });
@@ -148,4 +169,5 @@ export const message_organizer_controller = {
   seen,
   notifications,
   mark_notification_read,
+  get_user_presence,
 };

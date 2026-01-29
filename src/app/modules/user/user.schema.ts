@@ -81,6 +81,10 @@ const userProfileSchema = new Schema({
   ],
 
   personalWebsites: [String],
+  lastSeen: {
+    type: Date,
+    default: null,
+  },
 });
 export const UserProfile_Model = model<TUserProfile>(
   "user_profile",

@@ -3,9 +3,12 @@ import { Server as HTTPServer } from "http";
 import { Server } from "socket.io";
 import socketAuth from "./socket.auth";
 import { message_service } from "../modules/message/message.service";
+import { UserProfile_Model } from "../modules/user/user.schema";
 
 let io: Server;
 const activeUsers = new Map<string, Set<string>>();
+const presenceMap = new Map<string, Map<string, string>>();
+
 export const initSocket = (server: HTTPServer) => {
   io = new Server(server, {
     cors: {
@@ -36,6 +39,18 @@ export const initSocket = (server: HTTPServer) => {
       "active-count",
       activeUsers.get(eventId)!.size,
     );
+
+    if (!presenceMap.has(eventId)) {
+      presenceMap.set(eventId, new Map());
+    }
+
+    // user online
+    presenceMap.get(eventId)!.set(userId, socket.id);
+
+    // notify everyone: this user is online
+    io.to(`event:${eventId}`).emit("user:online", {
+      userId,
+    });
     // 2️⃣ LISTEN message from frontend
     socket.on("send-message", async (payload: any) => {
       try {
@@ -65,7 +80,7 @@ export const initSocket = (server: HTTPServer) => {
       }
     });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", async () => {
       console.log(` User ${userId} disconnected`);
 
       // remove user from active list
@@ -76,6 +91,20 @@ export const initSocket = (server: HTTPServer) => {
         "active-count",
         activeUsers.get(eventId)?.size || 0,
       );
+
+      presenceMap.get(eventId)?.delete(userId);
+
+      const lastSeen = new Date();
+
+      // save lastSeen (for refresh / later load)
+      await UserProfile_Model.updateOne({ accountId: userId }, { lastSeen });
+      console.log(`user ${userId} is offline from ${lastSeen}`);
+
+      // notify everyone
+      io.to(`event:${eventId}`).emit("user:offline", {
+        userId,
+        lastSeen,
+      });
     });
 
     //message for testing
