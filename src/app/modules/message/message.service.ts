@@ -145,6 +145,7 @@ const get_conversations = async (
         lastMessage: 1,
         lastMessageAt: 1,
         participants: 1,
+        status: 1,
         participantProfile: {
           accountId: "$participantProfile.accountId",
           name: "$participantProfile.name",

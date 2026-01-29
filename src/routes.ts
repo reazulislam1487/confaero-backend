@@ -11,16 +11,18 @@ import invitationRoute from "./app/modules/invitation/invitation.route";
 import noteRoute from "./app/modules/note/note.route";
 import resouceRoute from "./app/modules/resouce/resouce.route";
 import announcementRoute from "./app/modules/announcement/announcement.route";
-import messageRoute from './app/modules/message/message.route';
-import connectionRoute from './app/modules/connection/connection.route';
-import eventAttendeeRoute from './app/modules/eventAttendee/eventAttendee.route';
+import messageRoute from "./app/modules/message/message.route";
+import connectionRoute from "./app/modules/connection/connection.route";
+import eventAttendeeRoute from "./app/modules/eventAttendee/eventAttendee.route";
+import messageOrganizerRoute from "./app/modules/messageOrganizer/messageOrganizer.route";
 
 const appRouter = Router();
 
 const moduleRoutes = [
-    { path: "/eventAttendee", route: eventAttendeeRoute },
-    { path: "/connection", route: connectionRoute },
-    { path: "/message", route: messageRoute },
+  { path: "/messageOrganizer", route: messageOrganizerRoute },
+  { path: "/eventAttendee", route: eventAttendeeRoute },
+  { path: "/connection", route: connectionRoute },
+  { path: "/message", route: messageRoute },
   { path: "/announcement", route: announcementRoute },
   { path: "/resouce", route: resouceRoute },
   { path: "/note", route: noteRoute },

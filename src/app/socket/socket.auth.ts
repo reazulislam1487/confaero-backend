@@ -45,17 +45,33 @@ const socketAuth = async (socket: Socket, next: any) => {
       return next(new Error("Account not found"));
     }
 
+    // const event = await Event_Model.findOne({
+    //   _id: new Types.ObjectId(eventId as string),
+    //   participants: {
+    //     $elemMatch: {
+    //       accountId: new Types.ObjectId(decoded.id),
+    //     },
+    //   },
+    // });
+
+    // if (!event) {
+    //   console.error("❌ User not part of event");
+    //   return next(new Error("Event access denied"));
+    // }
+
+    // ✅ UPDATED: organizer OR participant check
     const event = await Event_Model.findOne({
       _id: new Types.ObjectId(eventId as string),
-      participants: {
-        $elemMatch: {
-          accountId: new Types.ObjectId(decoded.id),
-        },
-      },
-    });
+      $or: [
+        { organizers: new Types.ObjectId(decoded.id) },
+        { "participants.accountId": new Types.ObjectId(decoded.id) },
+      ],
+    }).select("_id organizer participants");
 
     if (!event) {
-      console.error("❌ User not part of event");
+      console.error(
+        "❌ User is neither participant nor organizer of this event",
+      );
       return next(new Error("Event access denied"));
     }
 
