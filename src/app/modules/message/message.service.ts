@@ -42,6 +42,7 @@ const send_message = async (
   eventId: any,
   receiverId: Types.ObjectId,
   text: string,
+  attachments: any[] = [],
 ) => {
   const conversation = await getOrCreateConversation(
     eventId,
@@ -54,10 +55,12 @@ const send_message = async (
     conversationId: conversation._id,
     senderId: userId,
     text,
+    attachments,
     readBy: [userId],
   });
 
-  conversation.lastMessage = text;
+  // conversation.lastMessage = text;
+  conversation.lastMessage = attachments.length ? "Attachment" : text;
   conversation.lastMessageAt = new Date();
 
   if (

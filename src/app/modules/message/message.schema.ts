@@ -1,5 +1,11 @@
 import { Schema, model } from "mongoose";
 import { T_Message } from "./message.interface";
+export interface T_Attachment {
+  url: string;
+  name: string;
+  size: number; // bytes
+  mimeType: string; // image/png, application/pdf etc
+}
 
 const message_schema = new Schema<T_Message>(
   {
@@ -28,6 +34,17 @@ const message_schema = new Schema<T_Message>(
     readBy: {
       type: [Schema.Types.ObjectId],
       ref: "account",
+      default: [],
+    },
+    attachments: {
+      type: [
+        {
+          url: { type: String, required: true },
+          name: { type: String, required: true },
+          size: { type: Number, required: true },
+          mimeType: { type: String, required: true },
+        },
+      ],
       default: [],
     },
   },

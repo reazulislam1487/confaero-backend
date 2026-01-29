@@ -16,8 +16,20 @@ const get_chat_stats = async (organizerId: any, eventId: any) => {
 
   const totalMember = event?.participants?.length || 0;
 
+  const conversations = await conversation_model.find(
+    {
+      eventId: eventObjectId,
+      participants: organizerObjectId,
+    },
+    { _id: 1 },
+  );
+
+  const conversationIds = conversations.map((c) => c._id);
+
+  // 2️⃣ Only those conversation-er unread message count koro
   const unreadMessages = await message_model.countDocuments({
     eventId: eventObjectId,
+    conversationId: { $in: conversationIds },
     readBy: { $ne: organizerObjectId },
   });
 
@@ -120,16 +132,21 @@ const get_messages = async (conversationId: any) => {
     .lean();
 };
 
-/**
- * MARK SEEN
- */
-const mark_seen = async (conversationId: any, organizerId: any) => {
-  await message_model.updateMany(
+export const mark_seen = async (conversationId: any, viewerId: any) => {
+  return message_model.updateMany(
     {
       conversationId: new Types.ObjectId(conversationId),
-      readBy: { $ne: new Types.ObjectId(organizerId) },
+
+      // ❌ নিজের পাঠানো message বাদ
+      senderId: { $ne: new Types.ObjectId(viewerId) },
+
+      // ❌ যেগুলো আগে থেকেই seen, সেগুলো বাদ
+      readBy: { $ne: new Types.ObjectId(viewerId) },
     },
-    { $addToSet: { readBy: organizerId } },
+    {
+      // ✅ viewer কে seen list এ add করা (duplicate হবে না)
+      $addToSet: { readBy: new Types.ObjectId(viewerId) },
+    },
   );
 };
 

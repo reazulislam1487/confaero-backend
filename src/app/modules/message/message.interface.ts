@@ -1,7 +1,12 @@
 import { Types } from "mongoose";
 
 type Status = "pending" | "active";
-
+export interface T_Attachment {
+  url: string;
+  name: string;
+  size: number; // bytes
+  mimeType: string; // image/png, application/pdf etc
+}
 export type T_Message = {
   eventId: Types.ObjectId;
   conversationId: Types.ObjectId;
@@ -9,6 +14,7 @@ export type T_Message = {
   text: string;
   readBy: Types.ObjectId[];
   createdAt: Date;
+  attachments: [];
 };
 
 export type T_Conversation = {
