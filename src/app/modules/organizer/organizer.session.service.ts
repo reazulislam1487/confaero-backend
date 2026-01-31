@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import { Event_Model } from "../superAdmin/event.schema";
 import { AppError } from "../../utils/app_error";
 import { UserProfile_Model } from "../user/user.schema";
+import { sendSessionNotification } from "../../utils/sendSessionNotification";
 
 type TSession = {
   title: string;
@@ -67,6 +68,19 @@ export const add_session = async (
   event.agenda.sessions.push(payload);
   await event.save();
 
+  const session = event.agenda.sessions[event.agenda.sessions.length - 1];
+  await sendSessionNotification({
+    eventId: event._id,
+    actorId: user.id,
+    sessionId: session._id,
+    type: "SESSION_CREATED",
+
+    title: "New Session has been Created!",
+    message:
+      "An existing session has been updated. Please review the changes in the agenda.",
+    sendToEmail: true,
+  });
+
   return event.agenda.sessions;
 };
 
@@ -88,7 +102,20 @@ export const update_session = async (
 
   Object.assign(session, payload);
   await event.save();
+  Object.assign(session, payload);
+  await event.save();
 
+  await sendSessionNotification({
+    eventId: event._id,
+    actorId: user.id,
+    sessionId: session._id, // ✅ exists here too
+    type: "SESSION_UPDATED",
+    title: "New Session has been Updated!",
+    message:
+      "A new session has been updated for the event by the organizer. Please check the agenda for details.",
+
+    sendToEmail: false,
+  });
   return session;
 };
 

@@ -60,6 +60,18 @@ const socketAuth = async (socket: Socket, next: any) => {
     // }
 
     // ✅ UPDATED: organizer OR participant check
+
+    // ✅ 1️⃣ SUPER ADMIN BYPASS
+    if (decoded.activeRole === "SUPER_ADMIN") {
+      socket.user = {
+        userId: decoded.id,
+        activeRole: decoded.activeRole,
+        eventId,
+      };
+
+      console.log("✅ SUPER ADMIN CHAT ACCESS GRANTED");
+      return next();
+    }
     const event = await Event_Model.findOne({
       _id: new Types.ObjectId(eventId as string),
       $or: [

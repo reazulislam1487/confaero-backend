@@ -11,7 +11,7 @@ const router = Router();
  */
 router.get(
   "/stats/:eventId",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   eventAccess(),
   message_organizer_controller.stats,
 );
@@ -21,7 +21,7 @@ router.get(
  */
 router.get(
   "/conversations/:eventId",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   eventAccess(),
   message_organizer_controller.conversations,
 );
@@ -31,7 +31,7 @@ router.get(
  */
 router.get(
   "/messages/:conversationId/:eventId",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   eventAccess(),
   message_organizer_controller.messages,
 );
@@ -41,7 +41,7 @@ router.get(
  */
 router.patch(
   "/seen/:conversationId/:eventId",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   eventAccess(),
   message_organizer_controller.seen,
 );
@@ -51,7 +51,7 @@ router.patch(
  */
 router.get(
   "/notifications/:eventId",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   eventAccess(),
   message_organizer_controller.notifications,
 );
@@ -61,13 +61,14 @@ router.get(
  */
 router.patch(
   "/notifications/:id/:eventId",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   eventAccess(),
   message_organizer_controller.mark_notification_read,
 );
 router.get(
   "/presence/:userId/:eventId",
   auth(
+    "SUPER_ADMIN",
     "ORGANIZER",
     "ATTENDEE",
     "SPEAKER",

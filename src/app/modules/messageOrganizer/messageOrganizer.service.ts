@@ -2,10 +2,10 @@ import { Types } from "mongoose";
 import { Event_Model } from "../superAdmin/event.schema";
 import { conversation_model } from "../message/conversation.model";
 import { message_model } from "../message/message.schema";
-import { organizer_notification_model } from "./messageOrganizer.schema";
 import { AppError } from "../../utils/app_error";
 import { UserProfile_Model } from "../user/user.schema";
 import httpStatus from "http-status";
+import { organizer_notification_model } from "./messageOrganizer.schema";
 
 /**
  * CHAT STATS
@@ -157,14 +157,42 @@ export const mark_seen = async (conversationId: any, viewerId: any) => {
 /**
  * NOTIFICATIONS
  */
-const get_notifications = async (organizerId: any, eventId: any) => {
-  return organizer_notification_model
-    .find({
-      receiverId: new Types.ObjectId(organizerId),
-      eventId: new Types.ObjectId(eventId),
-    })
-    .sort({ createdAt: -1 })
-    .lean();
+
+const get_notifications = async (
+  organizerAccountId: any,
+  eventId: any,
+  page = 1,
+  limit = 10,
+) => {
+  const safePage = Math.max(1, page);
+  const safeLimit = Math.min(50, Math.max(1, limit)); // max 50
+  const skip = (safePage - 1) * safeLimit;
+
+  const filter = {
+    eventId,
+  };
+
+  const [data, total] = await Promise.all([
+    organizer_notification_model
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(safeLimit)
+      .select("title message type refId isRead createdAt")
+      .lean(),
+
+    organizer_notification_model.countDocuments(filter),
+  ]);
+
+  return {
+    data,
+    meta: {
+      page: safePage,
+      limit: safeLimit,
+      total,
+      totalPages: Math.ceil(total / safeLimit),
+    },
+  };
 };
 
 const mark_notification_read = async (id: any, organizerId: any) => {
