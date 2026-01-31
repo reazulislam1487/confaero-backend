@@ -114,7 +114,7 @@ export const update_session = async (
     message:
       "A new session has been updated for the event by the organizer. Please check the agenda for details.",
 
-    sendToEmail: false,
+    sendToEmail: true,
   });
   return session;
 };
