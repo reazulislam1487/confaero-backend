@@ -115,7 +115,6 @@ authRoute.post(
 authRoute.get(
   "/my-roles",
   auth(
-    "SUPER_ADMIN",
     "ORGANIZER",
     "ATTENDEE",
     "SPEAKER",
@@ -127,5 +126,21 @@ authRoute.get(
     "TRACK_CHAIR",
   ),
   auth_controllers.get_my_roles,
+);
+authRoute.patch(
+  "/notification",
+  auth(
+    "SUPER_ADMIN",
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  auth_controllers.change_notification,
 );
 export default authRoute;

@@ -21,6 +21,10 @@ const authSchema = new Schema<TAccount>(
       type: Schema.Types.ObjectId,
       ref: "Event",
     },
+    emailNotificationOn: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     versionKey: false,

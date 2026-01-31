@@ -54,6 +54,7 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
       email: payload.email,
       password: hashPassword,
       lastPasswordChange: new Date(),
+      emailNotificationOn: true,
     };
 
     const newAccount = await Account_Model.create([accountPayload], {
@@ -453,6 +454,18 @@ const get_my_roles_from_db = async (user: JwtPayloadType) => {
     activeRole: account.activeRole, // current active role
   };
 };
+const change_notification_from_db = async (
+  user: JwtPayloadType,
+  payload: any,
+) => {
+  const emailNotificationOn = payload;
+
+  const notification = await Account_Model.updateOne(
+    { _id: user },
+    { emailNotificationOn },
+  );
+  return notification;
+};
 
 export const auth_services = {
   register_user_into_db,
@@ -468,4 +481,5 @@ export const auth_services = {
   delete_account_from_db,
   change_role_from_db,
   get_my_roles_from_db,
+  change_notification_from_db,
 };

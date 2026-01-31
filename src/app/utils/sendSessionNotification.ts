@@ -47,7 +47,7 @@ export const sendSessionNotification = async ({
   // 4️⃣ Load users (for email)
   const users = await Account_Model.find(
     { _id: { $in: receiverIds } },
-    { _id: 1, email: 1, name: 1 },
+    { _id: 1, email: 1, name: 1, emailNotificationOn: 1 },
   ).lean();
 
   // 5️⃣ Build notifications
@@ -84,7 +84,8 @@ export const sendSessionNotification = async ({
   if (sendToEmail) {
     notifications.forEach((n: any) => {
       if (!n.email) return;
-
+      // ❌ user globally email OFF করে রাখছে
+      if (n.emailNotificationOn === false) return;
       sendMail({
         to: n.email,
         subject:

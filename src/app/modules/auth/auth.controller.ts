@@ -167,6 +167,19 @@ const get_my_roles = catchAsync(async (req, res) => {
   });
 });
 
+const change_notification = catchAsync(async (req, res) => {
+  const result = await auth_services.change_notification_from_db(
+    req.user!.id,
+    req.body.emailNotificationOn,
+  );
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User notification changed successfully",
+    data: result,
+  });
+});
+
 export const auth_controllers = {
   register_user,
   login_user,
@@ -181,4 +194,5 @@ export const auth_controllers = {
   delete_account,
   change_role,
   get_my_roles,
+  change_notification,
 };
