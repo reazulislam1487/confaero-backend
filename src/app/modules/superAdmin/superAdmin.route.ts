@@ -3,7 +3,6 @@ import RequestValidator from "../../middlewares/request_validator";
 import { super_admin_controller } from "./superAdmin.controller";
 import { super_admin_validations } from "./superAdmin.validation";
 import auth from "../../middlewares/auth";
-import { multiUploadHandler } from "../../middlewares/multiUploadHandler";
 
 const super_admin_router = Router();
 
