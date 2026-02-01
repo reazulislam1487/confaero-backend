@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { invitation_model } from "./invitation.schema";
 import { Event_Model } from "../superAdmin/event.schema";
-import { User_Model } from "../user/user.schema";
+import { UserProfile_Model } from "../user/user.schema";
 import { Types } from "mongoose";
 import { Account_Model } from "../auth/auth.schema";
 import sendMail from "../../utils/mail_sender";
@@ -153,7 +153,12 @@ const get_event_invitations = async (eventId: any, query: any) => {
     (id) => new Types.ObjectId(id),
   );
 
-  const users = await User_Model.find(
+  // const users = await User_Model.find(
+  //   { accountId: { $in: accountIds } },
+  //   { name: 1, accountId: 1 },
+  // ).lean();
+
+  const users = await UserProfile_Model.find(
     { accountId: { $in: accountIds } },
     { name: 1, accountId: 1 },
   ).lean();

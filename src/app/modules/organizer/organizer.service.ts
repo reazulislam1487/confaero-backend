@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
 import { Event_Model } from "../superAdmin/event.schema";
 import { AppError } from "../../utils/app_error";
-import { User_Model, UserProfile_Model } from "../user/user.schema";
+import { UserProfile_Model } from "../user/user.schema";
 import { Account_Model } from "../auth/auth.schema";
 import { attendee_model } from "../attendee/attendee.schema";
 import { invitation_model } from "../invitation/invitation.schema";
@@ -96,7 +96,10 @@ const get_all_register_from_db = async (
     _id: { $in: accountIds },
   }).select("email");
 
-  const users = await User_Model.find({
+  // const users = await User_Model.find({
+  //   accountId: { $in: accountIds },
+  // }).select("name accountId");
+  const users = await UserProfile_Model.find({
     accountId: { $in: accountIds },
   }).select("name accountId");
 

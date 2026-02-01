@@ -4,7 +4,7 @@ import { Account_Model } from "../auth/auth.schema";
 import { Organizer_Model } from "./superAdmin.schema";
 import { Event_Model } from "./event.schema";
 import { AppError } from "../../utils/app_error";
-import { User_Model, UserProfile_Model } from "../user/user.schema";
+import {  UserProfile_Model } from "../user/user.schema";
 import { isAccountExist } from "../../utils/isAccountExist";
 import formatDateRange from "../../utils/formatDateRange";
 import sendMail from "../../utils/mail_sender";
@@ -315,10 +315,16 @@ const get_all_users_from_db = async ({
 
   const accountIds = accounts.map((acc) => acc._id);
 
-  const profiles = await User_Model.find({
+  // const profiles = await User_Model.find({
+  //   accountId: { $in: accountIds },
+  // })
+  //   .select("accountId name phone")
+  //   .lean();
+
+  const profiles = await UserProfile_Model.find({
     accountId: { $in: accountIds },
   })
-    .select("accountId name phone")
+    .select("accountId name location.address")
     .lean();
 
   const profileMap = new Map(

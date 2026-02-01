@@ -4,13 +4,13 @@ import { Account_Model } from "./auth.schema";
 import httpStatus from "http-status";
 import bcrypt from "bcrypt";
 import { TUser } from "../user/user.interface";
-import { User_Model, UserProfile_Model } from "../user/user.schema";
 import mongoose from "mongoose";
 import { jwtHelpers, JwtPayloadType } from "../../utils/JWT";
 import { configs } from "../../configs";
 import { JwtPayload, Secret } from "jsonwebtoken";
 import sendMail from "../../utils/mail_sender";
 import { isAccountExist } from "../../utils/isAccountExist";
+import { UserProfile_Model } from "../user/user.schema";
 // register user
 const register_user_into_db = async (payload: TRegisterPayload) => {
   const session = await mongoose.startSession();
@@ -66,8 +66,6 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
       name: payload.name,
       accountId: newAccount[0]._id,
     };
-
-    await User_Model.create([userPayload], { session });
 
     // 2️ User profile create
     await UserProfile_Model.create({
@@ -131,7 +129,7 @@ const login_user_from_db = async (payload: TLoginPayload) => {
 
 const get_my_profile_from_db = async (email: string) => {
   const isExistAccount = await isAccountExist(email);
-  const accountProfile = await User_Model.findOne({
+  const accountProfile = await UserProfile_Model.findOne({
     accountId: isExistAccount._id,
   });
   isExistAccount.password = "";
@@ -399,7 +397,7 @@ const delete_account_from_db = async (
     );
   }
 
-  await User_Model.findOneAndDelete({ accountId: account._id });
+  await UserProfile_Model.findOneAndDelete({ accountId: account._id });
   await Account_Model.findByIdAndDelete(account._id);
   return null;
 };
