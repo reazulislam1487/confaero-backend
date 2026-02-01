@@ -3,7 +3,6 @@ import { Event_Model } from "../superAdmin/event.schema";
 import { AppError } from "../../utils/app_error";
 import { UserProfile_Model } from "../user/user.schema";
 import { sendSessionNotification } from "../../utils/sendSessionNotification";
-import { Types } from "mongoose";
 
 type TSession = {
   title: string;

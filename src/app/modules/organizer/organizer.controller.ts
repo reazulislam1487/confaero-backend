@@ -4,6 +4,7 @@ import httpStatus from "http-status";
 import { organizer_service } from "./organizer.service";
 import { uploadToS3 } from "../../utils/s3";
 import { AppError } from "../../utils/app_error";
+import { Event_Model } from "../superAdmin/event.schema";
 
 const get_my_events = catchAsync(async (req, res) => {
   const result = await organizer_service.get_my_events_from_db(req.user);
@@ -21,33 +22,20 @@ const update_my_event = catchAsync(async (req, res) => {
 
   const files = req.files as {
     banner?: Express.Multer.File[];
-    floorMapImages?: Express.Multer.File[];
+    floorMapImage?: Express.Multer.File[]; // ✅ singular
   };
 
-  //  Banner image
+  /* ---------- Banner ---------- */
   if (files?.banner?.[0]) {
-    const bannerUrl = await uploadToS3(files.banner[0], "events/banner");
-    payload.bannerImageUrl = bannerUrl;
+    payload.bannerImageUrl = await uploadToS3(files.banner[0], "events/banner");
   }
 
-  //  Floor map multiple images
-  if (files?.floorMapImages?.length) {
-    const urls = await Promise.all(
-      files.floorMapImages.map((file) => uploadToS3(file, "events/floormap")),
+  /* ---------- Floor Map (ADD ONLY) ---------- */
+  if (files?.floorMapImage?.[0]) {
+    payload.__floorMapImageUrl = await uploadToS3(
+      files.floorMapImage[0],
+      "events/floormap",
     );
-
-    payload.floorMapImageUrl = urls;
-  }
-
-  if (req.body.agenda) {
-    try {
-      payload.__session = JSON.parse(req.body.agenda);
-
-      //  THIS LINE WAS MISSING
-      delete payload.agenda;
-    } catch {
-      throw new AppError("Invalid agenda JSON", httpStatus.BAD_REQUEST);
-    }
   }
 
   const result = await organizer_service.update_my_event_in_db(
@@ -61,6 +49,24 @@ const update_my_event = catchAsync(async (req, res) => {
     success: true,
     message: "Event updated successfully",
     data: result,
+  });
+});
+
+// get all floorMap
+const get_event_floormaps = catchAsync(async (req, res) => {
+  const event = await Event_Model.findById(req.params.eventId).select(
+    "floorMaps",
+  );
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Floor maps fetched successfully",
+    data: event.floorMaps,
   });
 });
 
@@ -110,10 +116,46 @@ const get_attendee_details = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const delete_floor_map = catchAsync(async (req, res) => {
+  const { eventId, floorMapId } = req.params;
+  const user = req.user;
+
+  const event = await Event_Model.findById(eventId);
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  if (!event.organizerEmails.includes(user!.email)) {
+    throw new AppError("Forbidden", httpStatus.FORBIDDEN);
+  }
+
+  const initialLength = event.floorMaps.length;
+
+  event.floorMaps = event.floorMaps.filter(
+    (floor) => floor._id.toString() !== floorMapId,
+  );
+
+  if (event.floorMaps.length === initialLength) {
+    throw new AppError("Floor map not found", httpStatus.NOT_FOUND);
+  }
+
+  await event.save();
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Floor map deleted successfully",
+  });
+});
+
 export const organizer_controller = {
   get_my_events,
   update_my_event,
   get_all_register,
   remove_attendee,
   get_attendee_details,
+  get_event_floormaps,
+  delete_floor_map,
 };

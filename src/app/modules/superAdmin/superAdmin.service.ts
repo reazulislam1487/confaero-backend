@@ -26,8 +26,8 @@ type TCreateEventPayload = {
   boothSlot?: number;
   details?: string;
   bannerImageUrl?: string;
-  floorMapImageUrl?: string[];
-  agenda?: string[];
+  // floorMapImageUrl?: string[];
+  // agenda?: string[];
 };
 
 const create_new_organizer_into_db = async (
@@ -151,8 +151,8 @@ const create_event_by_super_admin_into_db = async (
           organizers: organizerAccountIds,
           organizerEmails: payload.organizerEmails,
           bannerImageUrl: payload.bannerImageUrl ?? "",
-          floorMapImageUrl: payload.floorMapImageUrl ?? [],
-          agenda: payload.agenda ?? [],
+          // floorMapImageUrl: payload.floorMapImageUrl ?? [],
+          // agenda: payload.agenda ?? [],
         },
       ],
       { session },

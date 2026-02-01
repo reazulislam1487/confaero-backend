@@ -5,17 +5,6 @@ import { User_Model, UserProfile_Model } from "../user/user.schema";
 import { Account_Model } from "../auth/auth.schema";
 import { attendee_model } from "../attendee/attendee.schema";
 import { invitation_model } from "../invitation/invitation.schema";
-type TSession = {
-  title: string;
-  floorMapLocation?: string;
-  date: string;
-  time: string;
-  details?: string;
-};
-
-type TAgenda = {
-  sessions: TSession[];
-};
 const get_my_events_from_db = async (user: any) => {
   if (!user?.email) {
     throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
@@ -35,21 +24,23 @@ const update_my_event_in_db = async (user: any, eventId: any, payload: any) => {
     throw new AppError("Forbidden", httpStatus.FORBIDDEN);
   }
 
-  if (payload.__session) {
-    //  SAFE CAST ONLY agenda
-    const agenda = (event.agenda ?? { sessions: [] }) as TAgenda;
-
-    agenda.sessions = agenda.sessions || [];
-    agenda.sessions.push(payload.__session as TSession);
-
-    event.agenda = agenda;
-    delete payload.__session;
+  /* ---------- Floor Map ADD ONLY ---------- */
+  if (payload.__floorMapImageUrl && payload.floorMapTitle) {
+    event.floorMaps.push({
+      title: payload.floorMapTitle,
+      imageUrl: payload.__floorMapImageUrl,
+    });
   }
 
   /* ---------- LOCKED ---------- */
   delete payload.title;
   delete payload.googleMapLink;
 
+  /* ---------- CLEANUP ---------- */
+  delete payload.__floorMapImageUrl;
+  delete payload.floorMapTitle;
+
+  /* ---------- UPDATE EVENT ---------- */
   Object.assign(event, payload);
   await event.save();
 

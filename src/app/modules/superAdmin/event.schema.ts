@@ -1,5 +1,4 @@
 import { Schema, model, Types } from "mongoose";
-import { number, string } from "zod";
 
 const eventSchema = new Schema(
   {
@@ -18,7 +17,26 @@ const eventSchema = new Schema(
     organizers: [{ type: Types.ObjectId, ref: "Account", required: true }],
     organizerEmails: [{ type: String }],
     bannerImageUrl: { type: String },
-    floorMapImageUrl: [{ type: String }],
+    floorMaps: {
+      type: [
+        {
+          title: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+          imageUrl: {
+            type: String,
+            required: true,
+          },
+          order: {
+            type: Number,
+            default: 0,
+          },
+        },
+      ],
+      default: [],
+    },
     agenda: {
       sessions: {
         type: [
