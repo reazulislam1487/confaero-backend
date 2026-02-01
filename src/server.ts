@@ -13,7 +13,7 @@ async function main() {
   //  init socket
   initSocket(server);
 
-  await seedSuperAdmin(); // runs once safely
+  // await seedSuperAdmin(); // runs once safely
   // app.listen(configs.port, () => {
   //   console.log(`Server listening on port ${configs.port}`);
   // });

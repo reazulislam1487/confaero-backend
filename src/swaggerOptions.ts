@@ -16,6 +16,8 @@ import { connectionSwaggerDocs } from "./app/modules/connection/connection.swagg
 import { eventAttendeeSwaggerDocs } from "./app/modules/eventAttendee/eventAttendee.swagger";
 import { messageOrganizerSwaggerDocs } from "./app/modules/messageOrganizer/messageOrganizer.swagger";
 import { uploadSwaggerDocs } from "./app/modules/upload/upload.swagger";
+import { posterSwaggerDocs } from "./app/modules/poster/poster.swagger";
+import { reviewerSwaggerDocs } from "./app/modules/reviewer/reviewer.swagger";
 
 export const swaggerOptions = {
   definition: {
@@ -44,7 +46,9 @@ export const swaggerOptions = {
             ...connectionSwaggerDocs,
             ...eventAttendeeSwaggerDocs,
             ...messageOrganizerSwaggerDocs,
-            ...uploadSwaggerDocs,},
+            ...uploadSwaggerDocs,
+            ...posterSwaggerDocs,
+            ...reviewerSwaggerDocs,},
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]
