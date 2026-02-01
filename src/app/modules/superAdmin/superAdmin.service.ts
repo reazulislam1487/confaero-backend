@@ -188,8 +188,8 @@ const create_event_by_super_admin_into_db = async (
 `;
     await sendMail({
       to: payload.organizerEmails[0],
-      subject: "Password Reset Code!",
-      textBody: "Your password is successfully reset.",
+      subject: "Your Event have been created",
+      textBody: "Your event have been successfully created.",
       htmlBody: emailTemplate,
     });
 

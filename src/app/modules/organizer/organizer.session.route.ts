@@ -140,5 +140,19 @@ router.get(
   eventAccess(),
   organizer_session_controllers.get_speaker_profile,
 );
-
+router.patch(
+  "/agenda/:eventId/:sessionIndex/toggle-like",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  eventAccess(),
+  organizer_session_controllers.toggle_like_agenda_session,
+);
 export default router;

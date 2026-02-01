@@ -1,4 +1,5 @@
 import { Schema, model, Types } from "mongoose";
+import { number, string } from "zod";
 
 const eventSchema = new Schema(
   {
@@ -27,6 +28,14 @@ const eventSchema = new Schema(
             date: String,
             time: String,
             details: String,
+            bookmarkCount: {
+              type: Number,
+              default: 0,
+            },
+            likesCount: {
+              type: Number,
+              default: 0,
+            },
           },
         ],
         default: [],

@@ -195,6 +195,25 @@ const remove_from_my_agenda = catchAsync(
     });
   },
 );
+const toggle_like_agenda_session = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await session_service.toggle_like_session(
+      req.user,
+      req.params.eventId,
+      Number(req.params.sessionIndex),
+    );
+
+    manageResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: result.liked
+        ? "Session liked successfully"
+        : "Session unliked successfully",
+      data: result,
+    });
+  },
+);
+
 const get_single_agenda_session = catchAsync(
   async (req: Request, res: Response) => {
     const result = await session_service.get_single_agenda_session(
@@ -241,4 +260,5 @@ export const organizer_session_controllers = {
   remove_from_my_agenda,
   get_single_agenda_session,
   get_speaker_profile,
+  toggle_like_agenda_session,
 };

@@ -3,6 +3,7 @@ import { Event_Model } from "../superAdmin/event.schema";
 import { AppError } from "../../utils/app_error";
 import { UserProfile_Model } from "../user/user.schema";
 import { sendSessionNotification } from "../../utils/sendSessionNotification";
+import { Types } from "mongoose";
 
 type TSession = {
   title: string;
@@ -11,6 +12,25 @@ type TSession = {
   time: string;
   type?: string;
   details?: string;
+};
+
+// utilities
+const ensureParticipant = (event: any, user: any) => {
+  let participant = event.participants.find(
+    (p: any) => String(p.accountId) === String(user._id),
+  );
+
+  if (!participant) {
+    participant = {
+      accountId: user._id,
+      role: "ATTENDEE",
+      sessionIndex: [],
+      likedSessions: [],
+    };
+    event.participants.push(participant);
+  }
+
+  return participant;
 };
 
 const get_event = async (user: any, eventId: any) => {
@@ -69,6 +89,7 @@ export const add_session = async (
   await event.save();
 
   const session = event.agenda.sessions[event.agenda.sessions.length - 1];
+
   await sendSessionNotification({
     eventId: event._id,
     actorId: user.id,
@@ -207,10 +228,24 @@ export const add_to_my_agenda = async (
 ) => {
   const event: any = await get_event_fun(eventId);
 
-  if (!event.agenda.sessions[sessionIndex]) {
+  const session = event.agenda.sessions[sessionIndex];
+  if (!session) {
     throw new AppError("Invalid session index", httpStatus.BAD_REQUEST);
   }
 
+  // ✅ initialize if missing (old data safety)
+  if (typeof session.bookmarkCount !== "number") {
+    session.bookmarkCount = 0;
+  }
+
+  // ✅ increment bookmark count
+  session.bookmarkCount += 1;
+
+  // if (!event.agenda.sessions[sessionIndex]) {
+  //   throw new AppError("Invalid session index", httpStatus.BAD_REQUEST);
+  // }
+
+  // event.agenda.session.bookmarkCount += 1;
   // ✅ FIX 1: proper ObjectId comparison
   let participant = event.participants.find(
     (p: any) => String(p.accountId) === String(user.id),
@@ -250,6 +285,11 @@ export const remove_from_my_agenda = async (
 ) => {
   const event: any = await get_event_fun(eventId);
 
+  const session = event.agenda.sessions[sessionIndex];
+  if (!session) {
+    throw new AppError("Invalid session index", httpStatus.BAD_REQUEST);
+  }
+
   let participant = event.participants.find(
     (p: any) => String(p.accountId) === String(user.id),
   );
@@ -258,12 +298,74 @@ export const remove_from_my_agenda = async (
     throw new AppError("Nothing to remove", httpStatus.BAD_REQUEST);
   }
 
+  // ✅ Prevent removing if not bookmarked
+  if (!participant.sessionIndex.includes(sessionIndex)) {
+    throw new AppError("Session not in agenda", httpStatus.BAD_REQUEST);
+  }
+
+  // ✅ remove session index (your existing logic)
   participant.sessionIndex = participant.sessionIndex.filter(
     (i: number) => i !== sessionIndex,
   );
 
+  // ✅ SAFE decrement bookmarkCount
+  if (typeof session.bookmarkCount !== "number") {
+    session.bookmarkCount = 0;
+  }
+
+  session.bookmarkCount = Math.max(0, session.bookmarkCount - 1);
+
+  // ✅ ensure mongoose tracks participant change
+  event.markModified("participants");
   await event.save();
+
   return participant.sessionIndex;
+};
+
+// like
+
+export const toggle_like_session = async (
+  user: any,
+  eventId: any,
+  sessionIndex: number,
+) => {
+  const event: any = await get_event_fun(eventId);
+
+  const session = event.agenda.sessions[sessionIndex];
+  if (!session) {
+    throw new AppError("Invalid session index", httpStatus.BAD_REQUEST);
+  }
+
+  if (typeof session.likesCount !== "number") {
+    session.likesCount = 0;
+  }
+
+  const participant = ensureParticipant(event, user);
+
+  if (!Array.isArray(participant.likedSessions)) {
+    participant.likedSessions = [];
+  }
+
+  const alreadyLiked = participant.likedSessions.includes(sessionIndex);
+
+  if (alreadyLiked) {
+    participant.likedSessions = participant.likedSessions.filter(
+      (i: number) => i !== sessionIndex,
+    );
+    session.likesCount = Math.max(0, session.likesCount - 1);
+  } else {
+    participant.likedSessions.push(sessionIndex);
+    session.likesCount += 1;
+  }
+
+  event.markModified("participants");
+  await event.save();
+
+  return {
+    sessionIndex,
+    liked: !alreadyLiked,
+    likesCount: session.likesCount,
+  };
 };
 
 export const get_single_agenda_session = async (
