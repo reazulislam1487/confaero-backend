@@ -1,6 +1,9 @@
+import { AppError } from "../../utils/app_error";
+import { Event_Model } from "../superAdmin/event.schema";
 import { UserProfile_Model } from "../user/user.schema";
 import { poster_model } from "./poster.schema";
 import { Types } from "mongoose";
+import httpStatus from "http-status";
 
 const create_new_poster_into_db = async (payload: {
   eventId: any;
@@ -19,6 +22,21 @@ const create_new_poster_into_db = async (payload: {
     size?: number;
   }[];
 }) => {
+  const eventId = payload.eventId;
+
+  const event = await Event_Model.findById(eventId);
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+  const endDate = event.endDate;
+
+  if (!endDate) {
+    throw new AppError("Invalid end date", 400);
+  }
+
+  const dueDate = new Date(event.endDate as Date);
+
   return await poster_model.create({
     eventId: new Types.ObjectId(payload.eventId),
     authorId: new Types.ObjectId(payload.authorId),
@@ -31,6 +49,7 @@ const create_new_poster_into_db = async (payload: {
     presenters: payload.presenters || [],
     videoLink: payload.videoLink,
     attachments: payload.attachments || [],
+    dueDate: dueDate.toISOString(),
 
     status: "pending",
   });
@@ -59,7 +78,7 @@ const get_accepted_posters_from_db = async (query: {
     .sort({ updatedAt: -1 })
     .skip(skip)
     .limit(limit)
-    .select("_id eventId authorId title abstract banner ")
+    .select("_id eventId authorId title abstract banner dueDate ")
     .lean();
 
   // 2️⃣ author profiles

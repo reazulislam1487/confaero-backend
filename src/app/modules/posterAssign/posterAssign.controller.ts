@@ -36,8 +36,12 @@ const get_unassigned_files = catchAsync(async (req, res) => {
 
 const get_assigned_files = catchAsync(async (req, res) => {
   const { eventId } = req.params;
+  const { type } = req.query; // "pdf" | "image"
 
-  const data = await poster_assign_service.get_assigned_files(eventId);
+  const data = await poster_assign_service.get_assigned_files(
+    eventId,
+    type as "pdf" | "image",
+  );
 
   manageResponse(res, {
     statusCode: httpStatus.OK,
@@ -108,6 +112,22 @@ const get_reviewer_stats = catchAsync(async (req, res) => {
   });
 });
 
+const search_speakers = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  const search = req.query.search?.toString() || "";
+
+  const data = await poster_assign_service.search_event_speakers(
+    eventId,
+    search,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "speaker fetch successfully",
+    data,
+  });
+});
 export const poster_assign_controller = {
   create_new_poster_assign,
   get_unassigned_files,
@@ -116,4 +136,5 @@ export const poster_assign_controller = {
   submit_review,
   reassign_reviewer,
   get_reviewer_stats,
+  search_speakers,
 };

@@ -13,6 +13,7 @@ export type T_Attachment = {
   size?: number;
   reviewStatus: Status;
   reviewReason?: string;
+  _id: string;
 };
 
 export type T_Presenter = {

@@ -53,4 +53,10 @@ poster_assign_router.get(
   eventAccess(),
   poster_assign_controller.get_reviewer_stats,
 );
+poster_assign_router.get(
+  "/speakers/search/:eventId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  eventAccess(),
+  poster_assign_controller.search_speakers,
+);
 export default poster_assign_router;

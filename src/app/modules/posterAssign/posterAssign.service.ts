@@ -1,6 +1,8 @@
 import { Types } from "mongoose";
 import { poster_assign_model } from "./posterAssign.schema";
 import { poster_model } from "../poster/poster.schema";
+import { UserProfile_Model } from "../user/user.schema";
+import { Event_Model } from "../superAdmin/event.schema";
 
 const create_new_poster_assign_into_db = async (payload: {
   eventId: string;
@@ -8,47 +10,157 @@ const create_new_poster_assign_into_db = async (payload: {
   attachmentId: string;
   reviewerId: string;
   assignedBy: string;
-  
-  dueDate?: string;
+  dueDate: any;
 }) => {
-  return await poster_assign_model.create({
+  const assignment = await poster_assign_model.create({
     eventId: new Types.ObjectId(payload.eventId),
     posterId: new Types.ObjectId(payload.posterId),
     attachmentId: new Types.ObjectId(payload.attachmentId),
-
     reviewerId: new Types.ObjectId(payload.reviewerId),
     assignedBy: new Types.ObjectId(payload.assignedBy),
-
     dueDate: payload.dueDate ? new Date(payload.dueDate) : undefined,
     status: "assigned",
   });
+
+  await poster_model.updateOne(
+    {
+      _id: new Types.ObjectId(payload.posterId),
+      "attachments._id": new Types.ObjectId(payload.attachmentId),
+    },
+    {
+      $set: {
+        "attachments.$.reviewStatus": "assigned",
+      },
+    },
+  );
+
+  return assignment;
 };
+// const get_unassigned_files = async (eventId: any) => {
+//   const assignedIds = await poster_assign_model.distinct("attachmentId", {
+//     eventId: new Types.ObjectId(eventId),
+//   });
+
+//   return poster_model.find(
+//     {
+//       eventId,
+//       "attachments._id": { $nin: assignedIds },
+//     },
+//     {
+//       title: 1,
+//       authorId: 1,
+//       attachments: 1,
+//       dueDate: 1,
+//       createdAt: 1,
+//     },
+//   );
+// };
 const get_unassigned_files = async (eventId: any) => {
   const assignedIds = await poster_assign_model.distinct("attachmentId", {
     eventId: new Types.ObjectId(eventId),
   });
 
-  return poster_model.find(
-    {
-      eventId,
-      "attachments._id": { $nin: assignedIds },
-    },
-    {
-      title: 1,
-      authorId: 1,
-      attachments: 1,
-      createdAt: 1,
-    },
-  );
+  const posters = await poster_model
+    .find(
+      { eventId: new Types.ObjectId(eventId) },
+      {
+        title: 1,
+        authorId: 1,
+        attachments: 1,
+        createdAt: 1,
+      },
+    )
+    .lean();
+
+  return posters
+    .map((poster) => {
+      const unassignedAttachments = poster.attachments.filter(
+        (att: any) =>
+          !assignedIds.some((id: any) => id.toString() === att._id.toString()),
+      );
+
+      if (!unassignedAttachments.length) return null;
+
+      return {
+        posterId: poster._id,
+        title: poster.title,
+        authorId: poster.authorId,
+        attachments: unassignedAttachments,
+        createdAt: poster.createdAt,
+      };
+    })
+    .filter(Boolean);
 };
 
-/* ASSIGNED FILES */
-const get_assigned_files = async (eventId: any) => {
-  return poster_assign_model
-    .find({ eventId })
-    .populate("posterId", "title attachments authorId")
-    .populate("reviewerId", "name email")
-    .sort({ createdAt: -1 });
+const get_assigned_files = async (eventId: any, type: "pdf" | "image") => {
+  const assigns = await poster_assign_model
+    .find({ eventId: new Types.ObjectId(eventId) })
+    .sort({ createdAt: -1 })
+    .lean();
+
+  if (!assigns.length) return [];
+
+  const posterIds = assigns.map((a) => a.posterId);
+  const reviewerIds = assigns.map((a) => a.reviewerId);
+
+  const posters = await poster_model
+    .find(
+      { _id: { $in: posterIds } },
+      { title: 1, authorId: 1, attachments: 1 },
+    )
+    .lean();
+
+  const posterMap = new Map(posters.map((p) => [p._id.toString(), p]));
+
+  const authorIds = posters.map((p) => p.authorId);
+
+  const profiles = await UserProfile_Model.find({
+    accountId: { $in: [...authorIds, ...reviewerIds] },
+  })
+    .select("accountId name avatar")
+    .lean();
+
+  const profileMap = new Map(profiles.map((p) => [p.accountId.toString(), p]));
+
+  return assigns
+    .map((assign) => {
+      const poster = posterMap.get(assign.posterId.toString());
+      if (!poster) return null;
+
+      const attachment = poster.attachments.find(
+        (a: any) =>
+          a._id.toString() === assign.attachmentId.toString() &&
+          a.type === type,
+      );
+
+      if (!attachment) return null;
+      console.log(attachment);
+      return {
+        assignmentId: assign._id,
+        posterId: poster._id,
+        attachmentId: attachment._id,
+
+        title: poster.title,
+
+        author: profileMap.get(poster.authorId.toString()) || null,
+        reviewer: profileMap.get(assign.reviewerId.toString()) || null,
+
+        dueDate: assign.dueDate,
+
+        status: attachment.reviewStatus,
+        reviewReason: attachment.reviewReason,
+
+        file: {
+          url: attachment.url,
+          name: attachment.name,
+          size: attachment.size,
+          type: attachment.type,
+        },
+
+        createdAt: assign.createdAt,
+      };
+    })
+    .filter(Boolean);
 };
 
 /* REPORTED FILES */
@@ -139,6 +251,37 @@ const get_reviewer_stats = async (eventId: any) => {
     },
   ]);
 };
+const search_event_speakers = async (eventId: any, search: string) => {
+  const event = await Event_Model.findById(eventId)
+    .select("participants")
+    .lean();
+
+  if (!event) return [];
+
+  const speakerIds = event.participants
+    .filter((p: any) => p.role === "SPEAKER")
+    .map((p: any) => p.accountId);
+
+  if (!speakerIds.length) return [];
+
+  const speakers = await UserProfile_Model.find({
+    accountId: { $in: speakerIds },
+    $or: [
+      { email: { $regex: search, $options: "i" } },
+      { name: { $regex: search, $options: "i" } },
+    ],
+  })
+    .select("accountId name email avatar")
+    .limit(10)
+    .lean();
+
+  return speakers.map((s) => ({
+    speakerId: s.accountId,
+    name: s.name,
+    email: s.email,
+    avatar: s.avatar,
+  }));
+};
 
 export const poster_assign_service = {
   create_new_poster_assign_into_db,
@@ -148,4 +291,5 @@ export const poster_assign_service = {
   submit_review,
   reassign_reviewer,
   get_reviewer_stats,
+  search_event_speakers,
 };

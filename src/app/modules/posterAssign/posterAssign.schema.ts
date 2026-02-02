@@ -6,12 +6,9 @@ const poster_assign_schema = new Schema<T_PosterAssign>(
     eventId: { type: Schema.Types.ObjectId, required: true, index: true },
     posterId: { type: Schema.Types.ObjectId, required: true, index: true },
     attachmentId: { type: Schema.Types.ObjectId, required: true },
-
+    dueDate: { type: Date },
     reviewerId: { type: Schema.Types.ObjectId, required: true },
     assignedBy: { type: Schema.Types.ObjectId, required: true },
-
-    dueDate: { type: Date },
-
     status: {
       type: String,
       enum: ["assigned", "under_review", "reviewed", "reassigned"],
