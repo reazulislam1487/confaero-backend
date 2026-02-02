@@ -9,8 +9,48 @@ poster_assign_router.post(
   "/create/:eventId",
   auth("ORGANIZER", "SUPER_ADMIN"),
   eventAccess(),
-  // RequestValidator(poster_assign_validations.create),
   poster_assign_controller.create_new_poster_assign,
 );
 
+poster_assign_router.get(
+  "/unassigned/:eventId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  eventAccess(),
+  poster_assign_controller.get_unassigned_files,
+);
+
+poster_assign_router.get(
+  "/assigned/:eventId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  eventAccess(),
+  poster_assign_controller.get_assigned_files,
+);
+
+poster_assign_router.get(
+  "/reported/:eventId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  eventAccess(),
+  poster_assign_controller.get_reported_files,
+);
+
+poster_assign_router.post(
+  "/review/:eventId",
+  auth("ABSTRACT_REVIEWER"),
+  eventAccess(),
+  poster_assign_controller.submit_review,
+);
+
+poster_assign_router.post(
+  "/reassign/:eventId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  eventAccess(),
+  poster_assign_controller.reassign_reviewer,
+);
+
+poster_assign_router.get(
+  "/reviewer-stats/:eventId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  eventAccess(),
+  poster_assign_controller.get_reviewer_stats,
+);
 export default poster_assign_router;

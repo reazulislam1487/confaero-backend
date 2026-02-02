@@ -32,6 +32,7 @@ export type T_Poster = {
   presenters: T_Presenter[];
 
   videoLink?: string;
+  dueDate: string;
   attachments: T_Attachment[];
 
   status: Status;

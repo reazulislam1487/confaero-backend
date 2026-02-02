@@ -23,7 +23,7 @@ const poster_schema = new Schema<T_Poster>(
     },
 
     videoLink: { type: String },
-
+    dueDate: { type: String },
     attachments: {
       type: [
         {

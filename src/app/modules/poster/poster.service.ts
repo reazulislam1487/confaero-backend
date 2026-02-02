@@ -11,6 +11,7 @@ const create_new_poster_into_db = async (payload: {
   tags?: string[];
   presenters?: { name: string; role?: string }[];
   videoLink?: string;
+  dueDate: string;
   attachments?: {
     url: string;
     type: "pdf" | "image";
