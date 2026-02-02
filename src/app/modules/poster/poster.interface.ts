@@ -1,18 +1,20 @@
 import { Types } from "mongoose";
 
-export type T_Attachment = {
-  url: string;
-  type: "pdf" | "image";
-  name: string;
-  size?: number;
-};
-
 export type Status =
   | "pending"
   | "accepted"
   | "revised"
   | "flagged"
   | "rejected";
+export type T_Attachment = {
+  url: string;
+  type: "pdf" | "image";
+  name: string;
+  size?: number;
+  reviewStatus: Status;
+  reviewReason?: string;
+};
+
 export type T_Presenter = {
   name: string;
   role?: string;

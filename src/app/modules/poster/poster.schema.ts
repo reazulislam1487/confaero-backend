@@ -31,6 +31,13 @@ const poster_schema = new Schema<T_Poster>(
           type: { type: String, enum: ["pdf", "image"], required: true },
           name: { type: String, required: true },
           size: { type: Number },
+
+          reviewStatus: {
+            type: String,
+            enum: ["pending", "approved", "revised", "flagged", "rejected"],
+            default: "pending",
+          },
+          reviewReason: String,
         },
       ],
       default: [],

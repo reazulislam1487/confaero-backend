@@ -15,16 +15,18 @@ import messageRoute from "./app/modules/message/message.route";
 import connectionRoute from "./app/modules/connection/connection.route";
 import eventAttendeeRoute from "./app/modules/eventAttendee/eventAttendee.route";
 import messageOrganizerRoute from "./app/modules/messageOrganizer/messageOrganizer.route";
-import uploadRoute from './app/modules/upload/upload.route';
-import posterRoute from './app/modules/poster/poster.route';
-import reviewerRoute from './app/modules/reviewer/reviewer.route';
+import uploadRoute from "./app/modules/upload/upload.route";
+import posterRoute from "./app/modules/poster/poster.route";
+import reviewerRoute from "./app/modules/reviewer/reviewer.route";
+import posterAssignRoute from "./app/modules/posterAssign/posterAssign.route";
 
 const appRouter = Router();
 
 const moduleRoutes = [
-    { path: "/reviewer", route: reviewerRoute },
-    { path: "/poster", route: posterRoute },
-    { path: "/upload", route: uploadRoute },
+  { path: "/poster-assign", route: posterAssignRoute },
+  { path: "/reviewer", route: reviewerRoute },
+  { path: "/poster", route: posterRoute },
+  { path: "/upload", route: uploadRoute },
   { path: "/messageOrganizer", route: messageOrganizerRoute },
   { path: "/eventAttendee", route: eventAttendeeRoute },
   { path: "/connection", route: connectionRoute },

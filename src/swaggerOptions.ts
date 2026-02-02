@@ -18,6 +18,7 @@ import { messageOrganizerSwaggerDocs } from "./app/modules/messageOrganizer/mess
 import { uploadSwaggerDocs } from "./app/modules/upload/upload.swagger";
 import { posterSwaggerDocs } from "./app/modules/poster/poster.swagger";
 import { reviewerSwaggerDocs } from "./app/modules/reviewer/reviewer.swagger";
+import { posterAssignSwaggerDocs } from "./app/modules/posterAssign/posterAssign.swagger";
 
 export const swaggerOptions = {
   definition: {
@@ -48,7 +49,8 @@ export const swaggerOptions = {
             ...messageOrganizerSwaggerDocs,
             ...uploadSwaggerDocs,
             ...posterSwaggerDocs,
-            ...reviewerSwaggerDocs,},
+            ...reviewerSwaggerDocs,
+            ...posterAssignSwaggerDocs,},
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]
