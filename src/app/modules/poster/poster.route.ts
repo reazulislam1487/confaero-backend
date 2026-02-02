@@ -33,4 +33,15 @@ router.post(
   poster_controller.create_new_poster,
 );
 
+router.get(
+  "/accepted",
+  poster_controller.get_all_accepted_posters,
+);
+
+/* Public – Single Accepted Poster */
+router.get(
+  "/accepted/:posterId",
+  poster_controller.get_single_accepted_poster,
+);
+
 export default router;

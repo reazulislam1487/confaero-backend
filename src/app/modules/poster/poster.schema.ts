@@ -36,7 +36,7 @@ const poster_schema = new Schema<T_Poster>(
       default: [],
     },
 
-    status: { type: String, enum: ["submitted"], default: "submitted" },
+    status: { type: String, default: "pending" },
   },
   { timestamps: true },
 );

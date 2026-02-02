@@ -81,8 +81,38 @@ const create_new_poster = catchAsync(async (req, res) => {
   });
 });
 
+const get_all_accepted_posters = catchAsync(async (req, res) => {
+  const result = await poster_service.get_accepted_posters_from_db({
+    search: req.query.search as string,
+    page: Number(req.query.page),
+    limit: Number(req.query.limit),
+  });
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Accepted posters retrieved successfully",
+    data: result,
+  });
+});
+
+const get_single_accepted_poster = catchAsync(async (req, res) => {
+  const { posterId } = req.params;
+
+  const result =
+    await poster_service.get_single_accepted_poster_from_db(posterId);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Poster details retrieved successfully",
+    data: result,
+  });
+});
 export const poster_controller = {
   upload_single_file,
   upload_multiple_files,
   create_new_poster,
+  get_all_accepted_posters,
+  get_single_accepted_poster,
 };

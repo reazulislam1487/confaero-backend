@@ -7,6 +7,12 @@ export type T_Attachment = {
   size?: number;
 };
 
+export type Status =
+  | "pending"
+  | "accepted"
+  | "revised"
+  | "flagged"
+  | "rejected";
 export type T_Presenter = {
   name: string;
   role?: string;
@@ -26,7 +32,7 @@ export type T_Poster = {
   videoLink?: string;
   attachments: T_Attachment[];
 
-  status: "submitted";
+  status: Status;
 
   createdAt: Date;
 };
