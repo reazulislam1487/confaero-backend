@@ -4,6 +4,7 @@ export type Status =
   | "pending"
   | "accepted"
   | "revised"
+  | "reviewed"
   | "flagged"
   | "rejected";
 export type T_Attachment = {

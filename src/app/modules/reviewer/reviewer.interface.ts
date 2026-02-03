@@ -13,6 +13,7 @@ export type T_ReviewerLatestDocument = {
   title: string;
   reviewStatus: string;
   assignedAt: Date;
+  url: string;
   author: {
     name: string;
     avatar?: string;
@@ -22,4 +23,25 @@ export type T_ReviewerLatestDocument = {
 export type T_ReviewerDashboardResponse = {
   summary: T_ReviewerDashboardSummary;
   latestDocuments: T_ReviewerLatestDocument[];
+};
+export type T_AssignedAbstract = {
+  attachmentId: string;
+  title: string;
+  size: string;
+  uploadedAt: Date;
+  reviewStatus: string;
+  author: {
+    name: string;
+    avatar?: string;
+    role: string;
+  };
+};
+
+export type T_PaginatedAbstractResponse = {
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+  data: T_AssignedAbstract[];
 };

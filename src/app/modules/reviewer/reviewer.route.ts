@@ -11,5 +11,16 @@ reviewer_router.get(
   eventAccess(),
   reviewer_controller.get_reviewer_dashboard,
 );
-
+reviewer_router.get(
+  "/assignments/abstracts/:eventId",
+  auth("ABSTRACT_REVIEWER"),
+  eventAccess(),
+  // RequestValidator(reviewer_validations.get_assigned_abstracts),
+  reviewer_controller.get_assigned_abstracts,
+);
+reviewer_router.get(
+  "/assignments/abstracts/attachment/:attachmentId",
+  auth("ABSTRACT_REVIEWER"),
+  reviewer_controller.get_assigned_abstract_details,
+);
 export default reviewer_router;

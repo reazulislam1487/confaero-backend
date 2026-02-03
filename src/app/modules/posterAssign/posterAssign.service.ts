@@ -276,7 +276,7 @@ const search_event_speakers = async (eventId: any, search: string) => {
     .lean();
 
   return speakers.map((s) => ({
-    speakerId: s._id,
+    reviewerId: s._id,
     email: s.email,
   }));
 };
@@ -328,6 +328,44 @@ const search_unassigned_files_for_assign = async (params: {
       })),
   );
 };
+
+const get_assigned_abstracts_by_reviewer_test = async (reviewerId: string) => {
+  const reviewerObjectId = new Types.ObjectId(reviewerId);
+
+  return await poster_assign_model.aggregate([
+    {
+      $match: {
+        reviewerId: reviewerObjectId,
+        status: "assigned",
+      },
+    },
+    {
+      $lookup: {
+        from: "poster_attachments",
+        localField: "attachmentId",
+        foreignField: "_id",
+        as: "attachment",
+      },
+    },
+    { $unwind: "$attachment" },
+    {
+      $match: {
+        "attachment.type": "PDF",
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        attachmentId: "$attachment._id",
+        title: "$attachment.title",
+        reviewStatus: "$attachment.reviewStatus",
+        assignedAt: "$createdAt",
+        dueDate: "$dueDate",
+      },
+    },
+  ]);
+};
+
 export const poster_assign_service = {
   create_new_poster_assign_into_db,
   get_unassigned_files,
@@ -338,4 +376,5 @@ export const poster_assign_service = {
   get_reviewer_stats,
   search_event_speakers,
   search_unassigned_files_for_assign,
+  get_assigned_abstracts_by_reviewer_test,
 };

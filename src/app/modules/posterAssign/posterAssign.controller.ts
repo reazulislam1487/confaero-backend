@@ -124,7 +124,7 @@ const search_speakers = catchAsync(async (req, res) => {
   manageResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "speaker fetch successfully",
+    message: "reviewer fetch successfully",
     data,
   });
 });
