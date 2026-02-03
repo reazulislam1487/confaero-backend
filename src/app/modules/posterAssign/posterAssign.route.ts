@@ -59,4 +59,10 @@ poster_assign_router.get(
   eventAccess(),
   poster_assign_controller.search_speakers,
 );
+poster_assign_router.get(
+  "/unassigned/search/:eventId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  eventAccess(),
+  poster_assign_controller.search_unassigned_files,
+);
 export default poster_assign_router;

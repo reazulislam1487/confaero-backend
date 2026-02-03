@@ -3,6 +3,7 @@ import { poster_assign_model } from "./posterAssign.schema";
 import { poster_model } from "../poster/poster.schema";
 import { UserProfile_Model } from "../user/user.schema";
 import { Event_Model } from "../superAdmin/event.schema";
+import { Account_Model } from "../auth/auth.schema";
 
 const create_new_poster_assign_into_db = async (payload: {
   eventId: string;
@@ -251,6 +252,8 @@ const get_reviewer_stats = async (eventId: any) => {
     },
   ]);
 };
+
+// !ekhane speaker hbe na abstract reviewer hbe sob jaiga
 const search_event_speakers = async (eventId: any, search: string) => {
   const event = await Event_Model.findById(eventId)
     .select("participants")
@@ -259,30 +262,72 @@ const search_event_speakers = async (eventId: any, search: string) => {
   if (!event) return [];
 
   const speakerIds = event.participants
-    .filter((p: any) => p.role === "SPEAKER")
+    .filter((p: any) => p.role === "ABSTRACT_REVIEWER")
     .map((p: any) => p.accountId);
 
   if (!speakerIds.length) return [];
 
-  const speakers = await UserProfile_Model.find({
-    accountId: { $in: speakerIds },
-    $or: [
-      { email: { $regex: search, $options: "i" } },
-      { name: { $regex: search, $options: "i" } },
-    ],
+  const speakers = await Account_Model.find({
+    _id: { $in: speakerIds },
+    email: { $regex: search.trim(), $options: "i" },
   })
-    .select("accountId name email avatar")
+    .select("_id email")
     .limit(10)
     .lean();
 
   return speakers.map((s) => ({
-    speakerId: s.accountId,
-    name: s.name,
+    speakerId: s._id,
     email: s.email,
-    avatar: s.avatar,
   }));
 };
+const search_unassigned_files_for_assign = async (params: {
+  eventId: any;
+  search?: string;
+  type?: "pdf" | "image";
+}) => {
+  const { eventId, search = "", type } = params;
 
+  const assignedIds = await poster_assign_model.distinct("attachmentId", {
+    eventId: new Types.ObjectId(eventId),
+  });
+
+  const posters = await poster_model
+    .find(
+      {
+        eventId: new Types.ObjectId(eventId),
+        title: { $regex: search, $options: "i" },
+      },
+      { title: 1, authorId: 1, attachments: 1, createdAt: 1 },
+    )
+    .lean();
+
+  return posters.flatMap((poster) =>
+    poster.attachments
+      .filter((att: any) => {
+        if (type && att.type !== type) return false;
+
+        return !assignedIds.some(
+          (id: any) => id.toString() === att._id.toString(),
+        );
+      })
+      .map((att: any) => ({
+        posterId: poster._id,
+        attachmentId: att._id,
+
+        title: poster.title,
+        authorId: poster.authorId,
+
+        file: {
+          type: att.type,
+          name: att.name,
+          size: att.size,
+          url: att.url,
+        },
+
+        createdAt: poster.createdAt,
+      })),
+  );
+};
 export const poster_assign_service = {
   create_new_poster_assign_into_db,
   get_unassigned_files,
@@ -292,4 +337,5 @@ export const poster_assign_service = {
   reassign_reviewer,
   get_reviewer_stats,
   search_event_speakers,
+  search_unassigned_files_for_assign,
 };

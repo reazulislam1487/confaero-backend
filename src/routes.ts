@@ -19,10 +19,12 @@ import uploadRoute from "./app/modules/upload/upload.route";
 import posterRoute from "./app/modules/poster/poster.route";
 import reviewerRoute from "./app/modules/reviewer/reviewer.route";
 import posterAssignRoute from "./app/modules/posterAssign/posterAssign.route";
+import reviewerRoute from './app/modules/reviewer/reviewer.route';
 
 const appRouter = Router();
 
 const moduleRoutes = [
+    { path: "/reviewer", route: reviewerRoute },
   { path: "/poster-assign", route: posterAssignRoute },
   { path: "/reviewer", route: reviewerRoute },
   { path: "/poster", route: posterRoute },

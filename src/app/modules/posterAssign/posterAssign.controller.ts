@@ -128,6 +128,25 @@ const search_speakers = catchAsync(async (req, res) => {
     data,
   });
 });
+
+const search_unassigned_files = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  const { search, type } = req.query;
+
+  const data = await poster_assign_service.search_unassigned_files_for_assign({
+    eventId,
+    search: search?.toString(),
+    type: type as "pdf" | "image",
+  });
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "documents fetch successfully",
+    data,
+  });
+});
+
 export const poster_assign_controller = {
   create_new_poster_assign,
   get_unassigned_files,
@@ -137,4 +156,5 @@ export const poster_assign_controller = {
   reassign_reviewer,
   get_reviewer_stats,
   search_speakers,
+  search_unassigned_files,
 };
