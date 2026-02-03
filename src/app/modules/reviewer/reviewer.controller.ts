@@ -3,14 +3,20 @@ import manageResponse from "../../utils/manage_response";
 import httpStatus from "http-status";
 import { reviewer_service } from "./reviewer.service";
 
-const create_new_reviewer = catchAsync(async (req, res) => {
-  const result = await reviewer_service.create_new_reviewer_into_db();
+const get_reviewer_dashboard = catchAsync(async (req, res) => {
+  const reviewerId = req.user!.id;
+
+  const result =
+    await reviewer_service.get_reviewer_dashboard_from_db(reviewerId);
+
   manageResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "New reviewer created successfully!",
+    message: "Reviewer dashboard data fetched successfully!",
     data: result,
   });
 });
 
-export const reviewer_controller = { create_new_reviewer };
+export const reviewer_controller = {
+  get_reviewer_dashboard,
+};

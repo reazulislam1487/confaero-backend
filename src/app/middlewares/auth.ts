@@ -32,6 +32,7 @@ const auth = (...roles: Role[]) => {
         token,
         configs.jwt.access_token as string,
       );
+
       if (!roles.length || !roles.includes(verifiedUser.activeRole)) {
         throw new AppError("You are not authorize!!", 401);
       }
@@ -56,7 +57,6 @@ const auth = (...roles: Role[]) => {
       //   throw new AppError("This account is not verified ", 401);
       // }
       req.user = verifiedUser as JwtPayloadType;
-
       next();
     } catch (err) {
       next(err);
