@@ -33,12 +33,12 @@ poster_assign_router.get(
   poster_assign_controller.get_reported_files,
 );
 
-poster_assign_router.post(
-  "/review/:eventId",
-  auth("ABSTRACT_REVIEWER"),
-  eventAccess(),
-  poster_assign_controller.submit_review,
-);
+// poster_assign_router.post(
+//   "/review/:eventId",
+//   auth("ABSTRACT_REVIEWER"),
+//   eventAccess(),
+//   poster_assign_controller.submit_review,
+// );
 
 poster_assign_router.post(
   "/reassign/:eventId",
@@ -65,45 +65,5 @@ poster_assign_router.get(
   eventAccess(),
   poster_assign_controller.search_unassigned_files,
 );
-
-
-const get_assigned_abstracts_by_reviewer_test = async (
-  reviewerId: string,
-) => {
-  const reviewerObjectId = new Types.ObjectId(reviewerId);
-
-  return await poster_assign_model.aggregate([
-    {
-      $match: {
-        reviewerId: reviewerObjectId,
-        status: "assigned",
-      },
-    },
-    {
-      $lookup: {
-        from: "poster_attachments",
-        localField: "attachmentId",
-        foreignField: "_id",
-        as: "attachment",
-      },
-    },
-    { $unwind: "$attachment" },
-    {
-      $match: {
-        "attachment.type": "PDF",
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        attachmentId: "$attachment._id",
-        title: "$attachment.title",
-        reviewStatus: "$attachment.reviewStatus",
-        assignedAt: "$createdAt",
-        dueDate: "$dueDate",
-      },
-    },
-  ]);
-};
 
 export default poster_assign_router;

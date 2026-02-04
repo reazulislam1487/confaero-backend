@@ -64,22 +64,22 @@ const get_reported_files = catchAsync(async (req, res) => {
   });
 });
 
-const submit_review = catchAsync(async (req, res) => {
-  const reviewerId = req.user!.id;
-  const { eventId } = req.params;
+// const submit_review = catchAsync(async (req, res) => {
+//   const reviewerId = req.user!.id;
+//   const { eventId } = req.params;
 
-  await poster_assign_service.submit_review({
-    ...req.body,
-    reviewerId,
-    eventId,
-  });
+//   await poster_assign_service.submit_review({
+//     ...req.body,
+//     reviewerId,
+//     eventId,
+//   });
 
-  manageResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Review submitted successfully",
-  });
-});
+//   manageResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: "Review submitted successfully",
+//   });
+// });
 
 const reassign_reviewer = catchAsync(async (req, res) => {
   const assignedBy = req.user!.id;
@@ -152,7 +152,7 @@ export const poster_assign_controller = {
   get_unassigned_files,
   get_assigned_files,
   get_reported_files,
-  submit_review,
+  // submit_review,
   reassign_reviewer,
   get_reviewer_stats,
   search_speakers,

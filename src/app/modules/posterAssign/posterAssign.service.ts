@@ -148,57 +148,83 @@ const get_assigned_files = async (eventId: any, type: "pdf" | "image") => {
 
 /* REPORTED FILES */
 const get_reported_files = async (eventId: any) => {
-  return poster_model.find({
-    eventId,
-    "attachments.reviewStatus": {
-      $in: ["rejected", "revised", "flagged"],
-    },
-  });
-};
+  const eventObjectId = new Types.ObjectId(eventId);
 
-/* SUBMIT REVIEW */
-const submit_review = async (payload: {
-  eventId: string;
-  posterId: string;
-  attachmentId: string;
-  reviewStatus: string;
-  reviewReason?: string;
-  reviewerId: string;
-}) => {
-  await poster_model.updateOne(
-    {
-      _id: payload.posterId,
-      "attachments._id": payload.attachmentId,
-    },
-    {
-      $set: {
-        "attachments.$.reviewStatus": payload.reviewStatus,
-        "attachments.$.reviewReason": payload.reviewReason,
+  const posters = await poster_model
+    .find(
+      {
+        eventId: eventObjectId,
+        "attachments.reviewStatus": {
+          $in: ["rejected", "revision_required", "flagged"],
+        },
       },
-    },
-  );
+      {
+        title: 1,
+        authorId: 1,
+        attachments: 1,
+      },
+    )
+    .lean();
 
-  await poster_assign_model.updateOne(
-    {
-      posterId: payload.posterId,
-      attachmentId: payload.attachmentId,
-      reviewerId: payload.reviewerId,
-    },
-    { status: "reviewed" },
-  );
+  const results: any[] = [];
 
-  const imageApproved = await poster_model.exists({
-    _id: payload.posterId,
-    "attachments.type": "image",
-    "attachments.reviewStatus": "approved",
-  });
+  for (const poster of posters) {
+    const author = await UserProfile_Model.findOne(
+      { accountId: poster.authorId },
+      { name: 1 },
+    ).lean();
 
-  if (imageApproved) {
-    await poster_model.updateOne(
-      { _id: payload.posterId },
-      { status: "accepted" },
-    );
+    for (const attachment of poster.attachments) {
+      if (
+        !["rejected", "revised", "flagged"].includes(attachment.reviewStatus)
+      ) {
+        continue;
+      }
+
+      const assign = await poster_assign_model
+        .findOne(
+          {
+            posterId: poster._id,
+            attachmentId: attachment._id,
+          },
+          {
+            reviewerId: 1,
+            reason: 1,
+            dueDate: 1,
+          },
+        )
+        .lean();
+
+      const reviewer = assign
+        ? await UserProfile_Model.findOne(
+            { accountId: assign.reviewerId },
+            { name: 1 },
+          ).lean()
+        : null;
+
+      results.push({
+        attachmentId: attachment._id,
+        fileType: attachment.type,
+        title: attachment.name,
+        reviewType: attachment.reviewStatus,
+        reason: attachment.reviewReason,
+
+        dueDate: assign?.dueDate || null,
+
+        author: {
+          author,
+          name: author?.name || "",
+        },
+
+        reviewer: {
+          reviewer: assign?.reviewerId,
+          name: reviewer?.name || "",
+        },
+      });
+    }
   }
+
+  return results;
 };
 
 /* REASSIGN */
@@ -353,7 +379,7 @@ export const poster_assign_service = {
   get_unassigned_files,
   get_assigned_files,
   get_reported_files,
-  submit_review,
+  // submit_review,
   reassign_reviewer,
   get_reviewer_stats,
   search_event_speakers,

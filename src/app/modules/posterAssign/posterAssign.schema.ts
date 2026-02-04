@@ -9,6 +9,10 @@ const poster_assign_schema = new Schema<T_PosterAssign>(
     dueDate: { type: Date },
     reviewerId: { type: Schema.Types.ObjectId, required: true },
     assignedBy: { type: Schema.Types.ObjectId, required: true },
+    reason: {
+      type: String,
+      default: null,
+    },
     status: {
       type: String,
       enum: ["assigned", "under_review", "reviewed", "reassigned", "flagged"],

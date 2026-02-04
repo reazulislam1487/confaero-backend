@@ -14,7 +14,7 @@ export type T_PosterAssign = {
 
   reviewerId: Types.ObjectId;
   assignedBy: Types.ObjectId;
-
+  reason?: string | null;
   status: T_PosterAssignStatus;
   dueDate: Date;
   createdAt: Date;
