@@ -138,20 +138,26 @@ const get_reviewer_authors_from_db = async (
    ?type=pdf | image
 ========================= */
 const get_author_submissions_from_db = async (
-  reviewerId: any,
+  reviewerId: string,
   authorId: any,
   type?: "pdf" | "image",
 ) => {
   const reviewerObjectId = new Types.ObjectId(reviewerId);
   const authorObjectId = new Types.ObjectId(authorId);
 
+  // 1️⃣ reviewer assignments
   const assignments = await poster_assign_model
-    .find({ reviewerId: reviewerObjectId, status: "assigned" })
+    .find({
+      reviewerId: reviewerObjectId,
+      status: "assigned",
+    })
+    .sort({ createdAt: -1 })
     .lean();
 
   const results: any[] = [];
 
   for (const assign of assignments) {
+    // 2️⃣ find poster + specific attachment
     const poster = await poster_model
       .findOne(
         {
@@ -159,28 +165,51 @@ const get_author_submissions_from_db = async (
           authorId: authorObjectId,
           "attachments._id": assign.attachmentId,
         },
-        { attachments: { $elemMatch: { _id: assign.attachmentId } } },
+        {
+          title: 1,
+          authorId: 1,
+          createdAt: 1,
+          attachments: { $elemMatch: { _id: assign.attachmentId } },
+        },
       )
       .lean();
 
     if (!poster?.attachments?.length) continue;
 
     const attachment = poster.attachments[0];
+
+    // 3️⃣ tab filter (Abstracts / Posters)
     if (type && attachment.type !== type) continue;
 
+    // 4️⃣ author profile (for top card)
+    const author = await UserProfile_Model.findOne(
+      { accountId: poster.authorId },
+      { name: 1, avatar: 1 },
+    ).lean();
+
+    // 5️⃣ final UI-ready object
     results.push({
       attachmentId: attachment._id,
+
       title: attachment.name,
       type: attachment.type,
-      reviewStatus: attachment.reviewStatus,
+      fileUrl: attachment.url,
       size: attachment.size,
-      uploadedAt: attachment.createdAt,
+
+      uploadedAt: poster.createdAt,
+      reviewStatus: attachment.reviewStatus,
+
+      author: {
+        name: author?.name || "",
+        avatar: author?.avatar || "",
+      },
+
+      dueDate: assign.dueDate,
     });
   }
 
   return results;
 };
-
 /* =========================
    ATTACHMENT DETAILS
 ========================= */
