@@ -1,22 +1,16 @@
 import { Types } from "mongoose";
 import { poster_assign_model } from "../posterAssign/posterAssign.schema";
-import {
-  T_PaginatedAbstractResponse,
-  T_ReviewerDashboardResponse,
-} from "./reviewer.interface";
 import { poster_model } from "../poster/poster.schema";
 import { UserProfile_Model } from "../user/user.schema";
 
-const get_reviewer_dashboard_from_db = async (
-  reviewerId: string,
-): Promise<T_ReviewerDashboardResponse> => {
+/* =========================
+   DASHBOARD
+========================= */
+const get_reviewer_dashboard_from_db = async (reviewerId: any) => {
   const reviewerObjectId = new Types.ObjectId(reviewerId);
 
   const assignments = await poster_assign_model
-    .find({
-      reviewerId: reviewerObjectId,
-      status: "assigned",
-    })
+    .find({ reviewerId: reviewerObjectId, status: "assigned" })
     .sort({ createdAt: -1 })
     .lean();
 
@@ -29,10 +23,7 @@ const get_reviewer_dashboard_from_db = async (
   for (const assign of assignments) {
     const poster = await poster_model
       .findOne(
-        {
-          _id: assign.posterId,
-          "attachments._id": assign.attachmentId,
-        },
+        { _id: assign.posterId, "attachments._id": assign.attachmentId },
         {
           authorId: 1,
           attachments: { $elemMatch: { _id: assign.attachmentId } },
@@ -40,13 +31,12 @@ const get_reviewer_dashboard_from_db = async (
       )
       .lean();
 
-    if (!poster || !poster.attachments?.length) continue;
+    if (!poster?.attachments?.length) continue;
 
     const attachment = poster.attachments[0];
 
     if (attachment.type === "pdf") totalAbstracts++;
     if (attachment.type === "image") totalPosters++;
-
     if (attachment.reviewStatus === "reviewed") reviewed++;
 
     if (latestDocuments.length < 5) {
@@ -61,6 +51,7 @@ const get_reviewer_dashboard_from_db = async (
         title: attachment.name,
         reviewStatus: attachment.reviewStatus,
         assignedAt: assign.createdAt,
+        url: attachment.url,
         author: {
           name: author?.name || "",
           avatar: author?.avatar || "",
@@ -70,9 +61,6 @@ const get_reviewer_dashboard_from_db = async (
   }
 
   const totalAssigned = assignments.length;
-  const remaining = totalAssigned - reviewed;
-  const progress =
-    totalAssigned === 0 ? 0 : Math.round((reviewed / totalAssigned) * 100);
 
   return {
     summary: {
@@ -80,100 +68,129 @@ const get_reviewer_dashboard_from_db = async (
       totalPosters,
       totalAssigned,
       reviewed,
-      remaining,
-      progress,
+      remaining: totalAssigned - reviewed,
+      progress:
+        totalAssigned === 0 ? 0 : Math.round((reviewed / totalAssigned) * 100),
     },
     latestDocuments,
   };
 };
 
-const get_assigned_abstracts_from_db = async (
-  reviewerId: string,
-  page = 1,
-  limit = 10,
+/* =========================
+   FIRST PAGE – AUTHORS LIST
+   ?type=pdf | image
+========================= */
+const get_reviewer_authors_from_db = async (
+  reviewerId: any,
+  type?: "pdf" | "image",
 ) => {
   const reviewerObjectId = new Types.ObjectId(reviewerId);
 
-  // 1️⃣ সব assigned আনো (pagination ছাড়া)
   const assignments = await poster_assign_model
-    .find({
-      reviewerId: reviewerObjectId,
-      status: "assigned",
-    })
-    .sort({ createdAt: -1 })
+    .find({ reviewerId: reviewerObjectId, status: "assigned" })
     .lean();
 
-  // 2️⃣ PDF only resolve করো
-  const resolved = await Promise.all(
-    assignments.map(async (assign) => {
-      const poster = await poster_model
-        .findOne(
-          {
-            _id: assign.posterId,
-            "attachments._id": assign.attachmentId,
-          },
-          {
-            authorId: 1,
-            createdAt: 1,
-            attachments: { $elemMatch: { _id: assign.attachmentId } },
-          },
-        )
-        .lean();
+  const authorsMap: Record<string, any> = {};
 
-      if (!poster || !poster.attachments?.length) return null;
+  for (const assign of assignments) {
+    const poster = await poster_model.findById(assign.posterId).lean();
+    if (!poster) continue;
 
-      const attachment = poster.attachments[0];
-      if (attachment.type !== "pdf") return null;
+    const attachment = poster.attachments.find(
+      (a: any) => a._id.toString() === assign.attachmentId.toString(),
+    );
+    if (!attachment) continue;
 
+    if (type && attachment.type !== type) continue;
+
+    const authorId = poster.authorId.toString();
+
+    if (!authorsMap[authorId]) {
       const author = await UserProfile_Model.findOne(
         { accountId: poster.authorId },
-        { name: 1, avatar: 1 },
+        { name: 1, avatar: 1, role: 1 },
       ).lean();
 
-      return {
-        attachmentId: attachment._id,
-        attachment: {
-          name: attachment.name,
-          url: attachment.url,
-          size: attachment.size,
-          type: attachment.type,
-        },
-        uploadedAt: poster.createdAt,
-        reviewStatus: attachment.reviewStatus,
-        url: attachment.url,
-        author: {
-          name: author?.name || "",
-          avatar: author?.avatar || "",
-        },
-        dueDate: assign.dueDate,
+      authorsMap[authorId] = {
+        authorId,
+        author,
+        totalFiles: 0,
+        pending: 0,
+        lastSubmittedAt: poster.createdAt,
       };
-    }),
-  );
+    }
 
-  const filtered = resolved.filter(Boolean);
+    authorsMap[authorId].totalFiles++;
+    if (attachment.reviewStatus === "pending") {
+      authorsMap[authorId].pending++;
+    }
 
-  // 3️⃣ এখন pagination (correct place)
-  const total = filtered.length;
-  const start = (page - 1) * limit;
-  const end = start + limit;
+    if (poster.createdAt > authorsMap[authorId].lastSubmittedAt) {
+      authorsMap[authorId].lastSubmittedAt = poster.createdAt;
+    }
+  }
 
-  return {
-    meta: {
-      page,
-      limit,
-      total,
-    },
-    data: filtered.slice(start, end),
-  };
+  return Object.values(authorsMap);
 };
-const get_assigned_abstract_details_from_db = async (
+
+/* =========================
+   AUTHOR SUBMISSIONS
+   ?type=pdf | image
+========================= */
+const get_author_submissions_from_db = async (
+  reviewerId: any,
+  authorId: any,
+  type?: "pdf" | "image",
+) => {
+  const reviewerObjectId = new Types.ObjectId(reviewerId);
+  const authorObjectId = new Types.ObjectId(authorId);
+
+  const assignments = await poster_assign_model
+    .find({ reviewerId: reviewerObjectId, status: "assigned" })
+    .lean();
+
+  const results: any[] = [];
+
+  for (const assign of assignments) {
+    const poster = await poster_model
+      .findOne(
+        {
+          _id: assign.posterId,
+          authorId: authorObjectId,
+          "attachments._id": assign.attachmentId,
+        },
+        { attachments: { $elemMatch: { _id: assign.attachmentId } } },
+      )
+      .lean();
+
+    if (!poster?.attachments?.length) continue;
+
+    const attachment = poster.attachments[0];
+    if (type && attachment.type !== type) continue;
+
+    results.push({
+      attachmentId: attachment._id,
+      title: attachment.name,
+      type: attachment.type,
+      reviewStatus: attachment.reviewStatus,
+      size: attachment.size,
+      uploadedAt: attachment.createdAt,
+    });
+  }
+
+  return results;
+};
+
+/* =========================
+   ATTACHMENT DETAILS
+========================= */
+const get_attachment_details_from_db = async (
   reviewerId: any,
   attachmentId: any,
 ) => {
   const reviewerObjectId = new Types.ObjectId(reviewerId);
   const attachmentObjectId = new Types.ObjectId(attachmentId);
 
-  // 1️⃣ validate assignment (security)
   const assign = await poster_assign_model
     .findOne({
       reviewerId: reviewerObjectId,
@@ -184,15 +201,10 @@ const get_assigned_abstract_details_from_db = async (
 
   if (!assign) return null;
 
-  // 2️⃣ find poster + embedded attachment
   const poster = await poster_model
     .findOne(
+      { _id: assign.posterId, "attachments._id": attachmentObjectId },
       {
-        _id: assign.posterId,
-        "attachments._id": attachmentObjectId,
-      },
-      {
-        title: 1,
         authorId: 1,
         createdAt: 1,
         attachments: { $elemMatch: { _id: attachmentObjectId } },
@@ -200,14 +212,10 @@ const get_assigned_abstract_details_from_db = async (
     )
     .lean();
 
-  if (!poster || !poster.attachments?.length) return null;
+  if (!poster?.attachments?.length) return null;
 
   const attachment = poster.attachments[0];
 
-  // only abstract
-  if (attachment.type !== "pdf") return null;
-
-  // 3️⃣ author profile
   const author = await UserProfile_Model.findOne(
     { accountId: poster.authorId },
     { name: 1, avatar: 1 },
@@ -216,19 +224,18 @@ const get_assigned_abstract_details_from_db = async (
   return {
     attachmentId: attachment._id,
     title: attachment.name,
+    type: attachment.type,
     fileUrl: attachment.url,
-    size: attachment.size,
     reviewStatus: attachment.reviewStatus,
     uploadedAt: poster.createdAt,
     dueDate: assign.dueDate,
-    author: {
-      name: author?.name || "",
-      avatar: author?.avatar || "",
-    },
+    author,
   };
 };
+
 export const reviewer_service = {
   get_reviewer_dashboard_from_db,
-  get_assigned_abstracts_from_db,
-  get_assigned_abstract_details_from_db,
+  get_reviewer_authors_from_db,
+  get_author_submissions_from_db,
+  get_attachment_details_from_db,
 };

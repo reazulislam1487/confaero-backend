@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { reviewer_controller } from "./reviewer.controller";
 import auth from "../../middlewares/auth";
 import eventAccess from "../../middlewares/eventAccess.middleware";
+import { reviewer_controller } from "./reviewer.controller";
 
 const reviewer_router = Router();
 
@@ -11,16 +11,24 @@ reviewer_router.get(
   eventAccess(),
   reviewer_controller.get_reviewer_dashboard,
 );
+
 reviewer_router.get(
-  "/assignments/abstracts/:eventId",
+  "/authors/:eventId",
   auth("ABSTRACT_REVIEWER"),
   eventAccess(),
-  // RequestValidator(reviewer_validations.get_assigned_abstracts),
-  reviewer_controller.get_assigned_abstracts,
+  reviewer_controller.get_reviewer_authors,
 );
+
 reviewer_router.get(
-  "/assignments/abstracts/attachment/:attachmentId",
+  "/authors/:authorId/submissions",
   auth("ABSTRACT_REVIEWER"),
-  reviewer_controller.get_assigned_abstract_details,
+  reviewer_controller.get_author_submissions,
 );
+
+reviewer_router.get(
+  "/attachments/:attachmentId",
+  auth("ABSTRACT_REVIEWER"),
+  reviewer_controller.get_attachment_details,
+);
+
 export default reviewer_router;
