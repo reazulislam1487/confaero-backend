@@ -86,9 +86,11 @@ const approve_attachment = catchAsync(async (req, res) => {
 });
 
 const reject_attachment = catchAsync(async (req, res) => {
+  const { reason } = req.body;
   const result = await reviewer_service.reject_attachment_from_db(
     req.user!.id,
     req.params.attachmentId,
+    reason,
   );
 
   manageResponse(res, {
@@ -100,9 +102,12 @@ const reject_attachment = catchAsync(async (req, res) => {
 });
 
 const revise_attachment = catchAsync(async (req, res) => {
+  const { reason } = req.body;
+
   const result = await reviewer_service.revise_attachment_from_db(
     req.user!.id,
     req.params.attachmentId,
+    reason,
   );
 
   manageResponse(res, {
@@ -114,9 +119,12 @@ const revise_attachment = catchAsync(async (req, res) => {
 });
 
 const flag_attachment_for_admin = catchAsync(async (req, res) => {
+  const { reason } = req.body;
+
   const result = await reviewer_service.flag_attachment_for_admin_from_db(
     req.user!.id,
     req.params.attachmentId,
+    reason,
   );
 
   manageResponse(res, {

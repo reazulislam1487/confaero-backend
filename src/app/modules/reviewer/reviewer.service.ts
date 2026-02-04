@@ -293,6 +293,7 @@ const update_attachment_status = async (
   posterId: Types.ObjectId,
   attachmentId: Types.ObjectId,
   status: string,
+  reason?: string,
 ) => {
   const poster = await poster_model
     .findOne(
@@ -310,7 +311,12 @@ const update_attachment_status = async (
   if (attachment.type === "pdf") {
     await poster_model.updateOne(
       { _id: posterId, "attachments._id": attachmentId },
-      { $set: { "attachments.$.reviewStatus": status } },
+      {
+        $set: {
+          "attachments.$.reviewStatus": status,
+          "attachments.$.reviewReason": reason,
+        },
+      },
     );
     return;
   }
@@ -321,6 +327,7 @@ const update_attachment_status = async (
       {
         $set: {
           "attachments.$.reviewStatus": status,
+          "attachments.$.reviewReason": reason,
           status: status === "approved" ? "accepted" : "pending",
         },
       },
@@ -351,18 +358,24 @@ const approve_attachment_from_db = async (
 const reject_attachment_from_db = async (
   reviewerId: any,
   attachmentId: any,
+  reason: string,
 ) => {
+  if (!reason?.trim()) {
+    throw new Error("Revision reason is required");
+  }
+
   const assign = await validate_assignment(reviewerId, attachmentId);
 
   await update_attachment_status(
     assign.posterId,
     assign.attachmentId,
     "rejected",
+    reason,
   );
 
   await poster_assign_model.updateOne(
     { _id: assign._id },
-    { $set: { status: "completed" } },
+    { $set: { status: "completed", reason } },
   );
 
   return { attachmentId };
@@ -371,13 +384,18 @@ const reject_attachment_from_db = async (
 const revise_attachment_from_db = async (
   reviewerId: any,
   attachmentId: any,
+  reason: string,
 ) => {
+  if (!reason?.trim()) {
+    throw new Error("Revision reason is required");
+  }
   const assign = await validate_assignment(reviewerId, attachmentId);
 
   await update_attachment_status(
     assign.posterId,
     assign.attachmentId,
-    "revision_required",
+    "revised",
+    reason,
   );
 
   return { attachmentId };
@@ -386,9 +404,20 @@ const revise_attachment_from_db = async (
 const flag_attachment_for_admin_from_db = async (
   reviewerId: any,
   attachmentId: any,
+  reason: string,
 ) => {
+  if (!reason?.trim()) {
+    throw new Error("Revision reason is required");
+  }
   const assign = await validate_assignment(reviewerId, attachmentId);
 
+  await update_attachment_status(
+    assign.posterId,
+    assign.attachmentId,
+    "flagged",
+    reason,
+  );
+  // update posterAssin
   await poster_assign_model.updateOne(
     { _id: assign._id },
     { $set: { status: "flagged" } },
