@@ -63,7 +63,7 @@ const get_accepted_posters_from_db = async (query: {
   const { search = "", page = 1, limit = 10 } = query;
 
   const filter: any = {
-    status: "pending",
+    status: "accepted",
   };
 
   if (search) {
@@ -114,7 +114,7 @@ const get_single_accepted_poster_from_db = async (posterId: any) => {
   const poster = await poster_model
     .findOne({
       _id: new Types.ObjectId(posterId),
-      status: "pending",
+      status: "accepted",
     })
     .lean();
 

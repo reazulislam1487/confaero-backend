@@ -30,5 +30,32 @@ reviewer_router.get(
   auth("ABSTRACT_REVIEWER"),
   reviewer_controller.get_attachment_details,
 );
+reviewer_router.patch(
+  "/attachments/:attachmentId/approve",
+  auth("ABSTRACT_REVIEWER"),
+  // eventAccess(),
+  reviewer_controller.approve_attachment,
+);
+
+reviewer_router.patch(
+  "/attachments/:attachmentId/reject",
+  auth("ABSTRACT_REVIEWER"),
+  // eventAccess(),
+  reviewer_controller.reject_attachment,
+);
+
+reviewer_router.patch(
+  "/attachments/:attachmentId/revise",
+  auth("ABSTRACT_REVIEWER"),
+  // eventAccess(),
+  reviewer_controller.revise_attachment,
+);
+
+reviewer_router.patch(
+  "/attachments/:attachmentId/flag-admin",
+  auth("ABSTRACT_REVIEWER"),
+  // eventAccess(),
+  reviewer_controller.flag_attachment_for_admin,
+);
 
 export default reviewer_router;

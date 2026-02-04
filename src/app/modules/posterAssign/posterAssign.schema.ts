@@ -11,7 +11,7 @@ const poster_assign_schema = new Schema<T_PosterAssign>(
     assignedBy: { type: Schema.Types.ObjectId, required: true },
     status: {
       type: String,
-      enum: ["assigned", "under_review", "reviewed", "reassigned"],
+      enum: ["assigned", "under_review", "reviewed", "reassigned", "flagged"],
       default: "assigned",
     },
   },

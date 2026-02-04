@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import { poster_assign_model } from "../posterAssign/posterAssign.schema";
 import { poster_model } from "../poster/poster.schema";
 import { UserProfile_Model } from "../user/user.schema";
+import { Account_Model } from "../auth/auth.schema";
 
 /* =========================
    DASHBOARD
@@ -102,15 +103,20 @@ const get_reviewer_authors_from_db = async (
     if (!attachment) continue;
 
     if (type && attachment.type !== type) continue;
+    const accountRole = await Account_Model.findById({ _id: poster.authorId });
 
     const authorId = poster.authorId.toString();
 
     if (!authorsMap[authorId]) {
-      const author = await UserProfile_Model.findOne(
+      const authorR = await UserProfile_Model.findOne(
         { accountId: poster.authorId },
-        { name: 1, avatar: 1, role: 1 },
+        { name: 1, avatar: 1, _id: 0 },
       ).lean();
 
+      const author = {
+        ...authorR,
+        role: accountRole?.activeRole,
+      };
       authorsMap[authorId] = {
         authorId,
         author,
@@ -187,6 +193,8 @@ const get_author_submissions_from_db = async (
       { name: 1, avatar: 1 },
     ).lean();
 
+    const account = await Account_Model.findById({ _id: poster.authorId });
+
     // 5️⃣ final UI-ready object
     results.push({
       attachmentId: attachment._id,
@@ -202,6 +210,7 @@ const get_author_submissions_from_db = async (
       author: {
         name: author?.name || "",
         avatar: author?.avatar || "",
+        role: account?.activeRole || "Attendee",
       },
 
       dueDate: assign.dueDate,
@@ -244,12 +253,16 @@ const get_attachment_details_from_db = async (
   if (!poster?.attachments?.length) return null;
 
   const attachment = poster.attachments[0];
+  const account = await Account_Model.findById({ _id: poster.authorId });
 
-  const author = await UserProfile_Model.findOne(
+  const authorE = await UserProfile_Model.findOne(
     { accountId: poster.authorId },
     { name: 1, avatar: 1 },
   ).lean();
-
+  const author = {
+    ...authorE,
+    role: account?.activeRole,
+  };
   return {
     attachmentId: attachment._id,
     title: attachment.name,
@@ -261,10 +274,135 @@ const get_attachment_details_from_db = async (
     author,
   };
 };
+// 4 actions
+const validate_assignment = async (
+  reviewerId: string,
+  attachmentId: string,
+) => {
+  const assign = await poster_assign_model.findOne({
+    reviewerId: new Types.ObjectId(reviewerId),
+    attachmentId: new Types.ObjectId(attachmentId),
+    status: "assigned",
+  });
 
+  if (!assign) throw new Error("Not authorized");
+  return assign;
+};
+
+const update_attachment_status = async (
+  posterId: Types.ObjectId,
+  attachmentId: Types.ObjectId,
+  status: string,
+) => {
+  const poster = await poster_model
+    .findOne(
+      { _id: posterId, "attachments._id": attachmentId },
+      { attachments: { $elemMatch: { _id: attachmentId } } },
+    )
+    .lean();
+
+  if (!poster || !poster.attachments?.length) {
+    throw new Error("Poster or attachment not found");
+  }
+
+  const attachment = poster.attachments[0];
+
+  if (attachment.type === "pdf") {
+    await poster_model.updateOne(
+      { _id: posterId, "attachments._id": attachmentId },
+      { $set: { "attachments.$.reviewStatus": status } },
+    );
+    return;
+  }
+
+  if (attachment.type === "image") {
+    await poster_model.updateOne(
+      { _id: posterId, "attachments._id": attachmentId },
+      {
+        $set: {
+          "attachments.$.reviewStatus": status,
+          status: status === "approved" ? "accepted" : "pending",
+        },
+      },
+    );
+    return;
+  }
+};
+const approve_attachment_from_db = async (
+  reviewerId: any,
+  attachmentId: any,
+) => {
+  const assign = await validate_assignment(reviewerId, attachmentId);
+
+  await update_attachment_status(
+    assign.posterId,
+    assign.attachmentId,
+    "approved",
+  );
+
+  await poster_assign_model.updateOne(
+    { _id: assign._id },
+    { $set: { status: "completed" } },
+  );
+
+  return { attachmentId };
+};
+
+const reject_attachment_from_db = async (
+  reviewerId: any,
+  attachmentId: any,
+) => {
+  const assign = await validate_assignment(reviewerId, attachmentId);
+
+  await update_attachment_status(
+    assign.posterId,
+    assign.attachmentId,
+    "rejected",
+  );
+
+  await poster_assign_model.updateOne(
+    { _id: assign._id },
+    { $set: { status: "completed" } },
+  );
+
+  return { attachmentId };
+};
+
+const revise_attachment_from_db = async (
+  reviewerId: any,
+  attachmentId: any,
+) => {
+  const assign = await validate_assignment(reviewerId, attachmentId);
+
+  await update_attachment_status(
+    assign.posterId,
+    assign.attachmentId,
+    "revision_required",
+  );
+
+  return { attachmentId };
+};
+
+const flag_attachment_for_admin_from_db = async (
+  reviewerId: any,
+  attachmentId: any,
+) => {
+  const assign = await validate_assignment(reviewerId, attachmentId);
+
+  await poster_assign_model.updateOne(
+    { _id: assign._id },
+    { $set: { status: "flagged" } },
+  );
+
+  return { attachmentId };
+};
 export const reviewer_service = {
   get_reviewer_dashboard_from_db,
   get_reviewer_authors_from_db,
   get_author_submissions_from_db,
   get_attachment_details_from_db,
+  approve_attachment_from_db,
+  reject_attachment_from_db,
+  revise_attachment_from_db,
+  flag_attachment_for_admin_from_db,
 };

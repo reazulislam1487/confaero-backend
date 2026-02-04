@@ -37,25 +37,7 @@ const create_new_poster_assign_into_db = async (payload: {
 
   return assignment;
 };
-// const get_unassigned_files = async (eventId: any) => {
-//   const assignedIds = await poster_assign_model.distinct("attachmentId", {
-//     eventId: new Types.ObjectId(eventId),
-//   });
 
-//   return poster_model.find(
-//     {
-//       eventId,
-//       "attachments._id": { $nin: assignedIds },
-//     },
-//     {
-//       title: 1,
-//       authorId: 1,
-//       attachments: 1,
-//       dueDate: 1,
-//       createdAt: 1,
-//     },
-//   );
-// };
 const get_unassigned_files = async (eventId: any) => {
   const assignedIds = await poster_assign_model.distinct("attachmentId", {
     eventId: new Types.ObjectId(eventId),

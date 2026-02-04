@@ -70,10 +70,69 @@ const get_attachment_details = catchAsync(async (req, res) => {
     data,
   });
 });
+// 4 actions
+const approve_attachment = catchAsync(async (req, res) => {
+  const result = await reviewer_service.approve_attachment_from_db(
+    req.user!.id,
+    req.params.attachmentId,
+  );
 
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Attachment approved successfully",
+    data: result,
+  });
+});
+
+const reject_attachment = catchAsync(async (req, res) => {
+  const result = await reviewer_service.reject_attachment_from_db(
+    req.user!.id,
+    req.params.attachmentId,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Attachment rejected successfully",
+    data: result,
+  });
+});
+
+const revise_attachment = catchAsync(async (req, res) => {
+  const result = await reviewer_service.revise_attachment_from_db(
+    req.user!.id,
+    req.params.attachmentId,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Attachment marked for revision",
+    data: result,
+  });
+});
+
+const flag_attachment_for_admin = catchAsync(async (req, res) => {
+  const result = await reviewer_service.flag_attachment_for_admin_from_db(
+    req.user!.id,
+    req.params.attachmentId,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Attachment flagged for admin",
+    data: result,
+  });
+});
 export const reviewer_controller = {
   get_reviewer_dashboard,
   get_reviewer_authors,
   get_author_submissions,
   get_attachment_details,
+  flag_attachment_for_admin,
+  revise_attachment,
+  reject_attachment,
+  approve_attachment,
 };

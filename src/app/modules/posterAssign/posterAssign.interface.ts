@@ -4,7 +4,8 @@ export type T_PosterAssignStatus =
   | "assigned"
   | "under_review"
   | "reviewed"
-  | "reassigned";
+  | "reassigned"
+  | "flagged";
 
 export type T_PosterAssign = {
   eventId: Types.ObjectId;
