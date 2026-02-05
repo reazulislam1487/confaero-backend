@@ -4,6 +4,7 @@ import { poster_model } from "../poster/poster.schema";
 import { UserProfile_Model } from "../user/user.schema";
 import { Event_Model } from "../superAdmin/event.schema";
 import { Account_Model } from "../auth/auth.schema";
+import sendMail from "../../utils/mail_sender";
 
 const create_new_poster_assign_into_db = async (payload: {
   eventId: string;
@@ -747,6 +748,68 @@ const get_assigned_abstracts_by_reviewer_test = async (reviewerId: string) => {
   ]);
 };
 
+// send remainder using mail
+const send_review_reminder_into_db = async (assignmentId: any) => {
+  // 1️⃣ assignment
+  const assign = await poster_assign_model
+    .findById(new Types.ObjectId(assignmentId))
+    .lean();
+
+  if (!assign) {
+    throw new Error("Assignment not found");
+  }
+
+  // 2️⃣ attachment status check
+  const poster = await poster_model
+    .findOne(
+      {
+        _id: assign.posterId,
+        "attachments._id": assign.attachmentId,
+      },
+      {
+        attachments: { $elemMatch: { _id: assign.attachmentId } },
+      },
+    )
+    .lean();
+
+  if (!poster?.attachments?.length) {
+    throw new Error("Attachment not found");
+  }
+
+  const attachment = poster.attachments[0];
+
+  // if (attachment.reviewStatus !== "assigned") {
+  //   throw new Error("Reminder can be sent only for pending reviews");
+  // }
+
+  // 3️⃣ reviewer email
+  const reviewer = await Account_Model.findById(assign.reviewerId)
+    .select("email")
+    .lean();
+
+  if (!reviewer?.email) {
+    throw new Error("Reviewer email not found");
+  }
+
+  console.log(reviewer.email);
+
+  // 4️⃣ send mail
+  await sendMail({
+    to: reviewer.email,
+    subject: "Review Reminder",
+    textBody: `
+You have a pending review.
+
+File: ${attachment.name}
+Due Date: ${assign.dueDate ?? "N/A"}
+
+    `,
+    htmlBody: `
+      <p>Please complete the review.</p>
+    `,
+  });
+  return { assignmentId };
+};
 export const poster_assign_service = {
   create_new_poster_assign_into_db,
   reassign_poster_to_reviewer_into_db,
@@ -759,4 +822,6 @@ export const poster_assign_service = {
   search_event_speakers,
   search_unassigned_files_for_assign,
   get_assigned_abstracts_by_reviewer_test,
+
+  send_review_reminder_into_db,
 };

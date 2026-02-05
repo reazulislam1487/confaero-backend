@@ -167,6 +167,20 @@ const search_unassigned_files = catchAsync(async (req, res) => {
   });
 });
 
+// send mail
+const send_review_reminder = catchAsync(async (req, res) => {
+  const { assignmentId } = req.params;
+
+  const result =
+    await poster_assign_service.send_review_reminder_into_db(assignmentId);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Reminder sent successfully",
+    data: result,
+  });
+});
 export const poster_assign_controller = {
   create_new_poster_assign,
   get_unassigned_files,
@@ -178,4 +192,5 @@ export const poster_assign_controller = {
   search_speakers,
   search_unassigned_files,
   reassign_poster_to_reviewer,
+  send_review_reminder,
 };
