@@ -10,8 +10,12 @@ import { Account_Model } from "../auth/auth.schema";
 const get_reviewer_dashboard_from_db = async (reviewerId: any) => {
   const reviewerObjectId = new Types.ObjectId(reviewerId);
 
+  // 🔹 assigned + completed দুটোই আনতে হবে
   const assignments = await poster_assign_model
-    .find({ reviewerId: reviewerObjectId, status: "assigned" })
+    .find({
+      reviewerId: reviewerObjectId,
+      status: { $in: ["assigned", "completed"] },
+    })
     .sort({ createdAt: -1 })
     .lean();
 
@@ -36,10 +40,16 @@ const get_reviewer_dashboard_from_db = async (reviewerId: any) => {
 
     const attachment = poster.attachments[0];
 
+    // 🔹 type based counting (PDF ≠ IMAGE)
     if (attachment.type === "pdf") totalAbstracts++;
     if (attachment.type === "image") totalPosters++;
-    if (attachment.reviewStatus === "reviewed") reviewed++;
 
+    // 🔹 reviewed = reviewer এই attachment শেষ করেছে
+    if ((assign.status as string) === "completed") {
+      reviewed++;
+    }
+
+    // 🔹 latest 5 tasks (review হোক বা না হোক)
     if (latestDocuments.length < 5) {
       const author = await UserProfile_Model.findOne(
         { accountId: poster.authorId },
@@ -50,7 +60,7 @@ const get_reviewer_dashboard_from_db = async (reviewerId: any) => {
         attachmentId: attachment._id,
         type: attachment.type,
         title: attachment.name,
-        reviewStatus: attachment.reviewStatus,
+        reviewStatus: attachment.reviewStatus || "pending",
         assignedAt: assign.createdAt,
         url: attachment.url,
         author: {
@@ -65,10 +75,10 @@ const get_reviewer_dashboard_from_db = async (reviewerId: any) => {
 
   return {
     summary: {
-      totalAbstracts,
-      totalPosters,
-      totalAssigned,
-      reviewed,
+      totalAbstracts, // PDF tasks
+      totalPosters, // IMAGE tasks
+      totalAssigned, // total attachments assigned
+      reviewed, // completed assignments
       remaining: totalAssigned - reviewed,
       progress:
         totalAssigned === 0 ? 0 : Math.round((reviewed / totalAssigned) * 100),
@@ -76,7 +86,6 @@ const get_reviewer_dashboard_from_db = async (reviewerId: any) => {
     latestDocuments,
   };
 };
-
 /* =========================
    FIRST PAGE – AUTHORS LIST
    ?type=pdf | image
@@ -425,6 +434,73 @@ const flag_attachment_for_admin_from_db = async (
 
   return { attachmentId };
 };
+
+const review_image_attachment_from_db = async (
+  reviewerId: any,
+  attachmentId: any,
+  payload: any,
+) => {
+  const assign = await poster_assign_model.findOne({
+    reviewerId: new Types.ObjectId(reviewerId),
+    attachmentId: new Types.ObjectId(attachmentId),
+    status: "assigned",
+  });
+
+  if (!assign) throw new Error("Not authorized");
+
+  const poster = await poster_model.findOne(
+    { _id: assign.posterId, "attachments._id": assign.attachmentId },
+    { attachments: { $elemMatch: { _id: assign.attachmentId } } },
+  );
+
+  if (!poster || !poster.attachments?.length) {
+    throw new Error("Attachment not found");
+  }
+
+  const attachment = poster.attachments[0];
+
+  if (attachment.type !== "image") {
+    throw new Error("Only image attachments can be reviewed here");
+  }
+
+  if (!payload.overall && !payload.reviewReason?.trim()) {
+    throw new Error("Review reason is required");
+  }
+
+  const attachmentStatus = payload.overall
+    ? "approved"
+    : payload.reviewStatus || "rejected";
+
+  await poster_model.updateOne(
+    { _id: assign.posterId, "attachments._id": assign.attachmentId },
+    {
+      $set: {
+        "attachments.$.reviewScore": {
+          originality: payload.originality,
+          scientificRigor: payload.scientificRigor,
+          clarity: payload.clarity,
+          visualDesign: payload.visualDesign,
+          impact: payload.impact,
+          presentation: payload.presentation,
+          overall: payload.overall,
+        },
+        "attachments.$.reviewStatus": attachmentStatus,
+        "attachments.$.reviewReason": payload.overall
+          ? null
+          : payload.reviewReason,
+        status: payload.overall ? "accepted" : "pending",
+      },
+    },
+  );
+
+  await poster_assign_model.updateOne(
+    { _id: assign._id },
+    { $set: { status: "completed" } },
+  );
+
+  return { attachmentId };
+};
+
 export const reviewer_service = {
   get_reviewer_dashboard_from_db,
   get_reviewer_authors_from_db,
@@ -434,4 +510,5 @@ export const reviewer_service = {
   reject_attachment_from_db,
   revise_attachment_from_db,
   flag_attachment_for_admin_from_db,
+  review_image_attachment_from_db,
 };

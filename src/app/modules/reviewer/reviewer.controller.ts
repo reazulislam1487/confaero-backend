@@ -134,6 +134,23 @@ const flag_attachment_for_admin = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const review_image_attachment = catchAsync(async (req, res) => {
+  const result = await reviewer_service.review_image_attachment_from_db(
+    req.user!.id,
+    req.params.attachmentId,
+    req.body,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Poster image reviewed successfully",
+
+    data: result,
+  });
+});
+
 export const reviewer_controller = {
   get_reviewer_dashboard,
   get_reviewer_authors,
@@ -143,4 +160,5 @@ export const reviewer_controller = {
   revise_attachment,
   reject_attachment,
   approve_attachment,
+  review_image_attachment,
 };

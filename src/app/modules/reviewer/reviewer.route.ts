@@ -57,5 +57,9 @@ reviewer_router.patch(
   // eventAccess(),
   reviewer_controller.flag_attachment_for_admin,
 );
-
+reviewer_router.post(
+  "/attachments/:attachmentId/image-review",
+  auth("ABSTRACT_REVIEWER"),
+  reviewer_controller.review_image_attachment,
+);
 export default reviewer_router;

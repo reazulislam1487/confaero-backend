@@ -117,7 +117,36 @@ const get_assigned_files = async (eventId: any, type: "pdf" | "image") => {
       );
 
       if (!attachment) return null;
-      console.log(attachment);
+
+      /* -----------------------
+         SCORE CALCULATION
+      ----------------------- */
+      let averageScore: number | null = null;
+
+      if (
+        attachment.reviewScore &&
+        typeof attachment.reviewScore === "object"
+      ) {
+        const numericScores = Object.values(attachment.reviewScore).filter(
+          (v) => typeof v === "number",
+        );
+
+        if (numericScores.length) {
+          averageScore = Number(
+            (
+              numericScores.reduce((sum, v) => sum + v, 0) /
+              numericScores.length
+            ).toFixed(2),
+          );
+        }
+      }
+
+      /* -----------------------
+         STATUS RESOLUTION
+      ----------------------- */
+      const status =
+        assign.status === "assigned" ? "assigned" : attachment.reviewStatus;
+
       return {
         assignmentId: assign._id,
         posterId: poster._id,
@@ -130,21 +159,128 @@ const get_assigned_files = async (eventId: any, type: "pdf" | "image") => {
 
         dueDate: assign.dueDate,
 
-        status: attachment.reviewStatus,
-        reviewReason: attachment.reviewReason,
+        status,
+        reviewReason: attachment.reviewReason || null,
 
         file: {
           url: attachment.url,
           name: attachment.name,
           size: attachment.size,
           type: attachment.type,
+          status,
+          score: averageScore,
         },
 
         createdAt: assign.createdAt,
       };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .sort((a: any, b: any) => {
+      const scoreA = a.file.score;
+      const scoreB = b.file.score;
+
+      if (scoreA === null && scoreB === null) return 0;
+      if (scoreA === null) return 1; // null নিচে যাবে
+      if (scoreB === null) return -1;
+
+      return scoreB - scoreA; // বেশি score আগে
+    });
 };
+
+// const get_assigned_files = async (eventId: any, type: "pdf" | "image") => {
+//   const assigns = await poster_assign_model
+//     .find({ eventId: new Types.ObjectId(eventId) })
+//     .sort({ createdAt: -1 })
+//     .lean();
+
+//   if (!assigns.length) return [];
+
+//   const posterIds = assigns.map((a) => a.posterId);
+//   const reviewerIds = assigns.map((a) => a.reviewerId);
+
+//   const posters = await poster_model
+//     .find(
+//       { _id: { $in: posterIds } },
+//       { title: 1, authorId: 1, attachments: 1 },
+//     )
+//     .lean();
+
+//   const posterMap = new Map(posters.map((p) => [p._id.toString(), p]));
+
+//   const authorIds = posters.map((p) => p.authorId);
+
+//   const profiles = await UserProfile_Model.find({
+//     accountId: { $in: [...authorIds, ...reviewerIds] },
+//   })
+//     .select("accountId name avatar")
+//     .lean();
+
+//   const profileMap = new Map(profiles.map((p) => [p.accountId.toString(), p]));
+
+//   return assigns
+//     .map((assign) => {
+//       const poster = posterMap.get(assign.posterId.toString());
+//       if (!poster) return null;
+
+//       const attachment = poster.attachments.find(
+//         (a: any) =>
+//           a._id.toString() === assign.attachmentId.toString() &&
+//           a.type === type,
+//       );
+
+//       if (!attachment) return null;
+
+//       const score = attachment.reviewScore;
+
+//       if (!score || typeof score !== "object") {
+//         return {
+//           ...attachment,
+//           averageScore: null,
+//         };
+//       }
+
+//       const numericScores = Object.values(score).filter(
+//         (v) => typeof v === "number",
+//       );
+
+//       const averageScore =
+//         numericScores.length > 0
+//           ? Number(
+//               (
+//                 numericScores.reduce((sum, v) => sum + v, 0) /
+//                 numericScores.length
+//               ).toFixed(2),
+//             )
+//           : null;
+//       return {
+//         assignmentId: assign._id,
+//         posterId: poster._id,
+//         attachmentId: attachment._id,
+
+//         title: poster.title,
+
+//         author: profileMap.get(poster.authorId.toString()) || null,
+//         reviewer: profileMap.get(assign.reviewerId.toString()) || null,
+
+//         dueDate: assign.dueDate,
+
+//         status: attachment.reviewStatus,
+//         reviewReason: attachment.reviewReason,
+
+//         file: {
+//           url: attachment.url,
+//           name: attachment.name,
+//           size: attachment.size,
+//           type: attachment.type,
+//           status: attachment.reviewStatus,
+//           score: averageScore,
+//         },
+
+//         createdAt: assign.createdAt,
+//       };
+//     })
+//     .filter(Boolean);
+// };
 
 /* REPORTED FILES */
 const get_reported_files = async (eventId: any) => {
@@ -213,7 +349,6 @@ const get_reported_files = async (eventId: any) => {
 
         author: {
           author,
-          name: author?.name || "",
         },
 
         reviewer: {

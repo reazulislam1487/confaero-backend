@@ -14,6 +14,15 @@ export type T_Attachment = {
   size?: number;
   reviewStatus: Status;
   reviewReason?: string;
+  reviewScore?: {
+    originality: number;
+    scientificRigor: number;
+    clarity: number;
+    visualDesign: number;
+    impact: number;
+    presentation: number;
+    overall: boolean;
+  };
   _id: string;
 };
 

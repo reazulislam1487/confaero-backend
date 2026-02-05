@@ -39,6 +39,18 @@ const poster_schema = new Schema<T_Poster>(
           },
           // _id: String,
           reviewReason: String,
+
+          reviewScore: {
+            originality: { type: Number, min: 0, max: 10 },
+            scientificRigor: { type: Number, min: 0, max: 10 },
+            clarity: { type: Number, min: 0, max: 10 },
+            visualDesign: { type: Number, min: 0, max: 10 },
+            impact: { type: Number, min: 0, max: 10 },
+            presentation: { type: Number, min: 0, max: 10 },
+
+            // final reviewer decision (Yes / No)
+            overall: { type: Boolean },
+          },
         },
       ],
       default: [],
