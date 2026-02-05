@@ -11,6 +11,12 @@ poster_assign_router.post(
   eventAccess(),
   poster_assign_controller.create_new_poster_assign,
 );
+poster_assign_router.post(
+  "/reassign/:eventId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  eventAccess(),
+  poster_assign_controller.reassign_poster_to_reviewer,
+);
 
 poster_assign_router.get(
   "/unassigned/:eventId",

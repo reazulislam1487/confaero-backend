@@ -21,6 +21,26 @@ const create_new_poster_assign = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const reassign_poster_to_reviewer = catchAsync(async (req, res) => {
+  const assignedBy = req.user!.id;
+  const { eventId } = req.params;
+
+  const result =
+    await poster_assign_service.reassign_poster_to_reviewer_into_db({
+      ...req.body,
+      eventId,
+      assignedBy,
+    });
+
+  manageResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Poster reassigned to reviewer successfully",
+    data: result,
+  });
+});
+
 const get_unassigned_files = catchAsync(async (req, res) => {
   const { eventId } = req.params;
 
@@ -157,4 +177,5 @@ export const poster_assign_controller = {
   get_reviewer_stats,
   search_speakers,
   search_unassigned_files,
+  reassign_poster_to_reviewer,
 };

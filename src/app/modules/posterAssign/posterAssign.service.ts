@@ -38,6 +38,66 @@ const create_new_poster_assign_into_db = async (payload: {
   return assignment;
 };
 
+const reassign_poster_to_reviewer_into_db = async (payload: {
+  eventId: string;
+  posterId: string;
+  attachmentId: string;
+  reviewerId: string;
+  assignedBy: string;
+  dueDate?: any;
+}) => {
+  // 1️⃣ Find attachment & validate reported status
+  const poster = await poster_model
+    .findOne(
+      {
+        _id: new Types.ObjectId(payload.posterId),
+        "attachments._id": new Types.ObjectId(payload.attachmentId),
+      },
+      {
+        attachments: { $elemMatch: { _id: payload.attachmentId } },
+      },
+    )
+    .lean();
+
+  if (!poster?.attachments?.length) {
+    throw new Error("Attachment not found");
+  }
+
+  const attachment = poster.attachments[0];
+
+  if (!["rejected", "revised", "flagged"].includes(attachment.reviewStatus)) {
+    throw new Error(
+      "Reassign is allowed only for rejected, revised or flagged files",
+    );
+  }
+
+  // 2️⃣ Prevent duplicate assignment to same reviewer
+  const alreadyAssigned = await poster_assign_model.findOne({
+    eventId: new Types.ObjectId(payload.eventId),
+    posterId: new Types.ObjectId(payload.posterId),
+    attachmentId: new Types.ObjectId(payload.attachmentId),
+    reviewerId: new Types.ObjectId(payload.reviewerId),
+  });
+
+  if (alreadyAssigned) {
+    throw new Error("This reviewer is already assigned to this file");
+  }
+
+  // 3️⃣ Create NEW assignment (do not touch old one)
+  const newAssignment = await poster_assign_model.create({
+    eventId: new Types.ObjectId(payload.eventId),
+    posterId: new Types.ObjectId(payload.posterId),
+    attachmentId: new Types.ObjectId(payload.attachmentId),
+    reviewerId: new Types.ObjectId(payload.reviewerId),
+    assignedBy: new Types.ObjectId(payload.assignedBy),
+    dueDate: payload.dueDate ? new Date(payload.dueDate) : undefined,
+    status: "assigned",
+    isReassigned: true, // optional but useful
+  });
+
+  return newAssignment;
+};
+
 const get_unassigned_files = async (eventId: any) => {
   const assignedIds = await poster_assign_model.distinct("attachmentId", {
     eventId: new Types.ObjectId(eventId),
@@ -689,6 +749,7 @@ const get_assigned_abstracts_by_reviewer_test = async (reviewerId: string) => {
 
 export const poster_assign_service = {
   create_new_poster_assign_into_db,
+  reassign_poster_to_reviewer_into_db,
   get_unassigned_files,
   get_assigned_files,
   get_reported_files,
