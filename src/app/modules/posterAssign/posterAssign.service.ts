@@ -380,17 +380,195 @@ const reassign_reviewer = async (payload: {
   });
 };
 
-/* REVIEWER STATS */
 const get_reviewer_stats = async (eventId: any) => {
   return poster_assign_model.aggregate([
-    { $match: { eventId: new Types.ObjectId(eventId) } },
+    /* =========================
+       1️⃣ Event filter
+    ========================= */
+    {
+      $match: {
+        eventId: new Types.ObjectId(eventId),
+      },
+    },
+
+    /* =========================
+       2️⃣ Join poster (for attachment)
+    ========================= */
+    {
+      $lookup: {
+        from: "posters",
+        localField: "posterId",
+        foreignField: "_id",
+        as: "poster",
+      },
+    },
+    { $unwind: "$poster" },
+
+    /* =========================
+       3️⃣ Extract assigned attachment
+    ========================= */
+    {
+      $addFields: {
+        attachment: {
+          $first: {
+            $filter: {
+              input: "$poster.attachments",
+              as: "a",
+              cond: { $eq: ["$$a._id", "$attachmentId"] },
+            },
+          },
+        },
+      },
+    },
+
+    /* =========================
+       4️⃣ Extract IMAGE numeric scores
+    ========================= */
+    {
+      $addFields: {
+        numericScores: {
+          $cond: [
+            {
+              $and: [
+                { $eq: ["$status", "completed"] },
+                { $eq: ["$attachment.type", "image"] },
+                { $ne: ["$attachment.reviewScore", null] },
+              ],
+            },
+            {
+              $map: {
+                input: {
+                  $filter: {
+                    input: { $objectToArray: "$attachment.reviewScore" },
+                    as: "kv",
+                    cond: {
+                      $in: [
+                        { $type: "$$kv.v" },
+                        ["int", "long", "double", "decimal"],
+                      ],
+                    },
+                  },
+                },
+                as: "item",
+                in: "$$item.v",
+              },
+            },
+            [],
+          ],
+        },
+      },
+    },
+
+    /* =========================
+       5️⃣ Group by reviewer (accountId)
+    ========================= */
     {
       $group: {
-        _id: "$reviewerId",
+        _id: "$reviewerId", // reviewerId === accountId
+
         assigned: { $sum: 1 },
+
         completed: {
-          $sum: { $cond: [{ $eq: ["$status", "reviewed"] }, 1, 0] },
+          $sum: {
+            $cond: [{ $eq: ["$status", "completed"] }, 1, 0],
+          },
         },
+
+        allScores: { $push: "$numericScores" },
+      },
+    },
+
+    /* =========================
+       6️⃣ Flatten scores
+    ========================= */
+    {
+      $addFields: {
+        flatScores: {
+          $reduce: {
+            input: "$allScores",
+            initialValue: [],
+            in: { $concatArrays: ["$$value", "$$this"] },
+          },
+        },
+      },
+    },
+
+    /* =========================
+       7️⃣ Avg Score
+    ========================= */
+    {
+      $addFields: {
+        avgScore: {
+          $cond: [
+            { $eq: [{ $size: "$flatScores" }, 0] },
+            null,
+            { $round: [{ $avg: "$flatScores" }, 2] },
+          ],
+        },
+      },
+    },
+
+    /* =========================
+       8️⃣ Progress %
+    ========================= */
+    {
+      $addFields: {
+        progress: {
+          $cond: [
+            { $eq: ["$assigned", 0] },
+            0,
+            {
+              $round: [
+                {
+                  $multiply: [{ $divide: ["$completed", "$assigned"] }, 100],
+                },
+                0,
+              ],
+            },
+          ],
+        },
+      },
+    },
+
+    /* =========================
+       9️⃣ Join USER PROFILE (SOURCE OF TRUTH)
+    ========================= */
+    {
+      $lookup: {
+        from: "user_profiles",
+        localField: "_id", // reviewerId
+        foreignField: "accountId", // accountId
+        as: "profile",
+      },
+    },
+    { $unwind: { path: "$profile", preserveNullAndEmptyArrays: true } },
+
+    /* =========================
+       🔟 Final UI-ready shape
+    ========================= */
+    {
+      $project: {
+        reviewerId: "$_id",
+
+        name: "$profile.name",
+        avatar: "$profile.avatar",
+        email: "$profile.contact.email",
+        assigned: 1,
+        completed: 1,
+        progress: 1,
+        avgScore: 1,
+
+        _id: 0,
+      },
+    },
+
+    /* =========================
+       1️⃣1️⃣ Sort (best reviewers first)
+    ========================= */
+    {
+      $sort: {
+        avgScore: -1,
+        completed: -1,
       },
     },
   ]);
