@@ -3,6 +3,7 @@ import { poster_assign_model } from "../posterAssign/posterAssign.schema";
 import { poster_model } from "../poster/poster.schema";
 import { UserProfile_Model } from "../user/user.schema";
 import { Account_Model } from "../auth/auth.schema";
+import { send_revision_mail } from "./utilities/send_revision_mail";
 
 /* =========================
    DASHBOARD
@@ -370,7 +371,7 @@ const reject_attachment_from_db = async (
   reason: string,
 ) => {
   if (!reason?.trim()) {
-    throw new Error("Revision reason is required");
+    throw new Error("Reject reason is required");
   }
 
   const assign = await validate_assignment(reviewerId, attachmentId);
@@ -406,7 +407,7 @@ const revise_attachment_from_db = async (
     "revised",
     reason,
   );
-
+  await send_revision_mail(assign.posterId, assign.attachmentId, reason);
   return { attachmentId };
 };
 
