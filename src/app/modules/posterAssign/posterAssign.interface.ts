@@ -1,11 +1,6 @@
 import { Types } from "mongoose";
 
-export type T_PosterAssignStatus =
-  | "assigned"
-  | "under_review"
-  | "reviewed"
-  | "reassigned"
-  | "flagged";
+export type T_PosterAssignStatus = "assigned" | "completed";
 
 export type T_PosterAssign = {
   eventId: Types.ObjectId;

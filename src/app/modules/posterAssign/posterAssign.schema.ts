@@ -15,7 +15,7 @@ const poster_assign_schema = new Schema<T_PosterAssign>(
     },
     status: {
       type: String,
-      enum: ["assigned", "under_review", "reviewed", "reassigned", "flagged"],
+      enum: ["assigned", "completed"],
       default: "assigned",
     },
   },
