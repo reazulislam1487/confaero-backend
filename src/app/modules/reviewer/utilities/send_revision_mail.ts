@@ -18,7 +18,7 @@ export const send_revision_mail = async (
   // 2. Author profile থেকে email নাও
   const authorProfile = await UserProfile_Model.findOne(
     { accountId: poster!.authorId },
-    { email: 1, name: 1 },
+    { contact: 1, name: 1 },
   ).lean();
 
   const email = authorProfile?.contact?.email;
@@ -26,14 +26,14 @@ export const send_revision_mail = async (
   if (!email) {
     throw new Error("Author email not found");
   }
-
+  console.log(email);
   // 3. Simple email
   await sendMail({
     to: email,
     subject: "Poster Revision Required",
     textBody: "here is the text",
     htmlBody: `
-      Hi ${authorProfile!.name},<br/><br/>
+     ${authorProfile!.name},<br/><br/>
 
       Your poster "<b>${poster?.title}</b>" requires revision.<br/>
       <b>Reason:</b> ${reason}<br/><br/>

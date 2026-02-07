@@ -9,7 +9,6 @@ async function main() {
   await mongoose.connect(configs.db_url!);
 
   const server = http.createServer(app);
-
   //  init socket
   initSocket(server);
 

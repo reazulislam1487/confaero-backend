@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 
 export type Status =
   | "pending"
+  | "assigned"
   | "accepted"
   | "revised"
   | "reviewed"

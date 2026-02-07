@@ -34,7 +34,14 @@ const poster_schema = new Schema<T_Poster>(
 
           reviewStatus: {
             type: String,
-            enum: ["pending", "approved", "revised", "flagged", "rejected"],
+            enum: [
+              "pending",
+              "assigned",
+              "approved",
+              "revised",
+              "flagged",
+              "rejected",
+            ],
             default: "pending",
           },
           // _id: String,

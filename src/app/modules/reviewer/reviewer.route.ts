@@ -62,4 +62,6 @@ reviewer_router.post(
   auth("ORGANIZER", "SUPER_ADMIN", "ABSTRACT_REVIEWER"),
   reviewer_controller.review_image_attachment,
 );
+
+
 export default reviewer_router;

@@ -110,6 +110,112 @@ const get_accepted_posters_from_db = async (query: {
   };
 };
 
+const get_revised_posters_from_db = async (
+  authorId: any,
+  query: {
+    search?: string;
+    page?: number;
+    limit?: number;
+  },
+) => {
+  const { search = "", page = 1, limit = 10 } = query;
+
+  const filter: any = {
+    authorId,
+    "attachments.reviewStatus": "revised",
+  };
+
+  if (search) {
+    filter.title = { $regex: search, $options: "i" };
+  }
+
+  const skip = (page - 1) * limit;
+
+  // 1️⃣ posters
+  const posters = await poster_model
+    .find(filter)
+    .sort({ updatedAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .select("_id eventId authorId title abstract banner dueDate attachments")
+    .lean();
+
+  // 2️⃣ author profiles (single author, but keep structure consistent)
+  const profiles = await UserProfile_Model.findOne(
+    { accountId: authorId },
+    { accountId: 1, name: 1, avatar: 1 },
+  ).lean();
+
+  // 3️⃣ filter revised attachments only
+  const data = posters.map((poster) => ({
+    _id: poster._id,
+    eventId: poster.eventId,
+    title: poster.title,
+    abstract: poster.abstract,
+    banner: poster.banner,
+    dueDate: poster.dueDate,
+    author: profiles || null,
+    attachments: poster.attachments.filter(
+      (att) => att.reviewStatus === "revised",
+    ),
+  }));
+
+  const total = await poster_model.countDocuments(filter);
+
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data,
+  };
+};
+const update_revised_attachment_from_db = async (
+  authorId: any,
+  attachmentId: any,
+  payload: {
+    url: string;
+    name?: string;
+    size?: number;
+  },
+) => {
+  const poster = await poster_model.findOne({
+    authorId,
+    "attachments._id": attachmentId,
+    "attachments.reviewStatus": "revised",
+  });
+
+  if (!poster) {
+    throw new Error("Attachment is not allowed to update");
+  }
+
+  const attachment = poster.attachments.find(
+    (att) => att._id.toString() === attachmentId,
+  );
+
+  if (!attachment) {
+    throw new Error("Attachment not found");
+  }
+
+  // ✅ Only file-related fields update
+  attachment.url = payload.url;
+  if (payload.name) attachment.name = payload.name;
+  if (payload.size) attachment.size = payload.size;
+
+  // ❌ DO NOT TOUCH
+  // attachment.reviewStatus
+  // attachment.reviewReason
+  // poster.status
+
+  await poster.save();
+
+  return {
+    attachmentId,
+    type: attachment.type,
+  };
+};
+
 const get_single_accepted_poster_from_db = async (posterId: any) => {
   const poster = await poster_model
     .findOne({
@@ -138,4 +244,6 @@ export const poster_service = {
   create_new_poster_into_db,
   get_accepted_posters_from_db,
   get_single_accepted_poster_from_db,
+  get_revised_posters_from_db,
+  update_revised_attachment_from_db,
 };

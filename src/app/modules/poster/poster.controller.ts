@@ -95,6 +95,22 @@ const get_all_accepted_posters = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const get_revised_poster = catchAsync(async (req, res) => {
+  const authorId = req.user?.id;
+
+  const result = await poster_service.get_revised_posters_from_db(authorId, {
+    search: req.query.search as string,
+    page: Number(req.query.page),
+    limit: Number(req.query.limit),
+  });
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Accepted posters retrieved successfully",
+    data: result,
+  });
+});
 
 const get_single_accepted_poster = catchAsync(async (req, res) => {
   const { posterId } = req.params;
@@ -109,10 +125,31 @@ const get_single_accepted_poster = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const update_revised_attachment = catchAsync(async (req, res) => {
+  const authorId = req.user?.id;
+  const { attachmentId } = req.params;
+
+  const result = await poster_service.update_revised_attachment_from_db(
+    authorId,
+    attachmentId,
+    req.body,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Attachment updated successfully",
+    data: result,
+  });
+});
+
 export const poster_controller = {
   upload_single_file,
   upload_multiple_files,
   create_new_poster,
   get_all_accepted_posters,
   get_single_accepted_poster,
+  get_revised_poster,
+  update_revised_attachment,
 };

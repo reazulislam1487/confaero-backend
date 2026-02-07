@@ -1,8 +1,6 @@
 import { Router } from "express";
 import auth from "../../middlewares/auth";
 import { poster_controller } from "./poster.controller";
-import RequestValidator from "../../middlewares/request_validator";
-import { poster_validations } from "./poster.validation";
 import { upload } from "../../middlewares/upload";
 import eventAccess from "../../middlewares/eventAccess.middleware";
 
@@ -33,15 +31,19 @@ router.post(
   poster_controller.create_new_poster,
 );
 
+router.get("/accepted", poster_controller.get_all_accepted_posters);
 router.get(
-  "/accepted",
-  poster_controller.get_all_accepted_posters,
+  "/revised",
+  auth("ATTENDEE", "SPEAKER"),
+  poster_controller.get_revised_poster,
+);
+router.patch(
+  "/author/attachments/:attachmentId",
+  auth("ATTENDEE", "SPEAKER"),
+  poster_controller.update_revised_attachment,
 );
 
 /* Public – Single Accepted Poster */
-router.get(
-  "/accepted/:posterId",
-  poster_controller.get_single_accepted_poster,
-);
+router.get("/accepted/:posterId", poster_controller.get_single_accepted_poster);
 
 export default router;
