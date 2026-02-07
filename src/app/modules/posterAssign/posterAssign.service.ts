@@ -205,8 +205,9 @@ const get_assigned_files = async (eventId: any, type: "pdf" | "image") => {
       /* -----------------------
          STATUS RESOLUTION
       ----------------------- */
-      const status =
-        assign.status === "assigned" ? "assigned" : attachment.reviewStatus;
+      const status = assign.status === "assigned" ? "assigned" : "completed";
+
+      const reviewStatus = attachment.reviewStatus;
 
       return {
         assignmentId: assign._id,
@@ -228,7 +229,7 @@ const get_assigned_files = async (eventId: any, type: "pdf" | "image") => {
           name: attachment.name,
           size: attachment.size,
           type: attachment.type,
-          status,
+          reviewStatus,
           score: averageScore,
         },
 
@@ -352,7 +353,7 @@ const get_reported_files = async (eventId: any) => {
       {
         eventId: eventObjectId,
         "attachments.reviewStatus": {
-          $in: ["rejected", "revision_required", "flagged"],
+          $in: ["rejected", "revised", "flagged"],
         },
       },
       {
