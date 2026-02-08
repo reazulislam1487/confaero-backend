@@ -62,6 +62,7 @@ const update_booth_number_into_db = async (
 
   booth.boothNumber = boothNumber;
   booth.isAccepted = true;
+  booth.status = "active";
   await booth.save();
 
   return booth;

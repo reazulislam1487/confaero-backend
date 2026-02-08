@@ -21,10 +21,14 @@ const create_new_booth_into_db = async (payload: T_Booth): Promise<T_Booth> => {
 };
 
 const get_my_booth_from_db = async (exhibitorId: string) => {
-  const booth = await booth_model.findOne({ exhibitorId });
+  const booth = await booth_model.findOne({
+    exhibitorId,
+    status: "active",
+    isAccepted: true,
+  });
 
   if (!booth) {
-    throw new AppError("Booth not found", httpStatus.NOT_FOUND);
+    throw new AppError("Booth not found or not active", httpStatus.NOT_FOUND);
   }
 
   return booth;
