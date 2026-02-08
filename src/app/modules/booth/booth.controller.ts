@@ -59,10 +59,20 @@ const add_booth_staff_by_email = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const get_booth_staff_list = catchAsync(async (req, res) => {
+  const result = await booth_service.get_booth_staff_list_from_db(req.user?.id);
 
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Booth staff list fetched successfully",
+    data: result,
+  });
+});
 export const booth_controller = {
   create_new_booth,
   get_my_booth,
   update_my_booth,
   add_booth_staff_by_email,
+  get_booth_staff_list
 };

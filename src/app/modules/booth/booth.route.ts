@@ -35,4 +35,6 @@ booth_router.post(
   booth_controller.add_booth_staff_by_email,
 );
 
+booth_router.get("/staff", auth("EXHIBITOR", "STAFF"), booth_controller.get_booth_staff_list);
+
 export default booth_router;

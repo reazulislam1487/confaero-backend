@@ -102,11 +102,13 @@ const booth_staff_schema = new Schema<T_BoothStaff>(
     },
     userId: {
       type: Schema.Types.ObjectId,
+      ref: "account",
       required: true,
       index: true,
     },
     addedBy: {
       type: Schema.Types.ObjectId,
+      ref: "account",
       required: true,
     },
   },
