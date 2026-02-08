@@ -104,14 +104,6 @@ const add_staff_by_email_into_db = async (
 };
 
 const get_booth_staff_list_from_db = async (exhibitorId: string) => {
-  // 1️⃣ Find booth by exhibitor
-  // const booth = await booth_model.findOne({
-  //   exhibitorId: new Types.ObjectId(exhibitorId),
-  // });
-
-  // if (!booth) {
-  //   throw new AppError("Booth not found", httpStatus.NOT_FOUND);
-  // }
 
   const objectUserId = new Types.ObjectId(exhibitorId);
 
