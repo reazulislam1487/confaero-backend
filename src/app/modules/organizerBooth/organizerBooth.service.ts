@@ -2,7 +2,9 @@ import httpStatus from "http-status";
 import { Event_Model } from "../superAdmin/event.schema";
 import { AppError } from "../../utils/app_error";
 import { booth_model } from "../booth/booth.schema";
+import { Types } from "mongoose";
 
+// check if organizer has access to the event
 const check_event_access = async (eventId: string, organizerId: string) => {
   const event = await Event_Model.findOne({
     _id: eventId,
@@ -22,14 +24,17 @@ const get_event_booths_into_db = async (
 ) => {
   await check_event_access(eventId, organizerId);
 
-  const filter: any = { eventId };
-  if (isAccepted !== undefined) {
+  const filter: any = {
+    eventId: new Types.ObjectId(eventId),
+  };
+
+  if (typeof isAccepted === "string") {
     filter.isAccepted = isAccepted === "true";
   }
 
-  return booth_model.find(filter).sort({ createdAt: -1 });
+  const results = await booth_model.find(filter);
+  return results;
 };
-
 const get_booth_details_into_db = async (
   boothId: string,
   organizerId: string,
@@ -56,6 +61,7 @@ const update_booth_number_into_db = async (
   await check_event_access(booth.eventId.toString(), organizerId);
 
   booth.boothNumber = boothNumber;
+  booth.isAccepted = true;
   await booth.save();
 
   return booth;
@@ -85,6 +91,8 @@ const cancel_booth_into_db = async (boothId: string, organizerId: string) => {
   await check_event_access(booth.eventId.toString(), organizerId);
 
   booth.status = "inactive";
+  booth.isAccepted = false;
+
   await booth.save();
 
   return booth;
