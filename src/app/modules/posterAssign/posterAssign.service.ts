@@ -80,7 +80,7 @@ const reassign_poster_to_reviewer_into_db = async (payload: {
     reviewerId: new Types.ObjectId(payload.reviewerId),
   });
 
-  if (alreadyAssigned && alreadyAssigned.status !== "completed") {
+  if (alreadyAssigned) {
     throw new Error("This reviewer is already assigned to this file");
   }
   // 3️⃣ Create NEW assignment (do not touch old one)

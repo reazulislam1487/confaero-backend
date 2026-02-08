@@ -6,7 +6,6 @@ export type T_PosterAssign = {
   eventId: Types.ObjectId;
   posterId: Types.ObjectId;
   attachmentId: Types.ObjectId;
-
   reviewerId: Types.ObjectId;
   assignedBy: Types.ObjectId;
   reason?: string | null;
