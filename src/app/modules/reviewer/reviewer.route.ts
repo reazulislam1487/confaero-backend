@@ -47,7 +47,6 @@ reviewer_router.patch(
 reviewer_router.patch(
   "/attachments/:attachmentId/revise",
   auth("ORGANIZER", "SUPER_ADMIN", "ABSTRACT_REVIEWER"),
-  // eventAccess(),
   reviewer_controller.revise_attachment,
 );
 
