@@ -17,7 +17,17 @@ router.post(
 /* Multiple files (attachments) */
 router.post(
   "/upload-files",
-  auth("ATTENDEE", "SPEAKER"),
+  auth(
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   upload.array("files", 10),
   poster_controller.upload_multiple_files,
 );

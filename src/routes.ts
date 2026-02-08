@@ -19,12 +19,14 @@ import uploadRoute from "./app/modules/upload/upload.route";
 import posterRoute from "./app/modules/poster/poster.route";
 import reviewerRoute from "./app/modules/reviewer/reviewer.route";
 import posterAssignRoute from "./app/modules/posterAssign/posterAssign.route";
-import exhibitorRoute from './app/modules/exhibitor/exhibitor.route';
+import boothRoute from './app/modules/booth/booth.route';
+import organizerBoothRoute from './app/modules/organizerBooth/organizerBooth.route';
 
 const appRouter = Router();
 
 const moduleRoutes = [
-    { path: "/exhibitor", route: exhibitorRoute },
+    { path: "/organizerBooth", route: organizerBoothRoute },
+    { path: "/booth", route: boothRoute },
   { path: "/reviewer", route: reviewerRoute },
   { path: "/poster-assign", route: posterAssignRoute },
   { path: "/poster", route: posterRoute },

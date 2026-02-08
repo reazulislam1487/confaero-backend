@@ -19,7 +19,8 @@ import { uploadSwaggerDocs } from "./app/modules/upload/upload.swagger";
 import { posterSwaggerDocs } from "./app/modules/poster/poster.swagger";
 import { reviewerSwaggerDocs } from "./app/modules/reviewer/reviewer.swagger";
 import { posterAssignSwaggerDocs } from "./app/modules/posterAssign/posterAssign.swagger";
-import { exhibitorSwaggerDocs } from "./app/modules/exhibitor/exhibitor.swagger";
+import { boothSwaggerDocs } from "./app/modules/booth/booth.swagger";
+import { organizerBoothSwaggerDocs } from "./app/modules/organizerBooth/organizerBooth.swagger";
 
 export const swaggerOptions = {
   definition: {
@@ -38,21 +39,23 @@ export const swaggerOptions = {
 
       ...organizerSwaggerDocs,
       ...attendeeSwaggerDocs,
+
+      ...qrSwaggerDocs,
+      ...invitationSwaggerDocs,
+      ...noteSwaggerDocs,
+      ...resouceSwaggerDocs,
+      ...announcementSwaggerDocs,
+      ...messageSwaggerDocs,
+      ...connectionSwaggerDocs,
+      ...eventAttendeeSwaggerDocs,
+      ...messageOrganizerSwaggerDocs,
+      ...uploadSwaggerDocs,
+      ...posterSwaggerDocs,
+      ...reviewerSwaggerDocs,
+      ...posterAssignSwaggerDocs,
     
-            ...qrSwaggerDocs,
-            ...invitationSwaggerDocs,
-            ...noteSwaggerDocs,
-            ...resouceSwaggerDocs,
-            ...announcementSwaggerDocs,
-            ...messageSwaggerDocs,
-            ...connectionSwaggerDocs,
-            ...eventAttendeeSwaggerDocs,
-            ...messageOrganizerSwaggerDocs,
-            ...uploadSwaggerDocs,
-            ...posterSwaggerDocs,
-            ...reviewerSwaggerDocs,
-            ...posterAssignSwaggerDocs,
-            ...exhibitorSwaggerDocs,},
+            ...boothSwaggerDocs,
+            ...organizerBoothSwaggerDocs,},
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]
