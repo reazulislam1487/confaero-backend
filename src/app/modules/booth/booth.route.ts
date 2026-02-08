@@ -26,4 +26,13 @@ booth_router.patch(
   booth_controller.update_my_booth,
 );
 
+// add more routes as needed
+// add staff routes for booth management if needed
+
+booth_router.post(
+  "/staff",
+  auth("EXHIBITOR", "STAFF"),
+  booth_controller.add_booth_staff_by_email,
+);
+
 export default booth_router;

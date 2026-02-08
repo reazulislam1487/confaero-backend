@@ -29,3 +29,10 @@ export type T_Booth = {
   createdAt?: Date;
   updatedAt?: Date;
 };
+export type T_BoothStaff = {
+  boothId: Types.ObjectId;
+  userId: Types.ObjectId;
+  addedBy: Types.ObjectId;
+
+  createdAt?: Date;
+};

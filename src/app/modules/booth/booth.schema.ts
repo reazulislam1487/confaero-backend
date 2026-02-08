@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { T_Booth } from "./booth.interface";
+import { T_Booth, T_BoothStaff } from "./booth.interface";
 
 const booth_schema = new Schema<T_Booth>(
   {
@@ -91,5 +91,33 @@ const booth_schema = new Schema<T_Booth>(
 );
 
 booth_schema.index({ eventId: 1, exhibitorId: 1 }, { unique: true });
+
+const booth_staff_schema = new Schema<T_BoothStaff>(
+  {
+    boothId: {
+      type: Schema.Types.ObjectId,
+      ref: "booth",
+      required: true,
+      index: true,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      index: true,
+    },
+    addedBy: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
+
+booth_staff_schema.index({ boothId: 1, userId: 1 }, { unique: true });
+
+export const booth_staff_model = model<T_BoothStaff>(
+  "booth_staff",
+  booth_staff_schema,
+);
 
 export const booth_model = model<T_Booth>("booth", booth_schema);

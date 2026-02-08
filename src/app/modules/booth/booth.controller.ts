@@ -45,9 +45,24 @@ const update_my_booth = catchAsync(async (req, res) => {
     data: result,
   });
 });
+// add more controller functions as needed
+const add_booth_staff_by_email = catchAsync(async (req, res) => {
+  const result = await booth_service.add_staff_by_email_into_db(
+    req.user?.id,
+    req.body.email,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: "Booth staff added successfully",
+    data: result,
+  });
+});
 
 export const booth_controller = {
   create_new_booth,
   get_my_booth,
   update_my_booth,
+  add_booth_staff_by_email,
 };
