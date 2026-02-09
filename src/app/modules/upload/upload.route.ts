@@ -8,6 +8,7 @@ const router = Router();
 router.post(
   "/chat-attachment",
   auth(
+    "SUPER_ADMIN",
     "ORGANIZER",
     "ATTENDEE",
     "SPEAKER",

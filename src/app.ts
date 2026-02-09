@@ -15,16 +15,17 @@ const app = express();
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// middleware
-app.use(
+/*
   cors({
     origin: ["http://localhost:3000"],
     methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
     credentials: true,
   }),
-);
+*/
+// middleware
+app.use(cors());
 app.use(express.json({ limit: "100mb" }));
-app.use(express.raw());
+//! app.use(express.raw());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/v1/", appRouter);
