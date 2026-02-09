@@ -4,9 +4,14 @@ import httpStatus from "http-status";
 import { organizer_sponsor_service } from "./organizerSponsor.service";
 
 const get_all_sponsors = catchAsync(async (req, res) => {
-  const result = await organizer_sponsor_service.get_all_sponsors_from_db(
-    req.params,
-  );
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 6;
+
+  const result = await organizer_sponsor_service.get_all_sponsors_from_db({
+    ...req.params,
+    page,
+    limit,
+  });
 
   manageResponse(res, {
     statusCode: httpStatus.OK,

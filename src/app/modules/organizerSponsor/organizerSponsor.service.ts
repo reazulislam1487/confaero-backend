@@ -31,10 +31,10 @@ const get_all_sponsors_from_db = async (query: any) => {
       total,
       page,
       limit,
+      totalPage: Math.ceil(total / limit),
     },
   };
 };
-
 const get_single_sponsor_from_db = async (sponsorProfileId: string) => {
   if (!Types.ObjectId.isValid(sponsorProfileId)) {
     throw new AppError("Invalid sponsor id", httpStatus.BAD_REQUEST);
