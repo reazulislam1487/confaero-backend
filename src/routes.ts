@@ -21,10 +21,12 @@ import reviewerRoute from "./app/modules/reviewer/reviewer.route";
 import posterAssignRoute from "./app/modules/posterAssign/posterAssign.route";
 import boothRoute from './app/modules/booth/booth.route';
 import organizerBoothRoute from './app/modules/organizerBooth/organizerBooth.route';
+import sponsorRoute from './app/modules/sponsor/sponsor.route';
 
 const appRouter = Router();
 
 const moduleRoutes = [
+    { path: "/sponsor", route: sponsorRoute },
     { path: "/organizerBooth", route: organizerBoothRoute },
     { path: "/booth", route: boothRoute },
   { path: "/reviewer", route: reviewerRoute },
