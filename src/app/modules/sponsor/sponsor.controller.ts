@@ -19,10 +19,9 @@ const create_new_sponsor = catchAsync(async (req, res) => {
 });
 const get_my_sponsor = catchAsync(async (req, res) => {
   const sponsorId = req.user?.id;
-  const { eventId } = req.query;
-
+  const { eventId } = req.params;
   const result = await sponsor_service.get_my_sponsor_from_db(
-    eventId as string,
+    eventId as any,
     sponsorId,
   );
 

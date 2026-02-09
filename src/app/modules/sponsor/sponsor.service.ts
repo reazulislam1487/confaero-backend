@@ -31,7 +31,7 @@ const get_my_sponsor_from_db = async (eventId: string, sponsorId: string) => {
     eventId: new Types.ObjectId(eventId),
     sponsorId: new Types.ObjectId(sponsorId),
   });
-
+  console.log(eventId, sponsorId);
   if (!sponsor) {
     throw new AppError("Sponsor profile not found", httpStatus.NOT_FOUND);
   }

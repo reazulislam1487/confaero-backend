@@ -1,17 +1,23 @@
 import { Router } from "express";
-import RequestValidator from "../../middlewares/request_validator";
 import { sponsor_controller } from "./sponsor.controller";
-import { sponsor_validations } from "./sponsor.validation";
+import auth from "../../middlewares/auth";
 
 const sponsor_router = Router();
 
 sponsor_router.post(
   "/create",
-  RequestValidator(sponsor_validations.create),
+  auth("SPONSOR"),
   sponsor_controller.create_new_sponsor,
+);
+
+sponsor_router.get(
+  "/get-my-sponsor/:eventId",
+  auth("SPONSOR"),
+  sponsor_controller.get_my_sponsor,
 );
 sponsor_router.patch(
   "/update/:sponsorId",
+  auth("SPONSOR"),
   sponsor_controller.update_my_sponsor,
 );
 
