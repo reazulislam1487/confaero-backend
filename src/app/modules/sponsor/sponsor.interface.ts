@@ -9,6 +9,7 @@ export type T_Sponsor = {
   logoUrl: string;
   websiteUrl?: string;
   publicEmail?: string;
+  profileView: number;
 
   status: "pending" | "approved" | "rejected";
   isApproved: boolean;

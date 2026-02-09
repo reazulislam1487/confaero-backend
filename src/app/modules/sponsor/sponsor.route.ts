@@ -20,5 +20,25 @@ sponsor_router.patch(
   auth("SPONSOR"),
   sponsor_controller.update_my_sponsor,
 );
+sponsor_router.patch(
+  "/view/:sponsorProfileId",
+  auth(
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  sponsor_controller.increment_profile_view,
+);
+sponsor_router.get(
+  "/dashboard/:eventId",
+  auth("SPONSOR"),
+  sponsor_controller.get_sponsor_dashboard,
+);
 
 export default sponsor_router;

@@ -35,6 +35,10 @@ const sponsor_schema = new Schema<T_Sponsor>(
     publicEmail: {
       type: String,
     },
+    profileView: {
+      type: Number,
+      default: 0,
+    },
 
     status: {
       type: String,
@@ -48,7 +52,7 @@ const sponsor_schema = new Schema<T_Sponsor>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 sponsor_schema.index({ eventId: 1, sponsorId: 1 }, { unique: true });

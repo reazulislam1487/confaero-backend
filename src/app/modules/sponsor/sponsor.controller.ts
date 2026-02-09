@@ -50,8 +50,41 @@ const update_my_sponsor = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const increment_profile_view = catchAsync(async (req, res) => {
+  const { sponsorProfileId } = req.params;
+  console.log(sponsorProfileId);
+
+  const result =
+    await sponsor_service.increment_sponsor_profile_view(sponsorProfileId);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Sponsor profile view incremented!",
+    data: result,
+  });
+});
+const get_sponsor_dashboard = catchAsync(async (req, res) => {
+  const sponsorId = req.user?.id;
+  const { eventId } = req.params;
+
+  const result = await sponsor_service.get_sponsor_dashboard_from_db(
+    eventId as string,
+    sponsorId,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Sponsor dashboard data fetched successfully!",
+    data: result,
+  });
+});
+
 export const sponsor_controller = {
   update_my_sponsor,
   create_new_sponsor,
   get_my_sponsor,
+  increment_profile_view,
+  get_sponsor_dashboard,
 };
