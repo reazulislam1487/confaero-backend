@@ -1,14 +1,31 @@
 import { Router } from "express";
-import RequestValidator from "../../middlewares/request_validator";
 import { organizer_sponsor_controller } from "./organizerSponsor.controller";
-import { organizer_sponsor_validations } from "./organizerSponsor.validation";
+import auth from "../../middlewares/auth";
 
 const organizer_sponsor_router = Router();
 
-organizer_sponsor_router.post(
-  "/create",
-  RequestValidator(organizer_sponsor_validations.create),
-  organizer_sponsor_controller.create_new_organizer_sponsor
+organizer_sponsor_router.get(
+  "/all-sponsors/:eventId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  organizer_sponsor_controller.get_all_sponsors,
+);
+
+organizer_sponsor_router.get(
+  "/sponsor/:sponsorId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  organizer_sponsor_controller.get_single_sponsor,
+);
+
+organizer_sponsor_router.patch(
+  "/:sponsorId/approve",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  organizer_sponsor_controller.approve_sponsor,
+);
+
+organizer_sponsor_router.patch(
+  "/:sponsorId/reject",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  organizer_sponsor_controller.reject_sponsor,
 );
 
 export default organizer_sponsor_router;

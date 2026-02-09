@@ -3,14 +3,61 @@ import manageResponse from "../../utils/manage_response";
 import httpStatus from "http-status";
 import { organizer_sponsor_service } from "./organizerSponsor.service";
 
-const create_new_organizer_sponsor = catchAsync(async (req, res) => {
-  const result = await organizer_sponsor_service.create_new_organizer_sponsor_into_db();
+const get_all_sponsors = catchAsync(async (req, res) => {
+  const result = await organizer_sponsor_service.get_all_sponsors_from_db(
+    req.params,
+  );
+
   manageResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "New organizer_sponsor created successfully!",
+    message: "Sponsors fetched successfully",
     data: result,
   });
 });
 
-export const organizer_sponsor_controller = { create_new_organizer_sponsor };
+const get_single_sponsor = catchAsync(async (req, res) => {
+  const result = await organizer_sponsor_service.get_single_sponsor_from_db(
+    req.params.sponsorId as string,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Sponsor details fetched successfully",
+    data: result,
+  });
+});
+
+const approve_sponsor = catchAsync(async (req, res) => {
+  const result = await organizer_sponsor_service.approve_sponsor_into_db(
+    req.params.sponsorId as string,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Sponsor approved successfully",
+    data: result,
+  });
+});
+
+const reject_sponsor = catchAsync(async (req, res) => {
+  const result = await organizer_sponsor_service.reject_sponsor_into_db(
+    req.params.sponsorId as string,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Sponsor rejected successfully",
+    data: result,
+  });
+});
+
+export const organizer_sponsor_controller = {
+  get_all_sponsors,
+  get_single_sponsor,
+  approve_sponsor,
+  reject_sponsor,
+};
