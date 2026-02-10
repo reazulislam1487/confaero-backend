@@ -6,13 +6,35 @@ const organizer_sponsor_router = Router();
 
 organizer_sponsor_router.get(
   "/all-sponsors/:eventId",
-  auth("ORGANIZER", "SUPER_ADMIN"),
+  auth(
+    "SUPER_ADMIN",
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   organizer_sponsor_controller.get_all_sponsors,
 );
 
 organizer_sponsor_router.get(
   "/sponsor/:sponsorId",
-  auth("ORGANIZER", "SUPER_ADMIN"),
+  auth(
+    "SUPER_ADMIN",
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   organizer_sponsor_controller.get_single_sponsor,
 );
 

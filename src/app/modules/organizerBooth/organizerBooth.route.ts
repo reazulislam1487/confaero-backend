@@ -7,14 +7,37 @@ const organizer_booth_router = Router();
 
 organizer_booth_router.get(
   "/events/:eventId/booths",
-  auth("ORGANIZER", "SUPER_ADMIN"),
+  auth(
+    "SUPER_ADMIN",
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   // eventAccess(),
   organizer_booth_controller.get_event_booths,
 );
 
 organizer_booth_router.get(
   "/booths/:boothId",
-  auth("ORGANIZER", "SUPER_ADMIN"),
+
+  auth(
+    "SUPER_ADMIN",
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   organizer_booth_controller.get_booth_details,
 );
 
