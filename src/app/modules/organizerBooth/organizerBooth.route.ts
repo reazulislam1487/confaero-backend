@@ -25,7 +25,6 @@ organizer_booth_router.get(
 
 organizer_booth_router.get(
   "/booths/:boothId",
-
   auth(
     "SUPER_ADMIN",
     "ORGANIZER",
