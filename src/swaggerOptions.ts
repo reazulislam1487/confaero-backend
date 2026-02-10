@@ -23,6 +23,7 @@ import { boothSwaggerDocs } from "./app/modules/booth/booth.swagger";
 import { organizerBoothSwaggerDocs } from "./app/modules/organizerBooth/organizerBooth.swagger";
 import { sponsorSwaggerDocs } from "./app/modules/sponsor/sponsor.swagger";
 import { organizerSponsorSwaggerDocs } from "./app/modules/organizerSponsor/organizerSponsor.swagger";
+import { documentSwaggerDocs } from "./app/modules/document/document.swagger";
 
 export const swaggerOptions = {
   definition: {
@@ -59,7 +60,8 @@ export const swaggerOptions = {
             ...boothSwaggerDocs,
             ...organizerBoothSwaggerDocs,
             ...sponsorSwaggerDocs,
-            ...organizerSponsorSwaggerDocs,},
+            ...organizerSponsorSwaggerDocs,
+            ...documentSwaggerDocs,},
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]

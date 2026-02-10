@@ -23,10 +23,12 @@ import boothRoute from './app/modules/booth/booth.route';
 import organizerBoothRoute from './app/modules/organizerBooth/organizerBooth.route';
 import sponsorRoute from './app/modules/sponsor/sponsor.route';
 import organizerSponsorRoute from './app/modules/organizerSponsor/organizerSponsor.route';
+import documentRoute from './app/modules/document/document.route';
 
 const appRouter = Router();
 
 const moduleRoutes = [
+    { path: "/document", route: documentRoute },
     { path: "/organizerSponsor", route: organizerSponsorRoute },
     { path: "/sponsor", route: sponsorRoute },
     { path: "/organizerBooth", route: organizerBoothRoute },

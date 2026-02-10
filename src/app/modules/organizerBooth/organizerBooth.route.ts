@@ -1,7 +1,6 @@
 import { Router } from "express";
 import auth from "../../middlewares/auth";
 import { organizer_booth_controller } from "./organizerBooth.controller";
-import eventAccess from "../../middlewares/eventAccess.middleware";
 
 const organizer_booth_router = Router();
 
