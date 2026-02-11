@@ -1,14 +1,21 @@
 import { Router } from "express";
-import RequestValidator from "../../middlewares/request_validator";
 import { photo_controller } from "./photo.controller";
-import { photo_validations } from "./photo.validation";
 
 const photo_router = Router();
 
 photo_router.post(
-  "/create",
-  RequestValidator(photo_validations.create),
+  "/events/:eventId/photos",
   photo_controller.create_new_photo
+);
+
+photo_router.get(
+  "/events/:eventId/photos",
+  photo_controller.get_event_photos
+);
+
+photo_router.delete(
+  "/photos/:photoId",
+  photo_controller.delete_photo
 );
 
 export default photo_router;
