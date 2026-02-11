@@ -11,14 +11,12 @@ const create_new_photo_into_db = async ({
   role,
 }: {
   eventId: any;
-  imageUrl: string;
+  imageUrl: any;
   type: string;
   userId: string;
   role: string;
 }) => {
-  if (!["organizer", "super_admin"].includes(role)) {
-    throw new AppError("Permission denied", httpStatus.FORBIDDEN);
-  }
+ 
 
   return await photo_model.create({
     eventId: new Types.ObjectId(eventId),
@@ -76,9 +74,7 @@ const delete_photo_from_db = async ({
   userId: string;
   role: string;
 }) => {
-  if (!["organizer", "super_admin"].includes(role)) {
-    throw new AppError("Permission denied", httpStatus.FORBIDDEN);
-  }
+ 
 
   const photo = await photo_model.findById(photoId);
 
@@ -90,8 +86,30 @@ const delete_photo_from_db = async ({
   return null;
 };
 
+const get_public_event_photos_from_db = async ({
+  eventId,
+  type,
+}: {
+  eventId: any;
+  type?: any;
+}) => {
+  const filter: any = {
+    eventId: new Types.ObjectId(eventId),
+  };
+
+  if (type) {
+    filter.type = type;
+  }
+
+  return await photo_model
+    .find(filter)
+    .select("imageUrl type")
+    .sort({ createdAt: -1 });
+};
+
 export const photo_service = {
   create_new_photo_into_db,
   get_event_photos_from_db,
   delete_photo_from_db,
+  get_public_event_photos_from_db,
 };

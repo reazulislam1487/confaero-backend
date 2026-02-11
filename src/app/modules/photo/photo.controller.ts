@@ -11,6 +11,7 @@ const create_new_photo = catchAsync(async (req, res) => {
     userId: req.user?.id,
     role: req.user?.activeRole,
   });
+ 
 
   manageResponse(res, {
     statusCode: httpStatus.CREATED,
@@ -55,8 +56,23 @@ const delete_photo = catchAsync(async (req, res) => {
   });
 });
 
+const get_public_event_photos = catchAsync(async (req, res) => {
+  const result = await photo_service.get_public_event_photos_from_db({
+    eventId: req.params.eventId,
+    type: req.query.type as string | undefined,
+  });
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Public event photos retrieved successfully",
+    data: result,
+  });
+});
+
 export const photo_controller = {
   create_new_photo,
   get_event_photos,
   delete_photo,
+  get_public_event_photos,
 };
