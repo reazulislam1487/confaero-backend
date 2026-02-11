@@ -25,6 +25,7 @@ import { sponsorSwaggerDocs } from "./app/modules/sponsor/sponsor.swagger";
 import { organizerSponsorSwaggerDocs } from "./app/modules/organizerSponsor/organizerSponsor.swagger";
 import { documentSwaggerDocs } from "./app/modules/document/document.swagger";
 import { photoSwaggerDocs } from "./app/modules/photo/photo.swagger";
+import { volunteerSwaggerDocs } from "./app/modules/volunteer/volunteer.swagger";
 
 export const swaggerOptions = {
   definition: {
@@ -63,7 +64,8 @@ export const swaggerOptions = {
             ...sponsorSwaggerDocs,
             ...organizerSponsorSwaggerDocs,
             ...documentSwaggerDocs,
-            ...photoSwaggerDocs,},
+            ...photoSwaggerDocs,
+            ...volunteerSwaggerDocs,},
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]
