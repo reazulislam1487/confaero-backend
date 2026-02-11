@@ -26,10 +26,12 @@ import organizerSponsorRoute from './app/modules/organizerSponsor/organizerSpons
 import documentRoute from './app/modules/document/document.route';
 import photoRoute from './app/modules/photo/photo.route';
 import volunteerRoute from './app/modules/volunteer/volunteer.route';
+import chairRoute from './app/modules/chair/chair.route';
 
 const appRouter = Router();
 
 const moduleRoutes = [
+    { path: "/chair", route: chairRoute },
     { path: "/volunteer", route: volunteerRoute },
     { path: "/photo", route: photoRoute },
     { path: "/document", route: documentRoute },
