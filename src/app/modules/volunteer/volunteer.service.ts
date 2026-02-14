@@ -2,7 +2,7 @@ import httpStatus from "http-status";
 import { Account_Model } from "../auth/auth.schema";
 import { AppError } from "../../utils/app_error";
 import { Event_Model } from "../superAdmin/event.schema";
-import { task_report_model } from "./report.schema";
+import { task_model } from "./volunteer.schema";
 
 const create_task_and_assign = async (payload: any, creatorId: string) => {
   const {
@@ -42,7 +42,7 @@ const create_task_and_assign = async (payload: any, creatorId: string) => {
   }
 
   // 3️⃣ create task
-  return await task_report_model.create({
+  return await task_model.create({
     eventId,
     title,
     date,
@@ -56,11 +56,11 @@ const create_task_and_assign = async (payload: any, creatorId: string) => {
 };
 
 const get_my_tasks = async (volunteerId: string) => {
-  return await task_report_model.find({ assignedVolunteer: volunteerId });
+  return await task_model.find({ assignedVolunteer: volunteerId });
 };
 
 const complete_task = async (taskId: any, volunteerId: string) => {
-  const task = await task_report_model.findOne({
+  const task = await task_model.findOne({
     _id: taskId,
     assignedVolunteer: volunteerId,
   });

@@ -1,6 +1,34 @@
 import { Schema, model } from "mongoose";
-import { T_Volunteer } from "./volunteer.interface";
+import { T_Task } from "./volunteer.interface";
 
-const volunteer_schema = new Schema<T_Volunteer>({});
+const taskSchema = new Schema<T_Task>(
+  {
+    eventId: { type: Schema.Types.ObjectId, ref: "event", required: true },
+    title: String,
+    date: String,
+    time: String,
+    location: String,
+    instruction: String,
+    referenceImage: String,
 
-export const volunteer_model = model("volunteer", volunteer_schema);
+    assignedVolunteer: {
+      type: Schema.Types.ObjectId,
+      ref: "account",
+      required: true,
+    },
+
+    status: {
+      type: String,
+      enum: ["ASSIGNED", "COMPLETED", "REPORTED"],
+      default: "ASSIGNED",
+    },
+
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "account",
+    },
+  },
+  { timestamps: true }
+);
+
+export const task_model = model("task", taskSchema);
