@@ -13,14 +13,14 @@ router.post(
 
 router.get(
   "/my-tasks",
-  auth("SUPER_ADMIN", "ORGANIZER"),
+  auth("SUPER_ADMIN", "ORGANIZER", "VOLUNTEER"),
 
   task_controller.my_tasks,
 );
 
 router.patch(
   "/:taskId/complete",
-  auth("SUPER_ADMIN", "ORGANIZER"),
+  auth("VOLUNTEER"),
   task_controller.complete_task,
 );
 

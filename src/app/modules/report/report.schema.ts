@@ -1,6 +1,15 @@
 import { Schema, model } from "mongoose";
-import { T_Report } from "./report.interface";
 
-const report_schema = new Schema<T_Report>({});
+const reportSchema = new Schema(
+  {
+    taskId: { type: Schema.Types.ObjectId, ref: "task" },
+    volunteerId: { type: Schema.Types.ObjectId, ref: "account" },
+    category: String,
+    urgency: String,
+    description: String,
+    images: [String],
+  },
+  { timestamps: true }
+);
 
-export const report_model = model("report", report_schema);
+export const task_report_model = model("task_report", reportSchema);

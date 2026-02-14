@@ -1,3 +1,17 @@
-const create_new_report_into_db = () => { return {}; };
+import { task_model } from "../volunteer/volunteer.schema";
+import { task_report_model } from "./report.schema";
 
-export const report_service = { create_new_report_into_db };
+const report_issue = async (payload: any, volunteerId: string) => {
+  const report = await task_report_model.create({
+    ...payload,
+    volunteerId,
+  });
+
+  await task_model.findByIdAndUpdate(payload.taskId, {
+    status: "REPORTED",
+  });
+
+  return report;
+};
+
+export const report_service = { report_issue };

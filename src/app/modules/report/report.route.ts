@@ -1,14 +1,13 @@
 import { Router } from "express";
-import RequestValidator from "../../middlewares/request_validator";
+import auth from "../../middlewares/auth";
 import { report_controller } from "./report.controller";
-import { report_validations } from "./report.validation";
 
-const report_router = Router();
+const router = Router();
 
-report_router.post(
-  "/create",
-  RequestValidator(report_validations.create),
-  report_controller.create_new_report
+router.post(
+  "/report",
+  auth("VOLUNTEER"),
+  report_controller.report_task_issue
 );
 
-export default report_router;
+export default router;
