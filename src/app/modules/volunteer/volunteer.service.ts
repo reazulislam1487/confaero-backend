@@ -86,7 +86,6 @@ const get_today_progress = async (volunteerId: any) => {
     date: today,
   });
 
-  console.log(volunteerId, today, tasks);
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(
     (task) => task.status === "COMPLETED",
