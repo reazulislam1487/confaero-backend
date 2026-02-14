@@ -6,7 +6,7 @@ import { task_service } from "./volunteer.service";
 const create_task = catchAsync(async (req, res) => {
   const result = await task_service.create_task_and_assign(
     req.body,
-    req.user?.id
+    req.user?.id,
   );
 
   manageResponse(res, {
@@ -31,7 +31,7 @@ const my_tasks = catchAsync(async (req, res) => {
 const complete_task = catchAsync(async (req, res) => {
   const result = await task_service.complete_task(
     req.params.taskId,
-    req.user?.id
+    req.user?.id,
   );
 
   manageResponse(res, {
@@ -42,8 +42,20 @@ const complete_task = catchAsync(async (req, res) => {
   });
 });
 
+const today_progress = catchAsync(async (req, res) => {
+  const result = await task_service.get_today_progress(req.user?.id);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Today's task progress fetched",
+    data: result,
+  });
+});
+
 export const task_controller = {
   create_task,
   my_tasks,
   complete_task,
+  today_progress,
 };

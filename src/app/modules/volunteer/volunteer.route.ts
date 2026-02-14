@@ -23,5 +23,9 @@ router.patch(
   auth("VOLUNTEER"),
   task_controller.complete_task,
 );
-
+router.get(
+  "/today-progress",
+  auth("VOLUNTEER"),
+  task_controller.today_progress,
+);
 export default router;

@@ -55,7 +55,7 @@ const create_task_and_assign = async (payload: any, creatorId: string) => {
   });
 };
 
-const get_my_tasks = async (volunteerId: string) => {
+const get_my_tasks = async (volunteerId: any) => {
   const tasks = await task_model
     .find({ assignedVolunteer: volunteerId })
     .populate("createdBy", "email activeRole name")
@@ -78,8 +78,35 @@ const complete_task = async (taskId: any, volunteerId: string) => {
   return task;
 };
 
+const get_today_progress = async (volunteerId: any) => {
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+  const tasks = await task_model.find({
+    assignedVolunteer: new Object(volunteerId),
+    date: today,
+  });
+
+  console.log(volunteerId, today, tasks);
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(
+    (task) => task.status === "COMPLETED",
+  ).length;
+
+  const remainingTasks = totalTasks - completedTasks;
+
+  const progress =
+    totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
+  return {
+    totalTasks,
+    completedTasks,
+    remainingTasks,
+    progress,
+  };
+};
 export const task_service = {
   create_task_and_assign,
   get_my_tasks,
   complete_task,
+  get_today_progress,
 };
