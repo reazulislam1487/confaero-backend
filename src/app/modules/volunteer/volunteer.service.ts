@@ -56,7 +56,11 @@ const create_task_and_assign = async (payload: any, creatorId: string) => {
 };
 
 const get_my_tasks = async (volunteerId: string) => {
-  return await task_model.find({ assignedVolunteer: volunteerId });
+  const tasks = await task_model
+    .find({ assignedVolunteer: volunteerId })
+    .populate("createdBy", "email activeRole name")
+    .sort({ createdAt: -1 });
+  return tasks;
 };
 
 const complete_task = async (taskId: any, volunteerId: string) => {
