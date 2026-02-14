@@ -247,6 +247,64 @@ const get_speaker_profile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+//
+const assign_speaker_to_session = catchAsync(async (req: any, res: any) => {
+  const { eventId, sessionIndex, speakerId } = req.params;
+
+  const result = await session_service.assign_speaker_to_session_from_db(
+    req.user,
+    eventId,
+    Number(sessionIndex),
+    speakerId,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Speaker assigned to session successfully",
+    data: result,
+  });
+});
+const remove_speaker_from_session = catchAsync(
+  async (req: Request, res: Response) => {
+    const { eventId, sessionIndex, speakerId } = req.params;
+
+    const result = await session_service.remove_speaker_from_session_from_db(
+      req.user,
+      eventId,
+      Number(sessionIndex),
+      speakerId,
+    );
+
+    manageResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Speaker removed from session successfully",
+      data: result,
+    });
+  },
+);
+
+const search_speaker_by_email = catchAsync(
+  async (req: Request, res: Response) => {
+    const { eventId } = req.params;
+    const { email } = req.query;
+
+    const result = await session_service.search_speaker_by_email_from_db(
+      req.user,
+      eventId,
+      email as string,
+    );
+
+    manageResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Speaker search result fetched successfully",
+      data: result,
+    });
+  },
+);
+
 export const organizer_session_controllers = {
   get_sessions,
   get_single_session,
@@ -261,4 +319,7 @@ export const organizer_session_controllers = {
   get_single_agenda_session,
   get_speaker_profile,
   toggle_like_agenda_session,
+  assign_speaker_to_session,
+  remove_speaker_from_session,
+  search_speaker_by_email,
 };

@@ -150,6 +150,7 @@ const delete_floor_map = catchAsync(async (req, res) => {
   });
 });
 
+
 export const organizer_controller = {
   get_my_events,
   update_my_event,

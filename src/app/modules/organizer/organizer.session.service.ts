@@ -443,5 +443,147 @@ export const get_speaker_profile_from_db = async (
     speakingAt,
   };
 };
+//
+export const assign_speaker_to_session_from_db = async (
+  user: any,
+  eventId: string,
+  sessionIndex: number,
+  speakerId: string,
+) => {
+  const event: any = await Event_Model.findById(eventId);
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  if (
+    !Array.isArray(event.agenda?.sessions) ||
+    sessionIndex < 0 ||
+    !event.agenda.sessions[sessionIndex]
+  ) {
+    throw new AppError("Invalid session index", httpStatus.BAD_REQUEST);
+  }
+
+  const participant = event.participants.find(
+    (p: any) =>
+      p.role === "SPEAKER" && String(p.accountId) === String(speakerId),
+  );
+
+  if (!participant) {
+    throw new AppError("Speaker not found in this event", httpStatus.NOT_FOUND);
+  }
+
+  participant.sessionIndex = participant.sessionIndex || [];
+
+  if (participant.sessionIndex.includes(sessionIndex)) {
+    throw new AppError(
+      "Speaker already assigned to this session",
+      httpStatus.BAD_REQUEST,
+    );
+  }
+
+  participant.sessionIndex.push(sessionIndex);
+
+  await event.save();
+
+  return {
+    speakerId,
+    sessionIndex,
+  };
+};
+
+export const remove_speaker_from_session_from_db = async (
+  user: any,
+  eventId: any,
+  sessionIndex: number,
+  speakerId: any,
+) => {
+  const event: any = await Event_Model.findById(eventId);
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  const participant = event.participants.find(
+    (p: any) =>
+      p.role === "SPEAKER" && String(p.accountId) === String(speakerId),
+  );
+
+  if (!participant) {
+    throw new AppError("Speaker not found in this event", httpStatus.NOT_FOUND);
+  }
+
+  if (!Array.isArray(participant.sessionIndex)) {
+    throw new AppError(
+      "Speaker is not assigned to any session",
+      httpStatus.BAD_REQUEST,
+    );
+  }
+
+  const index = participant.sessionIndex.indexOf(sessionIndex);
+
+  if (index === -1) {
+    throw new AppError(
+      "Speaker is not assigned to this session",
+      httpStatus.BAD_REQUEST,
+    );
+  }
+
+  participant.sessionIndex.splice(index, 1);
+
+  await event.save();
+
+  return {
+    speakerId,
+    sessionIndex,
+  };
+};
+
+export const search_speaker_by_email_from_db = async (
+  user: any,
+  eventId: any,
+  email: string,
+) => {
+  if (!email) {
+    throw new AppError("Email is required", httpStatus.BAD_REQUEST);
+  }
+
+  // 🔹 Event check
+  const event: any = await Event_Model.findById(eventId);
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  // 🔹 Find user profile by email
+  const profile = await UserProfile_Model.findOne({
+    email: email.toLowerCase(),
+  });
+
+  if (!profile) {
+    throw new AppError("No user found with this email", httpStatus.NOT_FOUND);
+  }
+
+  // 🔹 Check if this user is already a SPEAKER in this event
+  const participant = event.participants.find(
+    (p: any) =>
+      p.role === "SPEAKER" && String(p.accountId) === String(profile.accountId),
+  );
+
+  if (!participant) {
+    throw new AppError(
+      "This user is not a speaker of this event",
+      httpStatus.BAD_REQUEST,
+    );
+  }
+
+  return {
+    speakerId: profile.accountId,
+    name: profile.name,
+    // email: profile.email,
+    avatar: profile.avatar,
+    alreadyAssignedSessions: participant.sessionIndex || [],
+  };
+};
 
 // export { bulk_add_sessions };
