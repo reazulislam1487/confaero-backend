@@ -1,14 +1,27 @@
 import { Router } from "express";
+import auth from "../../middlewares/auth";
 import RequestValidator from "../../middlewares/request_validator";
-import { volunteer_controller } from "./volunteer.controller";
-import { volunteer_validations } from "./volunteer.validation";
+import { task_controller } from "./volunteer.controller";
 
-const volunteer_router = Router();
+const router = Router();
 
-volunteer_router.post(
+router.post(
   "/create",
-  RequestValidator(volunteer_validations.create),
-  volunteer_controller.create_new_volunteer
+  auth("SUPER_ADMIN", "ORGANIZER"),
+  task_controller.create_task,
 );
 
-export default volunteer_router;
+router.get(
+  "/my-tasks",
+  auth("SUPER_ADMIN", "ORGANIZER"),
+
+  task_controller.my_tasks,
+);
+
+router.patch(
+  "/:taskId/complete",
+  auth("SUPER_ADMIN", "ORGANIZER"),
+  task_controller.complete_task,
+);
+
+export default router;

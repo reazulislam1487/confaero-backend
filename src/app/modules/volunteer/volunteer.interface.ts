@@ -1,3 +1,14 @@
-export type T_Volunteer = {
+import { Types } from "mongoose";
 
-}
+export type T_Task = {
+  eventId: Types.ObjectId;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  instruction: string;
+  referenceImage?: string;
+  assignedVolunteer: Types.ObjectId;
+  status: "ASSIGNED" | "COMPLETED" | "REPORTED";
+  createdBy: Types.ObjectId;
+};
