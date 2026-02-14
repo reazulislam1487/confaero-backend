@@ -3,6 +3,7 @@ import { Event_Model } from "../superAdmin/event.schema";
 import { AppError } from "../../utils/app_error";
 import { UserProfile_Model } from "../user/user.schema";
 import { sendSessionNotification } from "../../utils/sendSessionNotification";
+import { Account_Model } from "../auth/auth.schema";
 
 type TSession = {
   title: string;
@@ -542,7 +543,7 @@ export const remove_speaker_from_session_from_db = async (
 export const search_speaker_by_email_from_db = async (
   user: any,
   eventId: any,
-  email: string,
+  email: any,
 ) => {
   if (!email) {
     throw new AppError("Email is required", httpStatus.BAD_REQUEST);
@@ -556,7 +557,7 @@ export const search_speaker_by_email_from_db = async (
   }
 
   // 🔹 Find user profile by email
-  const profile = await UserProfile_Model.findOne({
+  const profile = await Account_Model.findOne({
     email: email.toLowerCase(),
   });
 
@@ -567,7 +568,7 @@ export const search_speaker_by_email_from_db = async (
   // 🔹 Check if this user is already a SPEAKER in this event
   const participant = event.participants.find(
     (p: any) =>
-      p.role === "SPEAKER" && String(p.accountId) === String(profile.accountId),
+      p.role === "SPEAKER" && String(p.accountId) === String(profile._id),
   );
 
   if (!participant) {
@@ -578,10 +579,8 @@ export const search_speaker_by_email_from_db = async (
   }
 
   return {
-    speakerId: profile.accountId,
-    name: profile.name,
-    // email: profile.email,
-    avatar: profile.avatar,
+    speakerId: profile._id,
+    email: profile.email,
     alreadyAssignedSessions: participant.sessionIndex || [],
   };
 };

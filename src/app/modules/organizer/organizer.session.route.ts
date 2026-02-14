@@ -166,14 +166,14 @@ router.post(
 
 router.delete(
   "/events/:eventId/agenda/:sessionIndex/speakers/:speakerId",
-  auth("ORGANIZER", "SUPER_ADMIN"),
+  auth("ORGANIZER", "SUPER_ADMIN", "TRACK_CHAIR"),
   eventAccess(),
   organizer_session_controllers.remove_speaker_from_session,
 );
 
 router.get(
-  "/events/:eventId/speakers/search",
-  auth("ORGANIZER", "SUPER_ADMIN"),
+  "/event/:eventId/speakers/search",
+  auth("ORGANIZER", "SUPER_ADMIN", "TRACK_CHAIR"),
   eventAccess(),
   organizer_session_controllers.search_speaker_by_email,
 );

@@ -293,7 +293,7 @@ const search_speaker_by_email = catchAsync(
     const result = await session_service.search_speaker_by_email_from_db(
       req.user,
       eventId,
-      email as string,
+      email as any,
     );
 
     manageResponse(res, {
