@@ -28,6 +28,7 @@ import { photoSwaggerDocs } from "./app/modules/photo/photo.swagger";
 import { volunteerSwaggerDocs } from "./app/modules/volunteer/volunteer.swagger";
 import { chairSwaggerDocs } from "./app/modules/chair/chair.swagger";
 import { reportSwaggerDocs } from "./app/modules/report/report.swagger";
+import { jobSwaggerDocs } from "./app/modules/job/job.swagger";
 
 export const swaggerOptions = {
   definition: {
@@ -69,7 +70,8 @@ export const swaggerOptions = {
             ...photoSwaggerDocs,
             ...volunteerSwaggerDocs,
             ...chairSwaggerDocs,
-            ...reportSwaggerDocs,},
+            ...reportSwaggerDocs,
+            ...jobSwaggerDocs,},
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]
