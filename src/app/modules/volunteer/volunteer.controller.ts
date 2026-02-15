@@ -17,6 +17,24 @@ const create_task = catchAsync(async (req, res) => {
   });
 });
 
+const get_task_details = catchAsync(async (req, res) => {
+  const { taskId } = req.params;
+  const userId = req.user?.id;
+  const role = req.user?.activeRole;
+
+  const result = await task_service.get_task_details_by_id(
+    taskId,
+    userId,
+    role,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Task details fetched",
+    data: result,
+  });
+});
 const my_tasks = catchAsync(async (req, res) => {
   const result = await task_service.get_my_tasks(req.user?.id);
 
@@ -105,4 +123,5 @@ export const task_controller = {
   search_volunteer_by_email,
   view_single_report,
   get_volunteer_dashboard,
+  get_task_details,
 };

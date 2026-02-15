@@ -5,7 +5,6 @@ import { task_model } from "./volunteer.schema";
 import { Event_Model } from "../superAdmin/event.schema";
 import { task_report_model } from "../report/report.schema";
 import { UserProfile_Model } from "../user/user.schema";
-import { ObjectId } from "mongodb";
 
 const create_task_and_assign = async (payload: any, creatorId: string) => {
   const {
@@ -56,6 +55,61 @@ const create_task_and_assign = async (payload: any, creatorId: string) => {
     assignedVolunteer: account._id,
     createdBy: creatorId,
   });
+};
+
+const get_task_details_by_id = async (
+  taskId: any,
+  userId: string,
+  role: string,
+) => {
+  const task: any = await task_model
+    .findById(taskId)
+    .populate("createdBy", "email activeRole")
+    .populate("assignedVolunteer", "email")
+    .lean();
+
+  if (!task) {
+    throw new AppError("Task not found", httpStatus.NOT_FOUND);
+  }
+
+  const userProfile = await UserProfile_Model.findOne({
+    accountId: task.createdBy._id,
+  });
+  // 🔐 Volunteer restriction
+
+  if (role === "VOLUNTEER") {
+    if (task.assignedVolunteer._id.toString() !== userId.toString()) {
+      throw new AppError(
+        "You are not allowed to view this task",
+        httpStatus.FORBIDDEN,
+      );
+    }
+  }
+
+  return {
+    taskId: task._id,
+    title: task.title,
+    date: task.date,
+    time: task.time,
+    location: task.location,
+    instruction: task.instruction,
+    referenceImage: task.referenceImage,
+    status: task.status,
+
+    assignedVolunteer: {
+      accountId: task.assignedVolunteer?._id,
+      email: task.assignedVolunteer?.email,
+    },
+
+    createdBy: {
+      email: task.createdBy?.email,
+      name: userProfile?.name,
+      photo: userProfile?.avatar,
+      role: task.createdBy?.activeRole,
+    },
+
+    createdAt: task.createdAt,
+  };
 };
 
 const get_my_tasks = async (volunteerId: any) => {
@@ -254,4 +308,5 @@ export const task_service = {
   search_event_volunteer_by_email,
   get_volunteers_dashboard,
   get_single_report,
+  get_task_details_by_id,
 };

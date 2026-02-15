@@ -16,6 +16,11 @@ router.get(
 
   task_controller.my_tasks,
 );
+router.get(
+  "/my-task/:taskId",
+  auth("SUPER_ADMIN", "ORGANIZER", "VOLUNTEER"),
+  task_controller.get_task_details,
+);
 
 router.patch(
   "/:taskId/complete",
@@ -42,6 +47,6 @@ router.get(
 router.get(
   "/:reportId",
   auth("SUPER_ADMIN", "ORGANIZER"),
-  task_controller.view_single_report
+  task_controller.view_single_report,
 );
 export default router;
