@@ -52,10 +52,57 @@ const today_progress = catchAsync(async (req, res) => {
     data: result,
   });
 });
+// search by email
+const search_volunteer_by_email = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  const { email } = req.query;
 
+  const result = await task_service.search_event_volunteer_by_email(
+    eventId,
+    email as string,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Volunteer found",
+    data: result,
+  });
+});
+const get_volunteer_dashboard = catchAsync(async (req, res) => {
+  const { page = 1, limit = 6, eventId } = req.query;
+
+  const result = await task_service.get_volunteers_dashboard({
+    page: Number(page),
+    limit: Number(limit),
+    eventId,
+  });
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Volunteer dashboard data fetched",
+    data: result,
+  });
+});
+const view_single_report = catchAsync(async (req, res) => {
+  const { reportId } = req.params;
+
+  const result = await task_service.get_single_report(reportId);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Report details fetched",
+    data: result,
+  });
+});
 export const task_controller = {
   create_task,
   my_tasks,
   complete_task,
   today_progress,
+  search_volunteer_by_email,
+  view_single_report,
+  get_volunteer_dashboard,
 };
