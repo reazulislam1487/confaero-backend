@@ -6,10 +6,26 @@ export type T_JobRole = "ORGANIZER" | "SUPER_ADMIN" | "EXHIBITOR" | "STAFF";
 export type T_Job = {
   title: string;
   company: string;
-  location: string;
-  type: string;
+
+  bannerImage?: string;
+//   logoImage?: string;
+
   description: string;
+  requirements?: string;
+
+  location: string;
+  locationUrl?: string;
+
+  position?: string;
+  qualification?: string;
+  experience?: string;
+  jobExpire?: Date;
+
+  type: string;
   salary?: string;
+
+  benefits?: string[];
+
   applyLink: string;
 
   status: T_JobStatus;

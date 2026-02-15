@@ -1,20 +1,18 @@
-import { Types } from "mongoose";
 import { job_model } from "./job.schema";
 
-const create_new_job_into_db = async (payload: any, user: any) => {
-  const status =
-    user.role === "ORGANIZER" || user.role === "SUPER_ADMIN"
-      ? "APPROVED"
-      : "PENDING";
+const create_new_job_into_db = async (
+  payload: Record<string, any>,
+  user: any,
+) => {
+  const isAutoApproved = ["ORGANIZER", "SUPER_ADMIN"].includes(user.activeRole);
 
   return job_model.create({
     ...payload,
-    status,
+    status: isAutoApproved ? "APPROVED" : "PENDING",
     postedBy: user.id,
-    posterRole: user.role,
+    posterRole: user.activeRole,
   });
 };
-
 const get_my_jobs = async (user: any, query: any) => {
   const { page = 1, limit = 10, search, status } = query;
 
@@ -91,7 +89,7 @@ const update_job_status = async (jobId: string, status: string) => {
   return job_model.findOneAndUpdate(
     { _id: jobId, status: "PENDING" },
     { status },
-    { new: true }
+    { new: true },
   );
 };
 
@@ -99,7 +97,7 @@ const update_job = async (jobId: string, user: any, payload: any) => {
   return job_model.findOneAndUpdate(
     { _id: jobId, postedBy: user.id },
     payload,
-    { new: true }
+    { new: true },
   );
 };
 

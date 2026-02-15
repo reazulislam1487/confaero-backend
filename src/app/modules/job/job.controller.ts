@@ -34,7 +34,7 @@ const review_jobs = catchAsync(async (req, res) => {
 });
 
 const public_jobs = catchAsync(async (req, res) => {
-  const result = await job_service.get_public_jobs(req.query.search);
+  const result = await job_service.get_public_jobs(req.query.search as string);
   manageResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -44,7 +44,10 @@ const public_jobs = catchAsync(async (req, res) => {
 });
 
 const job_details = catchAsync(async (req, res) => {
-  const result = await job_service.get_job_details(req.params.jobId, req.user);
+  const result = await job_service.get_job_details(
+    req.params.jobId as string,
+    req.user,
+  );
   manageResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -55,8 +58,8 @@ const job_details = catchAsync(async (req, res) => {
 
 const update_status = catchAsync(async (req, res) => {
   const result = await job_service.update_job_status(
-    req.params.jobId,
-    req.body.status
+    req.params.jobId as string,
+    req.body.status,
   );
   manageResponse(res, {
     statusCode: httpStatus.OK,
@@ -68,9 +71,9 @@ const update_status = catchAsync(async (req, res) => {
 
 const update_job = catchAsync(async (req, res) => {
   const result = await job_service.update_job(
-    req.params.jobId,
+    req.params.jobId as string,
     req.user,
-    req.body
+    req.body,
   );
   manageResponse(res, {
     statusCode: httpStatus.OK,
@@ -81,7 +84,10 @@ const update_job = catchAsync(async (req, res) => {
 });
 
 const delete_job = catchAsync(async (req, res) => {
-  const result = await job_service.delete_job(req.params.jobId, req.user);
+  const result = await job_service.delete_job(
+    req.params.jobId as string,
+    req.user,
+  );
   manageResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
