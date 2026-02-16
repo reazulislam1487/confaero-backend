@@ -40,7 +40,7 @@ qr_router.post(
   ),
   eventAccess(),
   // RequestValidator(qr_validations.scan),
-  qr_controller.scan_qr,
+  qr_controller.scan_qr_controller,
 );
 
 export default qr_router;

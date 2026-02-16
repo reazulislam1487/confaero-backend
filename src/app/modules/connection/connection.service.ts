@@ -355,60 +355,6 @@ const get_connection_detail_from_db = async (
   };
 };
 
-
-// auto connection r jonno ata make kra ata use hbe QR service a 
-export const create_instant_connection_from_scan = async ({
-  scannerId,
-  scannedUserId,
-  eventId,
-  role,
-  sessionsCount = 0,
-}: {
-  scannerId: Types.ObjectId;
-  scannedUserId: Types.ObjectId;
-  eventId: Types.ObjectId;
-  role: string;
-  sessionsCount?: number;
-}) => {
-  if (scannerId.toString() === scannedUserId.toString()) {
-    throw new Error("You cannot connect with yourself");
-  }
-
-  // already connected check (either direction)
-  const exists = await connection_model.findOne({
-    ownerAccountId: scannerId,
-    connectedAccountId: scannedUserId,
-    status: "accepted",
-  });
-
-  if (exists) {
-    return { alreadyConnected: true };
-  }
-
-  const eventInfo = [{ eventId, role, sessionsCount }];
-  const now = new Date();
-
-  // A → B
-  await connection_model.create({
-    ownerAccountId: scannerId,
-    connectedAccountId: scannedUserId,
-    status: "accepted",
-    events: eventInfo,
-    lastConnectedAt: now,
-  });
-
-  // B → A
-  await connection_model.create({
-    ownerAccountId: scannedUserId,
-    connectedAccountId: scannerId,
-    status: "accepted",
-    events: eventInfo,
-    lastConnectedAt: now,
-  });
-
-  return { connected: true };
-};
-
 export const connection_service = {
   send_connection_request_into_db,
   get_incoming_requests_from_db,
