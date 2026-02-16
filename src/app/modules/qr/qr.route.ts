@@ -42,5 +42,14 @@ qr_router.post(
   // RequestValidator(qr_validations.scan),
   qr_controller.scan_qr_controller,
 );
+// volunteer
+
+qr_router.get(
+  "/volunteer/:eventId",
+  auth("VOLUNTEER"),
+  // eventAccess(),
+  // RequestValidator(qr_validations.scan),
+  qr_controller.get_volunteer_checkin_history,
+);
 
 export default qr_router;

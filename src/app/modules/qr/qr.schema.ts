@@ -10,13 +10,13 @@ const attendanceSchema = new Schema(
 
     attendeeId: {
       type: Types.ObjectId,
-      ref: "User",
+      ref: "account",
       required: true,
     },
 
     checkedInBy: {
       type: Types.ObjectId,
-      ref: "User", // Volunteer
+      ref: "account", // Volunteer
       required: true,
     },
 
@@ -45,13 +45,13 @@ const leadSchema = new Schema(
 
     exhibitorId: {
       type: Types.ObjectId,
-      ref: "User",
+      ref: "account",
       required: true,
     },
 
     attendeeId: {
       type: Types.ObjectId,
-      ref: "User",
+      ref: "account",
       required: true,
     },
 

@@ -7,6 +7,7 @@ import {
   exhibitor_lead_service,
   volunteer_checkin_service,
 } from "./utilites";
+import { get_volunteer_checkin_history_service } from "./volunteer.service";
 
 const generate_qr = catchAsync(async (req, res) => {
   const { eventId } = req.params;
@@ -76,7 +77,28 @@ export const scan_qr_controller = catchAsync(async (req, res) => {
     data,
   });
 });
+
+// volunteer
+
+export const get_volunteer_checkin_history = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  const volunteerId = req.user?.id;
+
+  const data = await get_volunteer_checkin_history_service({
+    eventId,
+    volunteerId,
+  });
+
+  manageResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Volunteer check-in history fetched",
+    data,
+  });
+});
+
 export const qr_controller = {
   generate_qr,
   scan_qr_controller,
+  get_volunteer_checkin_history,
 };
