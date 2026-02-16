@@ -55,7 +55,7 @@ qr_router.get(
 // 🔹 Get all leads (All / Hot / Follow-up)
 qr_router.get(
   "/exhibitor/:eventId/leads",
-  auth("EXHIBITOR"),
+  auth("EXHIBITOR", "STAFF"),
   eventAccess(),
   qr_controller.get_exhibitor_leads,
 );
@@ -63,14 +63,14 @@ qr_router.get(
 // 🔹 Update lead note
 qr_router.patch(
   "/exhibitor/leads/:leadId/note",
-  auth("EXHIBITOR"),
+  auth("EXHIBITOR", "STAFF"),
   qr_controller.update_lead_note,
 );
 
 // 🔹 Update lead tags
 qr_router.patch(
   "/exhibitor/leads/:leadId/tags",
-  auth("EXHIBITOR"),
+  auth("EXHIBITOR", "STAFF"),
   qr_controller.update_lead_tags,
 );
 

@@ -107,12 +107,13 @@ export const get_volunteer_checkin_history = catchAsync(async (req, res) => {
 const get_exhibitor_leads = catchAsync(async (req, res) => {
   const { eventId } = req.params;
   const exhibitorId = req.user?.id;
-  const { filter = "all" } = req.query;
+  const { filter = "all", search = "" } = req.query;
 
   const data = await get_exhibitor_leads_service({
     eventId,
     exhibitorId,
     filter: filter as any,
+    search: search as string,
   });
 
   manageResponse(res, {

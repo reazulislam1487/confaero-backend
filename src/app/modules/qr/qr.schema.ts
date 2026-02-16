@@ -63,8 +63,8 @@ const leadSchema = new Schema(
     // 🔹 UI SUPPORT
     tags: {
       type: [String],
-      enum: ["HOT", "FOLLOW_UP", "DEMO"],
-      default: [],
+      enum: ["HOT", "FOLLOW_UP", "GENERAL"],
+      default: ["GENERAL"],
     },
 
     note: {

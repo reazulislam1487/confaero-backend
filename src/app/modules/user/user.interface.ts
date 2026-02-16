@@ -1,20 +1,20 @@
 import { Types } from "mongoose";
 
-export type TUser = {
-  name: string;
-  photo?: string;
-  address?: {
-    location?: string;
-    city?: string;
-    state?: string;
-    postCode?: string;
-    country?: string;
-    timeZone?: string;
-  };
-  accountId?: Types.ObjectId;
-  role?: string[];
-  activeRole?: string;
-};
+// export type TUser = {
+//   name: string;
+//   photo?: string;
+//   address?: {
+//     location?: string;
+//     city?: string;
+//     state?: string;
+//     postCode?: string;
+//     country?: string;
+//     timeZone?: string;
+//   };
+//   accountId?: Types.ObjectId;
+//   role?: string[];
+//   activeRole?: string;
+// };
 
 export type TUserProfile = {
   accountId: Types.ObjectId;
@@ -24,7 +24,10 @@ export type TUserProfile = {
 
   affiliations?: {
     company?: string;
-    role?: string;
+    position?: string;
+    from: string;
+    to: string;
+    isCurrent: boolean;
   };
   resume?: {
     url: string;
