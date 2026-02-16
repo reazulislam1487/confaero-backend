@@ -60,6 +60,19 @@ const leadSchema = new Schema(
       enum: ["QR_SCAN"],
       default: "QR_SCAN",
     },
+    // 🔹 UI SUPPORT
+    tags: {
+      type: [String],
+      enum: ["HOT", "FOLLOW_UP", "DEMO"],
+      default: [],
+    },
+
+    note: {
+      type: String,
+      trim: true,
+      default: null,
+      maxlength: 500,
+    },
   },
   {
     timestamps: true,

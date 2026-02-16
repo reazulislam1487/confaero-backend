@@ -8,6 +8,11 @@ import {
   volunteer_checkin_service,
 } from "./utilites";
 import { get_volunteer_checkin_history_service } from "./volunteer.service";
+import {
+  get_exhibitor_leads_service,
+  update_lead_note_service,
+  update_lead_tags_service,
+} from "./leadService";
 
 const generate_qr = catchAsync(async (req, res) => {
   const { eventId } = req.params;
@@ -97,8 +102,69 @@ export const get_volunteer_checkin_history = catchAsync(async (req, res) => {
   });
 });
 
+// leads
+
+const get_exhibitor_leads = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  const exhibitorId = req.user?.id;
+  const { filter = "all" } = req.query;
+
+  const data = await get_exhibitor_leads_service({
+    eventId,
+    exhibitorId,
+    filter: filter as any,
+  });
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Exhibitor leads fetched",
+    data,
+  });
+});
+const update_lead_note = catchAsync(async (req, res) => {
+  const { leadId } = req.params;
+  const { note } = req.body;
+  const exhibitorId = req.user?.id;
+
+  const data = await update_lead_note_service({
+    leadId,
+    exhibitorId,
+    note,
+  });
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Lead note updated",
+    data,
+  });
+});
+
+const update_lead_tags = catchAsync(async (req, res) => {
+  const { leadId } = req.params;
+  const { tags } = req.body;
+  const exhibitorId = req.user?.id;
+
+  const data = await update_lead_tags_service({
+    leadId,
+    exhibitorId,
+    tags,
+  });
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Lead tags updated",
+    data,
+  });
+});
+
 export const qr_controller = {
   generate_qr,
   scan_qr_controller,
   get_volunteer_checkin_history,
+  get_exhibitor_leads,
+  update_lead_note,
+  update_lead_tags,
 };
