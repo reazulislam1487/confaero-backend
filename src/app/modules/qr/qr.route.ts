@@ -9,7 +9,17 @@ const qr_router = Router();
 
 qr_router.get(
   "/generate/:eventId",
-  auth("ATTENDEE"),
+  auth(
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   eventAccess(),
   // RequestValidator(qr_validations.generate),
   qr_controller.generate_qr,
@@ -17,7 +27,17 @@ qr_router.get(
 
 qr_router.post(
   "/scan/:eventId",
-  auth("ATTENDEE"),
+  auth(
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   eventAccess(),
   // RequestValidator(qr_validations.scan),
   qr_controller.scan_qr,

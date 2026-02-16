@@ -17,7 +17,7 @@ const generate_qr_token = (
   };
 
   const token = jwt.sign(payload, QR_SECRET, {
-    expiresIn: "12h",
+    expiresIn: "30d",
   });
 
   return { qrToken: token };
