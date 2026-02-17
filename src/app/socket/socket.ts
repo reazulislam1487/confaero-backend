@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import socketAuth from "./socket.auth";
 import { message_service } from "../modules/message/message.service";
 import { UserProfile_Model } from "../modules/user/user.schema";
+import { registerEventLiveSockets } from "../modules/eventLive/eventLive.socket";
 
 let io: Server;
 const activeUsers = new Map<string, Set<string>>();
@@ -117,6 +118,8 @@ export const initSocket = (server: HTTPServer) => {
     //     time: new Date(),
     //   });
     // });
+
+    registerEventLiveSockets(io, socket);
   });
 
   return io;

@@ -29,7 +29,7 @@ import volunteerRoute from './app/modules/volunteer/volunteer.route';
 import chairRoute from './app/modules/chair/chair.route';
 import reportRoute from './app/modules/report/report.route';
 import jobRoute from './app/modules/job/job.route';
-import eventLiveRoute from './app/modules/eventLive/eventLive.route';
+import eventLiveRoute from './app/modules/eventLive/eventLive.guard';
 
 const appRouter = Router();
 
