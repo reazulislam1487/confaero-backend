@@ -7,6 +7,12 @@ const eventSchema = new Schema(
     location: { type: String, required: true },
     googleMapLink: { type: String },
 
+    eventType: {
+      type: String,
+      enum: ["OFFLINE", "ONLINE", "HYBRID"],
+      default: "OFFLINE",
+    },
+
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
 
@@ -54,6 +60,29 @@ const eventSchema = new Schema(
               type: Number,
               default: 0,
             },
+            //  online / live support
+            isOnline: {
+              type: Boolean,
+              default: false,
+            },
+
+            liveProvider: {
+              type: String,
+              enum: ["ZEGO"],
+            },
+
+            roomId: {
+              type: String,
+            },
+
+            liveStatus: {
+              type: String,
+              enum: ["NOT_STARTED", "LIVE", "ENDED"],
+              default: "NOT_STARTED",
+            },
+
+            startedAt: Date,
+            endedAt: Date,
           },
         ],
         default: [],
