@@ -29,12 +29,10 @@ import volunteerRoute from './app/modules/volunteer/volunteer.route';
 import chairRoute from './app/modules/chair/chair.route';
 import reportRoute from './app/modules/report/report.route';
 import jobRoute from './app/modules/job/job.route';
-import eventLiveRoute from './app/modules/eventLive/eventLive.guard';
 
 const appRouter = Router();
 
 const moduleRoutes = [
-    { path: "/eventLive", route: eventLiveRoute },
     { path: "/job", route: jobRoute },
     { path: "/report", route: reportRoute },
     { path: "/chair", route: chairRoute },

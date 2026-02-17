@@ -44,23 +44,6 @@ const socketAuth = async (socket: Socket, next: any) => {
       console.error("❌ Account not found");
       return next(new Error("Account not found"));
     }
-
-    // const event = await Event_Model.findOne({
-    //   _id: new Types.ObjectId(eventId as string),
-    //   participants: {
-    //     $elemMatch: {
-    //       accountId: new Types.ObjectId(decoded.id),
-    //     },
-    //   },
-    // });
-
-    // if (!event) {
-    //   console.error("❌ User not part of event");
-    //   return next(new Error("Event access denied"));
-    // }
-
-    // ✅ UPDATED: organizer OR participant check
-
     // ✅ 1️⃣ SUPER ADMIN BYPASS
     if (decoded.activeRole === "SUPER_ADMIN") {
       socket.user = {
