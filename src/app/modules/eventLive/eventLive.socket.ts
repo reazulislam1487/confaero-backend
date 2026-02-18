@@ -26,7 +26,7 @@ export const registerEventLiveSockets = (
       count,
     });
   };
-
+// test text
   // 🟢 JOIN LIVE SESSION
   socket.on(EVENT_LIVE_EVENTS.JOIN_SESSION, ({ sessionIndex }) => {
     try {
