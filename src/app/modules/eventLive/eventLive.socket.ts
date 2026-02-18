@@ -4,39 +4,41 @@ import { ensureSpeaker } from "./eventLive.guard";
 
 export const registerEventLiveSockets = (
   io: Server,
-  socket: Socket & { user?: any },
+  socket: Socket & {
+    user?: {
+      userId: string;
+      activeRole: string;
+      eventId: string;
+    };
+  },
 ) => {
-  const { userId, role } = socket.user;
+  const { userId, activeRole, eventId } = socket.user!;
 
-  const getRoom = (eventId: string, sessionIndex: number) =>
+  const getRoom = (sessionIndex: number) =>
     `session:${eventId}:${sessionIndex}`;
 
-  // JOIN LIVE SESSION
-  socket.on(EVENT_LIVE_EVENTS.JOIN_SESSION, ({ eventId, sessionIndex }) => {
-    socket.join(getRoom(eventId, sessionIndex));
+  // 🟢 JOIN LIVE SESSION
+  socket.on(EVENT_LIVE_EVENTS.JOIN_SESSION, ({ sessionIndex }) => {
+    socket.join(getRoom(sessionIndex));
 
-    console.log(
-      `🟢 User ${userId} joined live session ${eventId}:${sessionIndex}`,
-    );
+    console.log(`🟢 User ${userId} joined session ${eventId}:${sessionIndex}`);
   });
 
-  // LIVE CHAT (pure realtime, no DB, no memory)
-  socket.on(EVENT_LIVE_EVENTS.SEND_MESSAGE, ({ eventId, sessionIndex, text }) => {
-    io.to(getRoom(eventId, sessionIndex)).emit(
-      EVENT_LIVE_EVENTS.MESSAGE_NEW,
-      {
-        userId,
-        text,
-        time: new Date(),
-      },
-    );
+  // 💬 LIVE CHAT (ephemeral)
+  socket.on(EVENT_LIVE_EVENTS.SEND_MESSAGE, ({ sessionIndex, text }) => {
+    console.log(text);
+    io.to(getRoom(sessionIndex)).emit(EVENT_LIVE_EVENTS.MESSAGE_NEW, {
+      userId,
+      text,
+      time: new Date(),
+    });
   });
-  
-  // CREATE POLL (speaker only)
+
+  // 📊 CREATE POLL (speaker only)
   socket.on(
     EVENT_LIVE_EVENTS.CREATE_POLL,
-    ({ eventId, sessionIndex, question, options }) => {
-      ensureSpeaker(role);
+    ({ sessionIndex, question, options }) => {
+      ensureSpeaker(activeRole);
 
       const poll = {
         id: Date.now().toString(),
@@ -47,31 +49,23 @@ export const registerEventLiveSockets = (
         })),
       };
 
-      io.to(getRoom(eventId, sessionIndex)).emit(
-        EVENT_LIVE_EVENTS.POLL_CREATED,
-        poll,
-      );
+      io.to(getRoom(sessionIndex)).emit(EVENT_LIVE_EVENTS.POLL_CREATED, poll);
     },
   );
 
-  // VOTE POLL (realtime only)
+  // 🗳️ VOTE POLL (stateless)
   socket.on(
     EVENT_LIVE_EVENTS.VOTE_POLL,
-    ({ eventId, sessionIndex, pollId, optionIndex }) => {
-      io.to(getRoom(eventId, sessionIndex)).emit(
-        EVENT_LIVE_EVENTS.POLL_UPDATED,
-        {
-          pollId,
-          optionIndex,
-        },
-      );
+    ({ sessionIndex, pollId, optionIndex }) => {
+      io.to(getRoom(sessionIndex)).emit(EVENT_LIVE_EVENTS.POLL_UPDATED, {
+        pollId,
+        optionIndex,
+      });
     },
   );
 
-  // SESSION ENDED
-  socket.on(EVENT_LIVE_EVENTS.SESSION_ENDED, ({ eventId, sessionIndex }) => {
-    io.to(getRoom(eventId, sessionIndex)).emit(
-      EVENT_LIVE_EVENTS.SESSION_ENDED,
-    );
+ 
+  socket.onAny((event, payload) => {
+    console.log("📡 SOCKET EVENT:", event, payload);
   });
 };

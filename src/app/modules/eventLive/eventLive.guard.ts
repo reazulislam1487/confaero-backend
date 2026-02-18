@@ -1,5 +1,5 @@
-export const ensureSpeaker = (role: string) => {
-  if (role !== "SPEAKER") {
-    throw new Error("Only speaker can perform this action");
+export const ensureSpeaker = (activeRole: string) => {
+  if (activeRole !== "SPEAKER") {
+    throw new Error("Only speaker allowed");
   }
 };
