@@ -19,30 +19,34 @@ import uploadRoute from "./app/modules/upload/upload.route";
 import posterRoute from "./app/modules/poster/poster.route";
 import reviewerRoute from "./app/modules/reviewer/reviewer.route";
 import posterAssignRoute from "./app/modules/posterAssign/posterAssign.route";
-import boothRoute from './app/modules/booth/booth.route';
-import organizerBoothRoute from './app/modules/organizerBooth/organizerBooth.route';
-import sponsorRoute from './app/modules/sponsor/sponsor.route';
-import organizerSponsorRoute from './app/modules/organizerSponsor/organizerSponsor.route';
-import documentRoute from './app/modules/document/document.route';
-import photoRoute from './app/modules/photo/photo.route';
-import volunteerRoute from './app/modules/volunteer/volunteer.route';
-import chairRoute from './app/modules/chair/chair.route';
-import reportRoute from './app/modules/report/report.route';
-import jobRoute from './app/modules/job/job.route';
+import boothRoute from "./app/modules/booth/booth.route";
+import organizerBoothRoute from "./app/modules/organizerBooth/organizerBooth.route";
+import sponsorRoute from "./app/modules/sponsor/sponsor.route";
+import organizerSponsorRoute from "./app/modules/organizerSponsor/organizerSponsor.route";
+import documentRoute from "./app/modules/document/document.route";
+import photoRoute from "./app/modules/photo/photo.route";
+import volunteerRoute from "./app/modules/volunteer/volunteer.route";
+import chairRoute from "./app/modules/chair/chair.route";
+import reportRoute from "./app/modules/report/report.route";
+import jobRoute from "./app/modules/job/job.route";
+import zegoRoute from "./app/modules/zego/zego.route";
+import eventLiveRoute from "./app/modules/eventLive/eventLive.route";
 
 const appRouter = Router();
 
 const moduleRoutes = [
-    { path: "/job", route: jobRoute },
-    { path: "/report", route: reportRoute },
-    { path: "/chair", route: chairRoute },
-    { path: "/volunteer", route: volunteerRoute },
-    { path: "/photo", route: photoRoute },
-    { path: "/document", route: documentRoute },
-    { path: "/organizerSponsor", route: organizerSponsorRoute },
-    { path: "/sponsor", route: sponsorRoute },
-    { path: "/organizerBooth", route: organizerBoothRoute },
-    { path: "/booth", route: boothRoute },
+  { path: "/eventLive", route: eventLiveRoute },
+  { path: "/zego", route: zegoRoute },
+  { path: "/job", route: jobRoute },
+  { path: "/report", route: reportRoute },
+  { path: "/chair", route: chairRoute },
+  { path: "/volunteer", route: volunteerRoute },
+  { path: "/photo", route: photoRoute },
+  { path: "/document", route: documentRoute },
+  { path: "/organizerSponsor", route: organizerSponsorRoute },
+  { path: "/sponsor", route: sponsorRoute },
+  { path: "/organizerBooth", route: organizerBoothRoute },
+  { path: "/booth", route: boothRoute },
   { path: "/reviewer", route: reviewerRoute },
   { path: "/poster-assign", route: posterAssignRoute },
   { path: "/poster", route: posterRoute },

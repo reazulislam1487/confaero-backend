@@ -16,37 +16,6 @@ const create_new_organizer = catchAsync(async (req, res) => {
   });
 });
 
-// const create_event_by_super_admin = catchAsync(async (req, res) => {
-//   const uploaded = (req as any).uploadedFiles || {};
-
-//   const payload = {
-//     ...req.body,
-//     floorMapImageUrl: uploaded.floorMaps
-//       ? Array.isArray(uploaded.floorMaps)
-//         ? uploaded.floorMaps
-//         : [uploaded.floorMaps]
-//       : [],
-//     bannerImageUrl: uploaded.bannerImage
-//       ? Array.isArray(uploaded.bannerImage)
-//         ? uploaded.bannerImage
-//         : [uploaded.bannerImage]
-//       : [],
-//     organizerEmails: req.body.organizerEmails
-//       ? JSON.parse(req.body.organizerEmails)
-//       : [],
-//     agenda: req.body.agenda ? JSON.parse(req.body.agenda) : [],
-//   };
-
-//   const result =
-//     await super_admin_service.create_event_by_super_admin_into_db(payload);
-
-//   manageResponse(res, {
-//     statusCode: httpStatus.CREATED,
-//     success: true,
-//     message: "Event created successfully",
-//     data: result,
-//   });
-// });
 
 const create_event_by_super_admin = catchAsync(async (req, res) => {
   const result = await super_admin_service.create_event_by_super_admin_into_db(
