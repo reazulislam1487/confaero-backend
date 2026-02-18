@@ -11,4 +11,6 @@ export const EVENT_LIVE_EVENTS = {
   POLL_UPDATED: "event-live:poll-updated",
 
   SESSION_ENDED: "event-live:session-ended",
+
+  VIEWER_COUNT: "event-live:viewer-count",
 };
