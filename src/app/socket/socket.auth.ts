@@ -20,8 +20,15 @@ const socketAuth = async (socket: Socket, next: any) => {
   try {
     console.log("🧪 SOCKET AUTH HIT");
     // console.log("eventId", socket.handshake?.headers?.eventid);
+    // console.log(socket.handshake.auth.token);
+    // console.log(socket.handshake.auth.eventid);
     const token = socket.handshake?.headers?.token;
     const eventId = socket.handshake?.headers?.eventid;
+
+    // const token = socket.handshake?.auth?.token;
+    // const eventId = socket.handshake?.auth?.eventid;
+
+    console.log("token is", token, "eventId is", eventId);
 
     if (!token || !eventId) {
       console.error("❌ Missing token or eventId");

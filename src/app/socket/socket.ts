@@ -27,6 +27,7 @@ export const initSocket = (server: HTTPServer) => {
     socket.join(`event:${eventId}`);
 
     console.log(`🔌 User ${userId} joined event:${eventId}`);
+
     // init set if not exists
     if (!activeUsers.has(eventId)) {
       activeUsers.set(eventId, new Set());

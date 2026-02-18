@@ -20,19 +20,23 @@ export const registerEventLiveSockets = (
   // 🟢 JOIN LIVE SESSION
   socket.on(EVENT_LIVE_EVENTS.JOIN_SESSION, ({ sessionIndex }) => {
     socket.join(getRoom(sessionIndex));
-
     console.log(`🟢 User ${userId} joined session ${eventId}:${sessionIndex}`);
   });
 
   // 💬 LIVE CHAT (ephemeral)
   socket.on(EVENT_LIVE_EVENTS.SEND_MESSAGE, ({ sessionIndex, text }) => {
-    console.log(text);
     io.to(getRoom(sessionIndex)).emit(EVENT_LIVE_EVENTS.MESSAGE_NEW, {
       userId,
       text,
       time: new Date(),
     });
   });
+  /* 
+     without use room
+  socket.emit("event-live:send-message", {
+    sessionIndex: 0,
+    text: "Hello!",
+  }); */
 
   // 📊 CREATE POLL (speaker only)
   socket.on(
@@ -64,7 +68,6 @@ export const registerEventLiveSockets = (
     },
   );
 
- 
   socket.onAny((event, payload) => {
     console.log("📡 SOCKET EVENT:", event, payload);
   });
