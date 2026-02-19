@@ -27,7 +27,6 @@ booth_router.patch(
 );
 
 // add more routes as needed
-// add staff routes for booth management if needed
 
 booth_router.post(
   "/staff",

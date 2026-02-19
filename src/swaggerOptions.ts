@@ -26,7 +26,6 @@ import { organizerSponsorSwaggerDocs } from "./app/modules/organizerSponsor/orga
 import { documentSwaggerDocs } from "./app/modules/document/document.swagger";
 import { photoSwaggerDocs } from "./app/modules/photo/photo.swagger";
 import { volunteerSwaggerDocs } from "./app/modules/volunteer/volunteer.swagger";
-import { chairSwaggerDocs } from "./app/modules/chair/chair.swagger";
 import { reportSwaggerDocs } from "./app/modules/report/report.swagger";
 import { jobSwaggerDocs } from "./app/modules/job/job.swagger";
 import { zegoSwaggerDocs } from "./app/modules/zego/zego.swagger";
@@ -70,11 +69,11 @@ export const swaggerOptions = {
       ...documentSwaggerDocs,
       ...photoSwaggerDocs,
       ...volunteerSwaggerDocs,
-      ...chairSwaggerDocs,
       ...reportSwaggerDocs,
       ...jobSwaggerDocs,
-    
-            ...zegoSwaggerDocs,},
+
+      ...zegoSwaggerDocs,
+    },
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]
