@@ -26,4 +26,10 @@ router.post(
   auth("SPEAKER", "ATTENDEE"),
   eventLive_controller.end_live_session,
 );
+// start or find session
+router.get(
+  "/speaker/:eventid",
+  auth("SPEAKER", "ATTENDEE"),
+  eventLive_controller.get_speaker_sessions ,
+);
 export default router;

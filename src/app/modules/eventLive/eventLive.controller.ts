@@ -60,9 +60,27 @@ const end_live_session = catchAsync(async (req, res) => {
     data: result,
   });
 });
+// get speaker sessions
+const get_speaker_sessions = catchAsync(async (req, res) => {
+  const user = req.user as any;
+  const eventId = req.params.eventid as string; // ✅ FIXED
+
+  const result = await eventLive_service.get_event_live_sessions({
+    eventId,
+    userId: user.id,
+  });
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Speaker sessions retrieved successfully",
+    data: result,
+  });
+});
 
 export const eventLive_controller = {
   join_live_session,
   start_live_session,
   end_live_session,
+  get_speaker_sessions,
 };

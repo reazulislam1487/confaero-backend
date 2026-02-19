@@ -100,9 +100,8 @@ const join_live_session = async ({
 
   // 5️⃣ Participant validation
   const participant = event.participants.find(
-    (p: any) =>
-      p.accountId.toString() === user.id &&
-      p.sessionIndex.includes(sessionIndex),
+    (p: any) => p.accountId.toString() === user.id,
+    // && p.sessionIndex.includes(sessionIndex),
   );
 
   if (!participant) {
@@ -187,7 +186,6 @@ const end_live_session = async ({
   session.liveStatus = "ENDED";
   session.endedAt = new Date();
 
-
   await event.save();
 
   return {
@@ -197,9 +195,102 @@ const end_live_session = async ({
     endedBy: user.id,
   };
 };
+// get speaker sessions
+export const get_event_live_sessions = async ({
+  eventId,
+  userId,
+}: {
+  eventId: string;
+  userId: string;
+}) => {
+  const event: any = await Event_Model.findById(eventId);
+
+  if (!event) {
+    throw new AppError("Event not found", 404);
+  }
+
+  const participant = event.participants.find(
+    (p: any) => p.accountId.toString() === userId,
+  );
+
+  if (!participant) {
+    throw new AppError("User is not part of this event", 403);
+  }
+
+  // 🟢 SPEAKER FLOW
+  if (participant.role === "SPEAKER") {
+    const sessions = participant.sessionIndex
+      .map((index: number) => {
+        const s = event.agenda?.sessions?.[index];
+
+        if (!s) return null; // 🔒 guard
+
+        return {
+          sessionIndex: index,
+          title: s.title,
+          date: s.date,
+          time: s.time,
+          liveStatus: s.liveStatus,
+          startedAt: s.startedAt || null,
+        };
+      })
+      .filter(Boolean); // 🔒 remove nulls
+
+    return {
+      role: "SPEAKER",
+      sessions,
+    };
+  }
+
+  if (participant.role === "ATTENDEE") {
+    const allSessions = event.agenda?.sessions;
+
+    if (!Array.isArray(allSessions) || allSessions.length === 0) {
+      return {
+        role: "ATTENDEE",
+        message: "No live session is available right now",
+        sessions: [],
+      };
+    }
+
+    const sessions = allSessions
+      .map((s: any, index: number) => {
+        if (!s) return null;
+
+        return {
+          sessionIndex: index,
+          title: s.title,
+          date: s.date,
+          time: s.time,
+          roomId: s.roomId,
+          liveStatus: s.liveStatus,
+        };
+      })
+      .filter((s: any) => s && s.liveStatus === "LIVE");
+
+    if (sessions.length === 0) {
+      return {
+        role: "ATTENDEE",
+        message: "No live session is available right now",
+        sessions: [],
+      };
+    }
+
+    return {
+      role: "ATTENDEE",
+      sessions,
+    };
+  }
+
+  return {
+    role: participant.role,
+    sessions: [],
+  };
+};
 
 export const eventLive_service = {
   join_live_session,
   start_live_session,
   end_live_session,
+  get_event_live_sessions,
 };
