@@ -3,7 +3,14 @@ import { Event_Model } from "../superAdmin/event.schema";
 import { AppError } from "../../utils/app_error";
 import { generateZegoToken } from "../zego/utils";
 
-type zogo = "SPEAKER" | "ATTENDEE";
+type zogo =
+  | "ATTENDEE"
+  | "SPEAKER"
+  | "EXHIBITOR"
+  | "STAFF"
+  | "SPONSOR"
+  | "ABSTRACT_REVIEWER"
+  | "TRACK_CHAIR";
 const start_live_session = async ({
   eventId,
   sessionIndex,
@@ -112,12 +119,12 @@ const join_live_session = async ({
   }
 
   // 6️⃣ Role validation
-  if (!["SPEAKER", "ATTENDEE"].includes(participant.role)) {
-    throw new AppError(
-      "Role not allowed in live session",
-      httpStatus.FORBIDDEN,
-    );
-  }
+  // if (!["SPEAKER", "ATTENDEE"].includes(participant.role)) {
+  //   throw new AppError(
+  //     "Role not allowed in live session",
+  //     httpStatus.FORBIDDEN,
+  //   );
+  // }
   // 7️⃣ Ensure roomId (create once)
   if (!session.roomId) {
     session.roomId = `${eventId}_${sessionIndex}`;
