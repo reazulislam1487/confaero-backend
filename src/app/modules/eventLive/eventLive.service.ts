@@ -3,14 +3,7 @@ import { Event_Model } from "../superAdmin/event.schema";
 import { AppError } from "../../utils/app_error";
 import { generateZegoToken } from "../zego/utils";
 
-type zogo =
-  | "ATTENDEE"
-  | "SPEAKER"
-  | "EXHIBITOR"
-  | "STAFF"
-  | "SPONSOR"
-  | "ABSTRACT_REVIEWER"
-  | "TRACK_CHAIR";
+type zogo = "SPEAKER" | "ATTENDEE";
 const start_live_session = async ({
   eventId,
   sessionIndex,
@@ -58,7 +51,6 @@ const start_live_session = async ({
 
   await event.save();
 
-  console.log(session);
   return {
     roomId: session.roomId,
     sessionIndex,
@@ -90,6 +82,26 @@ const join_live_session = async ({
 
   if (!session) {
     throw new AppError("Session not found", httpStatus.NOT_FOUND);
+  }
+
+  // 🔥 AUTO END LOGIC (ADDED)
+  const MAX_SESSION_DURATION = 4 * 60 * 60 * 1000; // 4 hours
+
+  const isSessionExpired = (s: any) => {
+    if (!s.startedAt) return false;
+
+    return Date.now() - new Date(s.startedAt).getTime() > MAX_SESSION_DURATION;
+  };
+
+  if (session.liveStatus === "LIVE" && isSessionExpired(session)) {
+    session.liveStatus = "ENDED";
+    session.endedAt = new Date();
+    await event.save();
+
+    throw new AppError(
+      "Session has ended (time limit reached)",
+      httpStatus.BAD_REQUEST,
+    );
   }
 
   // 3️⃣ Live status check
