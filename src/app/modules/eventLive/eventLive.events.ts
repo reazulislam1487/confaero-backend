@@ -13,4 +13,12 @@ export const EVENT_LIVE_EVENTS = {
   SESSION_ENDED: "event-live:session-ended",
 
   VIEWER_COUNT: "event-live:viewer-count",
+
+  // 🔊 NEW: SPEAKER → ALL ATTENDEE MIC CONTROL
+  MUTE_ALL_ATTENDEES: "event-live:mute-all-attendees",
+  UNMUTE_ALL_ATTENDEES: "event-live:unmute-all-attendees",
+
+  // 🔔 NEW: ATTENDEE SIDE SIGNALS
+  FORCE_MUTE: "event-live:force-mute",
+  ALLOW_UNMUTE: "event-live:allow-unmute",
 };

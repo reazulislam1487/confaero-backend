@@ -123,6 +123,40 @@ export const registerEventLiveSockets = (
     }
   });
 
+  // 🔊 NEW: SPEAKER → ALL ATTENDEE MIC CONTRO
+  //
+
+  // 🔇 MUTE ALL ATTENDEES (speaker only)
+  socket.on(EVENT_LIVE_EVENTS.MUTE_ALL_ATTENDEES, ({ sessionIndex }) => {
+    try {
+      if (typeof sessionIndex !== "number") return;
+
+      ensureSpeaker(activeRole);
+
+      // 🚫 speaker নিজে mute হবে না
+      socket.to(getRoom(sessionIndex)).emit(EVENT_LIVE_EVENTS.FORCE_MUTE, {
+        message: "Speaker has muted all attendees",
+      });
+    } catch (err) {
+      console.error("MUTE_ALL_ATTENDEES error", err);
+    }
+  });
+
+  // 🔊 UNMUTE ALL ATTENDEES (permission only, mic auto ON নয়)
+  socket.on(EVENT_LIVE_EVENTS.UNMUTE_ALL_ATTENDEES, ({ sessionIndex }) => {
+    try {
+      if (typeof sessionIndex !== "number") return;
+
+      ensureSpeaker(activeRole);
+
+      // ✅ speaker নিজে unaffected
+      socket.to(getRoom(sessionIndex)).emit(EVENT_LIVE_EVENTS.ALLOW_UNMUTE, {
+        message: "Speaker has unmuted all attendees",
+      });
+    } catch (err) {
+      console.error("UNMUTE_ALL_ATTENDEES error", err);
+    }
+  });
   // ❌ DISCONNECT → UPDATE VIEWER COUNT
   socket.on("disconnect", () => {
     const sessionIndex = socket.data.sessionIndex;
