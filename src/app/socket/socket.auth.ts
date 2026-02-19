@@ -15,7 +15,7 @@ declare module "socket.io" {
     };
   }
 }
-
+// test
 const socketAuth = async (socket: Socket, next: any) => {
   try {
     console.log("🧪 SOCKET AUTH HIT");
