@@ -7,7 +7,7 @@ const create_or_update_app_content = catchAsync(async (req, res) => {
   const payload = {
     ...req.body,
     createdBy: req.user?.id,
-    updatedBy: req.user?.id, 
+    updatedBy: req.user?.id,
   };
 
   const result =
