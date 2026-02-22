@@ -10,6 +10,7 @@ import { JwtPayload, Secret } from "jsonwebtoken";
 import sendMail from "../../utils/mail_sender";
 import { isAccountExist } from "../../utils/isAccountExist";
 import { UserProfile_Model } from "../user/user.schema";
+// added
 // register user
 const register_user_into_db = async (payload: TRegisterPayload) => {
   const session = await mongoose.startSession();
