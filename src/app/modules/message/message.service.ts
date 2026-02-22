@@ -191,30 +191,7 @@ const get_conversations = async (
     },
   };
 };
-// const get_conversations = async (userId: any, eventId: any) => {
-//   const conversations = await conversation_model
-//     .find({
-//       eventId,
-//       participants: userId,
-//     })
-//     .sort({ lastMessageAt: -1 })
-//     .lean();
 
-//   console.log(eventId, userId);
-
-//   const results = await Promise.all(
-//     conversations.map(async (conv) => {
-//       const unreadCount = await message_model.countDocuments({
-//         conversationId: conv._id,
-//         readBy: { $ne: userId },
-//       });
-
-//       return { ...conv, unreadCount };
-//     }),
-//   );
-
-//   return results;
-// };
 
 const get_messages = async (conversationId: any, userId: Types.ObjectId) => {
   return message_model.find({ conversationId }).sort({ createdAt: 1 });
