@@ -3,7 +3,6 @@ import { TAccount, TLoginPayload, TRegisterPayload } from "./auth.interface";
 import { Account_Model } from "./auth.schema";
 import httpStatus from "http-status";
 import bcrypt from "bcrypt";
-import { TUser } from "../user/user.interface";
 import mongoose from "mongoose";
 import { jwtHelpers, JwtPayloadType } from "../../utils/JWT";
 import { configs } from "../../configs";
@@ -60,12 +59,6 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
     const newAccount = await Account_Model.create([accountPayload], {
       session,
     });
-
-    // 5. create user
-    const userPayload: TUser = {
-      name: payload.name,
-      accountId: newAccount[0]._id,
-    };
 
     // 2️ User profile create
     await UserProfile_Model.create({
