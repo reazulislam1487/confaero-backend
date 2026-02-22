@@ -6,8 +6,8 @@ import { app_content_service } from "./appContent.service";
 const create_or_update_app_content = catchAsync(async (req, res) => {
   const payload = {
     ...req.body,
-    createdBy: req.user?.id, // ✅ backend inject
-    updatedBy: req.user?.id, // ✅ backend inject
+    createdBy: req.user?.id,
+    updatedBy: req.user?.id, 
   };
 
   const result =
