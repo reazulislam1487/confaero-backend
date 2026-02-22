@@ -1,4 +1,3 @@
-// appContent.service.ts
 import { T_AppContent } from "./appContent.interface";
 import { AppContent } from "./appContent.schema";
 
@@ -7,17 +6,17 @@ const create_or_update_app_content_into_db = async (payload: T_AppContent) => {
 
   // 🟢 CREATE
   if (!existing) {
-    const created = await AppContent.create(payload);
-    return created;
+    return AppContent.create(payload);
   }
 
-  // 🔵 UPDATE
-  const { createdBy, ...updatePayload } = payload;
+  // 🔵 UPDATE (safe fields only)
   const updated = await AppContent.findByIdAndUpdate(
     existing._id,
     {
-      ...updatePayload,
-      updatedBy: payload.updatedBy,
+      title: payload.title,
+      content: payload.content,
+      isActive: payload.isActive ?? existing.isActive,
+      updatedBy: payload.updatedBy, // ✅ only updater changes
     },
     { new: true },
   );
