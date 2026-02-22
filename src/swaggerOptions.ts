@@ -28,7 +28,6 @@ import { photoSwaggerDocs } from "./app/modules/photo/photo.swagger";
 import { volunteerSwaggerDocs } from "./app/modules/volunteer/volunteer.swagger";
 import { reportSwaggerDocs } from "./app/modules/report/report.swagger";
 import { jobSwaggerDocs } from "./app/modules/job/job.swagger";
-import { zegoSwaggerDocs } from "./app/modules/zego/zego.swagger";
 import { appContentSwaggerDocs } from "./app/modules/appContent/appContent.swagger";
 
 export const swaggerOptions = {
@@ -72,10 +71,8 @@ export const swaggerOptions = {
       ...volunteerSwaggerDocs,
       ...reportSwaggerDocs,
       ...jobSwaggerDocs,
-
-      ...zegoSwaggerDocs,
-    
-            ...appContentSwaggerDocs,},
+      ...appContentSwaggerDocs,
+    },
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]

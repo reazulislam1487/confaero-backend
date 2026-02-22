@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
 import { Event_Model } from "../superAdmin/event.schema";
 import { AppError } from "../../utils/app_error";
-import { generateZegoToken } from "../zego/utils";
+import { generateZegoToken } from "../../utils/generateZegoToken";
 
 type zogo = "SPEAKER" | "ATTENDEE";
 const start_live_session = async ({

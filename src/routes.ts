@@ -28,7 +28,6 @@ import photoRoute from "./app/modules/photo/photo.route";
 import volunteerRoute from "./app/modules/volunteer/volunteer.route";
 import reportRoute from "./app/modules/report/report.route";
 import jobRoute from "./app/modules/job/job.route";
-import zegoRoute from "./app/modules/zego/zego.route";
 import eventLiveRoute from "./app/modules/eventLive/eventLive.route";
 import appContentRoute from './app/modules/appContent/appContent.route';
 
@@ -37,7 +36,6 @@ const appRouter = Router();
 const moduleRoutes = [
     { path: "/appContent", route: appContentRoute },
   { path: "/eventLive", route: eventLiveRoute },
-  { path: "/zego", route: zegoRoute },
   { path: "/job", route: jobRoute },
   { path: "/report", route: reportRoute },
   { path: "/volunteer", route: volunteerRoute },
