@@ -19,7 +19,12 @@ const eventSchema = new Schema(
     expectedAttendee: { type: Number },
     boothSlot: { type: Number },
     details: { type: String },
-
+    // registration
+    paymentType: {
+      type: String,
+      enum: ["STRIPE", "EXTERNAL"],
+      default: "STRIPE",
+    },
     organizers: [{ type: Types.ObjectId, ref: "Account", required: true }],
     organizerEmails: [{ type: String }],
     bannerImageUrl: { type: String },

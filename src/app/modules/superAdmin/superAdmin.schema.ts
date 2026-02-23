@@ -20,6 +20,16 @@ const organizerSchema = new Schema<TOrganizer>(
       type: Boolean,
       default: false,
     },
+
+    stripeAccountId: {
+      type: String,
+      default: null,
+    },
+
+    stripeConnected: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

@@ -5,6 +5,7 @@ import { organizer_service } from "./organizer.service";
 import { uploadToS3 } from "../../utils/s3";
 import { AppError } from "../../utils/app_error";
 import { Event_Model } from "../superAdmin/event.schema";
+import { super_admin_service } from "../superAdmin/superAdmin.service";
 
 const get_my_events = catchAsync(async (req, res) => {
   const result = await organizer_service.get_my_events_from_db(req.user);
@@ -134,7 +135,7 @@ const delete_floor_map = catchAsync(async (req, res) => {
   const initialLength = event.floorMaps.length;
 
   event.floorMaps = event.floorMaps.filter(
-    (floor) => floor._id.toString() !== floorMapId,
+    (floor) => floor._id.toString() !== (floorMapId as any),
   );
 
   if (event.floorMaps.length === initialLength) {
@@ -150,7 +151,24 @@ const delete_floor_map = catchAsync(async (req, res) => {
   });
 });
 
+const connectOrganizerStripeController = catchAsync(async (req, res) => {
+  /**
+   * Assumption:
+   * - Organizer already logged in
+   * - req.user.organizerId OR req.user.accountId থেকে organizer পাওয়া যাবে
+   */
+  const organizerId = req.params.organizerId;
 
+  const result =
+    await super_admin_service.connect_organizer_stripe_account(organizerId);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Stripe onboarding link generated successfully",
+    data: result, // { onboardingUrl }
+  });
+});
 export const organizer_controller = {
   get_my_events,
   update_my_event,
@@ -159,4 +177,5 @@ export const organizer_controller = {
   get_attendee_details,
   get_event_floormaps,
   delete_floor_map,
+  connectOrganizerStripeController,
 };

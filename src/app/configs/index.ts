@@ -33,5 +33,7 @@ export const configs = {
   },
   new: {
     jwt_access_secret: process.env.JWT_ACCESS_SECRET,
+    stripe_secret_key: process.env.STRIPE_SECRET_KEY,
+    webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
   },
 };

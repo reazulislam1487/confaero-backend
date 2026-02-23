@@ -2,6 +2,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Request, Response } from "express";
 import swaggerJSDoc from "swagger-jsdoc";
+import bodyParser from "body-parser";
 import swaggerUi from "swagger-ui-express";
 import globalErrorHandler from "./app/middlewares/global_error_handler";
 import notFound from "./app/middlewares/not_found_api";
@@ -9,6 +10,7 @@ import appRouter from "./routes";
 import { swaggerOptions } from "./swaggerOptions";
 import { upload } from "./app/middlewares/upload";
 import { uploadToS3 } from "./app/utils/s3";
+import { stripeWebhookController } from "./app/utils/stripe.webhook";
 
 // define app
 const app = express();
@@ -24,6 +26,14 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 */
 // middleware
 app.use(cors());
+
+// stripe webhook endpoint
+app.post(
+  "/webhooks/stripe",
+  bodyParser.raw({ type: "application/json" }),
+  stripeWebhookController,
+);
+
 app.use(express.json({ limit: "100mb" }));
 //! app.use(express.raw());
 app.use(cookieParser());

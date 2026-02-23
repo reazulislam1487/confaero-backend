@@ -585,4 +585,3 @@ export const search_speaker_by_email_from_db = async (
   };
 };
 
-// export { bulk_add_sessions };

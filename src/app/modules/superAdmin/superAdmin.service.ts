@@ -4,10 +4,11 @@ import { Account_Model } from "../auth/auth.schema";
 import { Organizer_Model } from "./superAdmin.schema";
 import { Event_Model } from "./event.schema";
 import { AppError } from "../../utils/app_error";
-import {  UserProfile_Model } from "../user/user.schema";
+import { UserProfile_Model } from "../user/user.schema";
 import { isAccountExist } from "../../utils/isAccountExist";
 import formatDateRange from "../../utils/formatDateRange";
 import sendMail from "../../utils/mail_sender";
+import { stripe } from "../../configs/stripe";
 
 type TCreateOrganizerPayload = {
   email: string;
@@ -526,6 +527,46 @@ const get_single_event_details_from_db = async (eventId: any) => {
 
   return event;
 };
+
+// stripe
+const connect_organizer_stripe_account = async (organizerId: any) => {
+  const organizer = await Organizer_Model.findById(organizerId);
+
+  if (!organizer) {
+    throw new AppError("Organizer not found", httpStatus.NOT_FOUND);
+  }
+
+  // ✅ Case-3: already fully connected
+  if (organizer.stripeAccountId && organizer.stripeConnected) {
+    throw new AppError("Stripe already connected", httpStatus.BAD_REQUEST);
+  }
+
+  let stripeAccountId = organizer.stripeAccountId;
+
+  // ✅ Case-1: account not created yet
+  if (!stripeAccountId) {
+    const account = await stripe.accounts.create({
+      type: "standard",
+    });
+
+    stripeAccountId = account.id;
+    organizer.stripeAccountId = stripeAccountId;
+    organizer.stripeConnected = false;
+    await organizer.save();
+  }
+
+  // ✅ Case-2: account exists but onboarding incomplete
+  const accountLink = await stripe.accountLinks.create({
+    account: stripeAccountId,
+    refresh_url: `http://localhost:3000/stripe/refresh`,
+    return_url: `http://localhost:3000/stripe/success`,
+    type: "account_onboarding",
+  });
+
+  return {
+    onboardingUrl: accountLink.url,
+  };
+};
 export const super_admin_service = {
   create_new_organizer_into_db,
   create_event_by_super_admin_into_db,
@@ -541,4 +582,5 @@ export const super_admin_service = {
   get_dashboard_overview_from_db,
   get_event_details_from_db,
   get_single_event_details_from_db,
+  connect_organizer_stripe_account,
 };
