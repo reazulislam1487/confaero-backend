@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { Organizer_Model } from "../modules/superAdmin/superAdmin.schema";
 import { stripe } from "../configs/stripe";
 import { configs } from "../configs";
+import mongoose from "mongoose";
 
 export const stripeWebhookController = async (req: Request, res: Response) => {
   const sig = req.headers["stripe-signature"];
@@ -31,8 +32,20 @@ export const stripeWebhookController = async (req: Request, res: Response) => {
           { stripeConnected: true },
         );
       }
-      console.log("this is test images");
+      /*       console.log("this is account:", account.id);
+      const exists = await Organizer_Model.findOne({
+        stripeAccountId: account.id,
+      });
 
+      console.log("Organizer exists?", !!exists);
+      const updatedOrganizer = await Organizer_Model.findOneAndUpdate(
+        { stripeAccountId: account.id },
+        { stripeConnected: true },
+        { new: true }, // ⬅️ important
+      );
+
+      console.log("Updated organizer:", updatedOrganizer);
+      console.log("DB name:", mongoose.connection.name); */
       break;
     }
     case "payment_intent.succeeded": {
