@@ -25,7 +25,7 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   }),
 */
 // middleware
-app.use(cors());
+// app.use(cors());
 
 // stripe webhook endpoint
 app.post(
