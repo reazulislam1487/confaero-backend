@@ -16,7 +16,12 @@ attendee_router.post(
   auth("ATTENDEE"),
   attendee_controller.register_event,
 );
-
+// real register flow
+attendee_router.post(
+  "/events/:eventId/initiate-registration",
+  auth("ATTENDEE"),
+  attendee_controller.initiate_attendee_registration,
+);
 attendee_router.get(
   "/my-events/:eventId",
   auth("ATTENDEE"),

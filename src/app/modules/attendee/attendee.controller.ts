@@ -26,6 +26,20 @@ const register_event = catchAsync(async (req, res) => {
   });
 });
 
+// real register flow
+const initiate_attendee_registration = catchAsync(async (req, res) => {
+  const result = await attendee_service.initiate_attendee_registration(
+    req.user?.id,
+    req.params.eventId as any,
+  );
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Event registration initiated successfully",
+    data: result,
+  });
+});
+
 const get_my_events = catchAsync(async (req, res) => {
   const result = await attendee_service.get_my_registered_events_from_db(
     req.user?.id,
@@ -109,4 +123,5 @@ export const attendee_controller = {
   get_event_sessions,
   get_event_home,
   generate_qr_token,
+  initiate_attendee_registration,
 };

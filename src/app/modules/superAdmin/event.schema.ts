@@ -12,7 +12,7 @@ const eventSchema = new Schema(
       enum: ["OFFLINE", "ONLINE", "HYBRID"],
       default: "OFFLINE",
     },
-
+    price: { type: Number, default: 0 },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
 
@@ -25,6 +25,7 @@ const eventSchema = new Schema(
       enum: ["STRIPE", "EXTERNAL"],
       default: "STRIPE",
     },
+    externalPaymentUrl: { type: String },
     organizers: [{ type: Types.ObjectId, ref: "Account", required: true }],
     organizerEmails: [{ type: String }],
     bannerImageUrl: { type: String },

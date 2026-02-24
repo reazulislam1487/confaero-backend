@@ -4,6 +4,7 @@ import { Organizer_Model } from "../modules/superAdmin/superAdmin.schema";
 import { stripe } from "../configs/stripe";
 import { configs } from "../configs";
 import mongoose from "mongoose";
+import { finalize_attendee_registration } from "../modules/attendee/attendee.service";
 
 export const stripeWebhookController = async (req: Request, res: Response) => {
   const sig = req.headers["stripe-signature"];
@@ -50,6 +51,13 @@ export const stripeWebhookController = async (req: Request, res: Response) => {
     }
     case "payment_intent.succeeded": {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const intent = event.data.object;
+
+      await finalize_attendee_registration(
+        intent.metadata.userId,
+        intent.metadata.eventId,
+        intent.id,
+      );
       console.log("PaymentIntent was successful!", paymentIntent.id);
       break;
     }

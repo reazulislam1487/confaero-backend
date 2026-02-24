@@ -15,6 +15,21 @@ type TSession = {
 };
 
 // utilities
+
+// utils
+
+// const normalizeTime = (time: string) => {
+//   // "08:30-09:00" → "08:30"
+//   return time.split("-")[0].trim();
+// };
+const isValidUrl = (value: string) => {
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+};
 const ensureParticipant = (event: any, user: any) => {
   let participant = event.participants.find(
     (p: any) => String(p.accountId) === String(user._id),
@@ -160,11 +175,65 @@ export const bulk_add_sessions = async (
   eventId: string,
   sessions: any[],
 ) => {
-  const event = await get_event(user, eventId);
-  event.agenda.sessions.push(...sessions);
+  if (!Array.isArray(sessions) || !sessions.length) {
+    throw new AppError("Sessions data is empty", httpStatus.BAD_REQUEST);
+  }
+
+  const event = await Event_Model.findOne({
+    organizerEmails: user.email,
+    _id: eventId,
+  });
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  const validatedSessions = sessions.map((session, index) => {
+    const { title, floorMapLocation, details, date, time } = session;
+
+    // 🔐 required fields
+    if (!title || !floorMapLocation || !details || !date || !time) {
+      throw new AppError(
+        `Invalid SVG data at row ${index + 1}: title, floorMapLocation, date, time, and details are required`,
+        httpStatus.BAD_REQUEST,
+      );
+    }
+
+    // 🔗 URL validation
+    if (!isValidUrl(floorMapLocation)) {
+      throw new AppError(
+        `Invalid floorMapLocation URL at row ${index + 1}`,
+        httpStatus.BAD_REQUEST,
+      );
+    }
+
+    // 🕒 normalize time
+    // const normalizedTime = normalizeTime(time);
+
+    return {
+      title: String(title).trim(),
+      floorMapLocation,
+      details: String(details).trim(),
+      date, // ✅ from SVG
+      time: time, // ✅ HH:mm
+    };
+  });
+
+  event.agenda.sessions.push(...validatedSessions);
   await event.save();
+
   return event.agenda.sessions;
 };
+// export const bulk_add_sessions = async (
+//   user: any,
+//   eventId: string,
+//   sessions: any[],
+// ) => {
+//   const event = await get_event(user, eventId);
+//   event.agenda.sessions.push(...sessions);
+//   await event.save();
+//   return event.agenda.sessions;
+// };
 
 // for agenda
 const get_event_fun = async (eventId: any) => {
@@ -584,4 +653,3 @@ export const search_speaker_by_email_from_db = async (
     alreadyAssignedSessions: participant.sessionIndex || [],
   };
 };
-
