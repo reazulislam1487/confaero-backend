@@ -179,7 +179,7 @@ export const bulk_add_sessions = async (
     throw new AppError("Sessions data is empty", httpStatus.BAD_REQUEST);
   }
 
-  const event = await Event_Model.findOne({
+  const event: any = await Event_Model.findOne({
     organizerEmails: user.email,
     _id: eventId,
   });
