@@ -57,7 +57,7 @@ const register_attendee_into_event = async (
 
 const initiate_attendee_registration = async (
   userId: Types.ObjectId,
-  userEmail: string,
+  userEmail: any,
   eventId: Types.ObjectId,
 ) => {
   const event = await Event_Model.findById(eventId);
@@ -68,6 +68,7 @@ const initiate_attendee_registration = async (
   const alreadyRegistered = await attendee_model.findOne({
     account: userId,
     event: eventId,
+    status: "VERIFIED",
   });
 
   if (alreadyRegistered) {
