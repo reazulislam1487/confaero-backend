@@ -16,12 +16,6 @@ type TSession = {
 
 // utilities
 
-// utils
-
-// const normalizeTime = (time: string) => {
-//   // "08:30-09:00" → "08:30"
-//   return time.split("-")[0].trim();
-// };
 const isValidUrl = (value: string) => {
   try {
     new URL(value);
@@ -224,16 +218,6 @@ export const bulk_add_sessions = async (
 
   return event.agenda.sessions;
 };
-// export const bulk_add_sessions = async (
-//   user: any,
-//   eventId: string,
-//   sessions: any[],
-// ) => {
-//   const event = await get_event(user, eventId);
-//   event.agenda.sessions.push(...sessions);
-//   await event.save();
-//   return event.agenda.sessions;
-// };
 
 // for agenda
 const get_event_fun = async (eventId: any) => {
