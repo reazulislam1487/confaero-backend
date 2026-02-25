@@ -29,6 +29,7 @@ import { volunteerSwaggerDocs } from "./app/modules/volunteer/volunteer.swagger"
 import { reportSwaggerDocs } from "./app/modules/report/report.swagger";
 import { jobSwaggerDocs } from "./app/modules/job/job.swagger";
 import { appContentSwaggerDocs } from "./app/modules/appContent/appContent.swagger";
+import { verifyEmailSwaggerDocs } from "./app/modules/verifyEmail/verifyEmail.swagger";
 
 export const swaggerOptions = {
   definition: {
@@ -72,7 +73,8 @@ export const swaggerOptions = {
       ...reportSwaggerDocs,
       ...jobSwaggerDocs,
       ...appContentSwaggerDocs,
-    },
+    
+            ...verifyEmailSwaggerDocs,},
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]

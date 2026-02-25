@@ -30,10 +30,12 @@ import reportRoute from "./app/modules/report/report.route";
 import jobRoute from "./app/modules/job/job.route";
 import eventLiveRoute from "./app/modules/eventLive/eventLive.route";
 import appContentRoute from './app/modules/appContent/appContent.route';
+import verifyEmailRoute from './app/modules/verifyEmail/verifyEmail.route';
 
 const appRouter = Router();
 
 const moduleRoutes = [
+    { path: "/verifyEmail", route: verifyEmailRoute },
     { path: "/appContent", route: appContentRoute },
   { path: "/eventLive", route: eventLiveRoute },
   { path: "/job", route: jobRoute },
