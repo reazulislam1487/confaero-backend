@@ -12,7 +12,7 @@ const attendee_schema = new Schema<T_Attendee_Registration>(
     },
     paymentProvider: {
       type: String,
-      enum: ["STRIPE", "FREE"],
+      enum: ["STRIPE", "FREE", "EXTERNAL", "EMAIL_VERIFICATION"],
       default: "FREE",
     },
     referenceId: String,

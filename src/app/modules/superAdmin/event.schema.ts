@@ -22,7 +22,7 @@ const eventSchema = new Schema(
     // registration
     paymentType: {
       type: String,
-      enum: ["STRIPE", "EXTERNAL"],
+      enum: ["STRIPE", "EXTERNAL", "EMAIL_VERIFICATION"],
       default: "STRIPE",
     },
     externalPaymentUrl: { type: String },

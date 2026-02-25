@@ -30,6 +30,7 @@ const register_event = catchAsync(async (req, res) => {
 const initiate_attendee_registration = catchAsync(async (req, res) => {
   const result = await attendee_service.initiate_attendee_registration(
     req.user?.id,
+    req.user?.email,
     req.params.eventId as any,
   );
   manageResponse(res, {
