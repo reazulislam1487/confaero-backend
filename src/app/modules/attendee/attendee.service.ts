@@ -216,14 +216,24 @@ export const finalize_attendee_registration = async (
 };
 
 const get_my_registered_events_from_db = async (userId: Types.ObjectId) => {
-  return attendee_model.find({ account: userId }).populate("event");
+  const result = await attendee_model
+    .find({ account: userId })
+    .populate("event")
+    .lean();
+
+  if (!result || result.length === 0) return [];
+
+  const events = result.map((item) => {
+    return {
+      ...item,
+      event: item.event,
+    };
+  });
+  return events;
 };
 
 //
-const get_single_event_from_db = async (eventId: Types.ObjectId) => {
-  const event = await Event_Model.findById(eventId).lean();
-  return event;
-};
+const get_single_event_from_db = async (eventId: Types.ObjectId) => {};
 
 const get_event_sessions_from_db = async (eventId: Types.ObjectId) => {
   const event = (await Event_Model.findById(eventId)
