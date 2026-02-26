@@ -398,11 +398,6 @@ const get_event_home_from_db = async (eventId: any) => {
       startDate: event.startDate,
       endDate: event.endDate,
     },
-    quickLinks: {
-      speakers: event.speakers?.length || 0,
-      exhibitors: event.exhibitors?.length || 0,
-      resources: event.resources?.length || 0,
-    },
     sponsors: event.sponsors || [],
   };
 };
