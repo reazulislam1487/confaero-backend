@@ -2,7 +2,6 @@ import path from "path";
 import { configs } from "./app/configs";
 import { authSwaggerDocs } from "./app/modules/auth/auth.swagger";
 import { userSwaggerDocs } from "./app/modules/user/user.swagger";
-import { profileSwaggerDocs } from "./app/modules/profile/profile.swagger";
 import { superAdminSwaggerDocs } from "./app/modules/superAdmin/superAdmin.swagger";
 import { organizerSwaggerDocs } from "./app/modules/organizer/organizer.swagger";
 import { attendeeSwaggerDocs } from "./app/modules/attendee/attendee.swagger";
@@ -43,7 +42,6 @@ export const swaggerOptions = {
       ...authSwaggerDocs,
       ...userSwaggerDocs,
 
-      ...profileSwaggerDocs,
       ...superAdminSwaggerDocs,
 
       ...organizerSwaggerDocs,
@@ -73,11 +71,12 @@ export const swaggerOptions = {
       ...reportSwaggerDocs,
       ...jobSwaggerDocs,
       ...appContentSwaggerDocs,
-    
-            ...verifyEmailSwaggerDocs,},
+
+      ...verifyEmailSwaggerDocs,
+    },
     servers:
       configs.env === "production"
-        ? [{ url: "https://live-url.com" }, { url: "http://localhost:5000" }]
+        ? [{ url: "https://live-url.com" }, { url: "http://localhost:8080" }]
         : [{ url: "http://localhost:5000" }, { url: "https://live-url.com" }],
     components: {
       securitySchemes: {

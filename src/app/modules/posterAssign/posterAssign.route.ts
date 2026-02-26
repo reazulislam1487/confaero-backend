@@ -39,13 +39,6 @@ poster_assign_router.get(
   poster_assign_controller.get_reported_files,
 );
 
-// poster_assign_router.post(
-//   "/review/:eventId",
-//   auth("ABSTRACT_REVIEWER"),
-//   eventAccess(),
-//   poster_assign_controller.submit_review,
-// );
-
 poster_assign_router.post(
   "/reassign/:eventId",
   auth("ORGANIZER", "SUPER_ADMIN"),

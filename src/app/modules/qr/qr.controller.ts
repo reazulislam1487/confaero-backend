@@ -32,18 +32,6 @@ const generate_qr = catchAsync(async (req, res) => {
   });
 });
 
-// const scan_qr = catchAsync(async (req, res) => {
-//   const { qrToken } = req.body;
-
-//   const payload = qr_service.scan_qr_token(qrToken, req.user);
-
-//   manageResponse(res, {
-//     statusCode: httpStatus.OK,
-//     success: true,
-//     message: "QR verified successfully",
-//     data: payload,
-//   });
-// });
 export const scan_qr_controller = catchAsync(async (req, res) => {
   const { qrToken } = req.body;
   const scanner = req.user; // from auth middleware
