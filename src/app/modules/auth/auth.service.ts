@@ -114,6 +114,7 @@ const login_user_from_db = async (payload: TLoginPayload) => {
     configs.jwt.refresh_token as Secret,
     configs.jwt.refresh_expires as string,
   );
+  console.log(refreshToken);
   return {
     accessToken: accessToken,
     refreshToken: refreshToken,
@@ -135,6 +136,7 @@ const get_my_profile_from_db = async (email: string) => {
 
 const refresh_token_from_db = async (token: string) => {
   let decodedData;
+  console.log(token);
   try {
     decodedData = jwtHelpers.verifyToken(
       token,
@@ -143,10 +145,8 @@ const refresh_token_from_db = async (token: string) => {
   } catch (err) {
     throw new Error("You are not authorized!");
   }
-
   const userData = await Account_Model.findOne({
     email: decodedData.email,
-    status: "ACTIVE",
     isDeleted: false,
   });
 
@@ -160,7 +160,7 @@ const refresh_token_from_db = async (token: string) => {
     configs.jwt.access_expires as string,
   );
 
-  return accessToken;
+  return { accessToken };
 };
 
 const change_password_from_db = async (

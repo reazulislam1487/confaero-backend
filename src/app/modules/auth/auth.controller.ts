@@ -25,10 +25,7 @@ const login_user = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "User is logged in successful !",
-    data: {
-      accessToken: result.accessToken,
-      activeRole: result?.activeRole,
-    },
+    data: result,
   });
 });
 
