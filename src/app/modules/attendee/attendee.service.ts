@@ -217,7 +217,7 @@ export const finalize_attendee_registration = async (
 
 const get_my_registered_events_from_db = async (userId: Types.ObjectId) => {
   const result = await attendee_model
-    .find({ account: userId })
+    .find({ account: userId, status: "VERIFIED" })
     .populate("event")
     .lean();
 
