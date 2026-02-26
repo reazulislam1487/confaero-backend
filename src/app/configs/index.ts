@@ -36,4 +36,7 @@ export const configs = {
     stripe_secret_key: process.env.STRIPE_SECRET_KEY,
     webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
   },
+  qr: {
+    secret: process.env.QR_SECRET,
+  },
 };
