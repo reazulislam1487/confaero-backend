@@ -136,7 +136,6 @@ const get_my_profile_from_db = async (email: string) => {
 
 const refresh_token_from_db = async (token: string) => {
   let decodedData;
-  console.log(token);
   try {
     decodedData = jwtHelpers.verifyToken(
       token,
