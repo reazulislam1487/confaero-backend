@@ -11,7 +11,21 @@ import { configs } from "../../configs";
 
 const get_all_upcoming_events_from_db = async () => {
   const now = new Date();
-  return Event_Model.find({ startDate: { $gte: now } }).sort({ startDate: 1 });
+
+  return Event_Model.find(
+    {
+      endDate: { $gte: now },
+    },
+    {
+      title: 1,
+      bannerImageUrl: 1,
+      startDate: 1,
+      endDate: 1,
+      location: 1,
+    },
+  )
+    .sort({ startDate: 1 })
+    .lean();
 };
 
 const register_attendee_into_event = async (
@@ -216,25 +230,68 @@ export const finalize_attendee_registration = async (
 };
 
 const get_my_registered_events_from_db = async (userId: Types.ObjectId) => {
+  const now = new Date();
+
   const result = await attendee_model
-    .find({ account: userId, status: "VERIFIED" })
-    .populate("event")
+    .find(
+      {
+        account: userId,
+        status: "VERIFIED",
+      },
+      {
+        event: 1,
+        status: 1,
+      },
+    )
+    .populate({
+      path: "event",
+      match: {
+        endDate: { $gte: now },
+      },
+      select: "title bannerImageUrl startDate endDate bannerImageUrl location",
+    })
     .lean();
 
-  if (!result || result.length === 0) return [];
+  if (!result?.length) return [];
 
-  const events = result.map((item) => {
-    return {
-      ...item,
+  // populate match fail হলে event = null আসে → filter করা দরকার
+  return result
+    .filter((item) => item.event)
+    .map((item) => ({
       event: item.event,
-    };
-  });
-  return events;
+      status: item.status,
+    }));
 };
-
 //
-const get_single_event_from_db = async (eventId: Types.ObjectId) => {};
 
+const get_single_event_from_db = async (eventId: Types.ObjectId) => {
+  const event = await Event_Model.findOne(
+    {
+      _id: eventId,
+    },
+    {
+      title: 1,
+      website: 1,
+      location: 1,
+      googleMapLink: 1,
+      startDate: 1,
+      endDate: 1,
+      details: 1,
+      bannerImageUrl: 1,
+      expectedAttendee: 1,
+      boothSlot: 1,
+      eventType: 1,
+      paymentType: 1,
+      price: 1,
+      externalPaymentUrl: 1,
+      createdAt: 1,
+    },
+  ).lean();
+
+  if (!event) return null;
+
+  return event;
+};
 const get_event_sessions_from_db = async (eventId: Types.ObjectId) => {
   const event = (await Event_Model.findById(eventId)
     .select("agenda")
