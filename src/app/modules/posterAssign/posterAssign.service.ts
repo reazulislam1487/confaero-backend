@@ -6,39 +6,80 @@ import { Event_Model } from "../superAdmin/event.schema";
 import { Account_Model } from "../auth/auth.schema";
 import sendMail from "../../utils/mail_sender";
 
+// const create_new_poster_assign_into_db = async (payload: {
+//   eventId: string;
+//   posterId: string;
+//   attachmentId: string;
+//   reviewerId: string;
+//   assignedBy: string;
+//   dueDate: any;
+// }) => {
+//   const assignment = await poster_assign_model.create({
+//     eventId: new Types.ObjectId(payload.eventId),
+//     posterId: new Types.ObjectId(payload.posterId),
+//     attachmentId: new Types.ObjectId(payload.attachmentId),
+//     reviewerId: new Types.ObjectId(payload.reviewerId),
+//     assignedBy: new Types.ObjectId(payload.assignedBy),
+//     dueDate: payload.dueDate ? new Date(payload.dueDate) : undefined,
+//     status: "assigned",
+//   });
+
+//   await poster_model.updateOne(
+//     {
+//       _id: new Types.ObjectId(payload.posterId),
+//       "attachments._id": new Types.ObjectId(payload.attachmentId),
+//     },
+//     {
+//       $set: {
+//         "attachments.$.reviewStatus": "assigned",
+//       },
+//     },
+//   );
+
+//   return assignment;
+// };
+
 const create_new_poster_assign_into_db = async (payload: {
-  eventId: string;
-  posterId: string;
-  attachmentId: string;
+  items: {
+    posterId: string;
+    attachmentId: string;
+  }[];
   reviewerId: string;
   assignedBy: string;
-  dueDate: any;
+  dueDate?: string;
 }) => {
-  const assignment = await poster_assign_model.create({
-    eventId: new Types.ObjectId(payload.eventId),
-    posterId: new Types.ObjectId(payload.posterId),
-    attachmentId: new Types.ObjectId(payload.attachmentId),
+  const assignments = payload.items.map((item) => ({
+    posterId: new Types.ObjectId(item.posterId),
+    attachmentId: new Types.ObjectId(item.attachmentId),
     reviewerId: new Types.ObjectId(payload.reviewerId),
     assignedBy: new Types.ObjectId(payload.assignedBy),
     dueDate: payload.dueDate ? new Date(payload.dueDate) : undefined,
     status: "assigned",
-  });
+  }));
 
-  await poster_model.updateOne(
-    {
-      _id: new Types.ObjectId(payload.posterId),
-      "attachments._id": new Types.ObjectId(payload.attachmentId),
-    },
-    {
-      $set: {
-        "attachments.$.reviewStatus": "assigned",
+  // 1️⃣ create all assignments
+  await poster_assign_model.insertMany(assignments);
+
+  // 2️⃣ update all attachments status
+  for (const item of payload.items) {
+    await poster_model.updateOne(
+      {
+        _id: new Types.ObjectId(item.posterId),
+        "attachments._id": new Types.ObjectId(item.attachmentId),
       },
-    },
-  );
+      {
+        $set: {
+          "attachments.$.reviewStatus": "assigned",
+        },
+      },
+    );
+  }
 
-  return assignment;
+  return {
+    count: assignments.length,
+    message: "Multiple posters assigned successfully",
+  };
 };
-
 const reassign_poster_to_reviewer_into_db = async (payload: {
   eventId: string;
   posterId: string;

@@ -331,7 +331,7 @@ const initiate_attendee_registration = async (
 //   };
 // };
 
-// register for create attendee after successful payment
+// register for create attendee after successful payment for webhook
 export const finalize_attendee_registration = async (
   userId: string,
   eventId: string,
