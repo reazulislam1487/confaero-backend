@@ -4,13 +4,15 @@ import { Account_Model } from "./auth.schema";
 import httpStatus from "http-status";
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 import { jwtHelpers, JwtPayloadType } from "../../utils/JWT";
 import { configs } from "../../configs";
 import { JwtPayload, Secret } from "jsonwebtoken";
 import sendMail from "../../utils/mail_sender";
 import { isAccountExist } from "../../utils/isAccountExist";
 import { UserProfile_Model } from "../user/user.schema";
-// added
+// import admin from "../../utils/firebaseAdmin";
+
 // register user
 const register_user_into_db = async (payload: TRegisterPayload) => {
   const session = await mongoose.startSession();
@@ -60,6 +62,7 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
     const newAccount = await Account_Model.create([accountPayload], {
       session,
     });
+
 
     // 2️ User profile create
     await UserProfile_Model.create({

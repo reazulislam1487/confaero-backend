@@ -177,6 +177,7 @@ const change_notification = catchAsync(async (req, res) => {
   });
 });
 
+
 export const auth_controllers = {
   register_user,
   login_user,
