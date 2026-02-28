@@ -11,6 +11,7 @@ const get_all_sponsors = catchAsync(async (req, res) => {
     ...req.params,
     page,
     limit,
+    ...req.query,
   });
 
   manageResponse(res, {

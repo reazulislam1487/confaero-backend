@@ -12,7 +12,8 @@ const get_all_sponsors_from_db = async (query: any) => {
     eventId: new Types.ObjectId(query.eventId),
   };
 
-  if (query.status) {
+  // ✅ Status filter add (default = all data)
+  if (query.status && query.status !== "all") {
     filter.status = query.status;
   }
 

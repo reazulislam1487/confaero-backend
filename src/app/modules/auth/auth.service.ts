@@ -204,35 +204,43 @@ const change_password_from_db = async (
   );
   return "Password changed successful.";
 };
-
 const forget_password_from_db = async (email: string) => {
-  const isAccountExists = await isAccountExist(email);
+  const account = await isAccountExist(email);
 
+  // If existing OTP still valid
+  if (
+    account.resetPasswordCode &&
+    account.resetPasswordExpire &&
+    account.resetPasswordExpire > new Date()
+  ) {
+    // resend same OTP
+    await sendMail({
+      to: email,
+      subject: "Password Reset Code!",
+      textBody: "Your password reset code",
+      htmlBody: `<h3>${account.resetPasswordCode}</h3>
+                 <p>This OTP is valid until ${account.resetPasswordExpire}</p>`,
+    });
+
+    return "Previous verification code resent to your email";
+  }
+
+  // otherwise generate new OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-  await Account_Model.findByIdAndUpdate(isAccountExists._id, {
+  await Account_Model.findByIdAndUpdate(account._id, {
     resetPasswordCode: otp,
-    resetPasswordExpire: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+    resetPasswordExpire: new Date(Date.now() + 10 * 60 * 1000),
   });
 
-  const resetToken = jwtHelpers.generateToken(
-    {
-      email: isAccountExists.email,
-      activeRole: isAccountExists.activeRole,
-    },
-    configs.jwt.reset_secret as Secret,
-    configs.jwt.reset_expires as string,
-  );
-
-  const resetPasswordLink = `${configs.jwt.front_end_url}/reset?token=${resetToken}&email=${isAccountExists.email}`;
-  const emailTemplate = `<p>Click the link below to reset your password:</p><a href="${resetPasswordLink}">Reset Password</a>
-  <p>This link will expire in 10 minutes.</p>
-  <p>If you did not request a password reset, please ignore this email.</p>
-  <br/>
-  <p>Alternatively, you can use the following OTP to reset your password:</p>
-  <h3>${otp}</h3>
-  <p>This OTP is valid for 10 minutes.</p>
-  `;
+  const emailTemplate = `
+    <p>This link will expire in 10 minutes.</p>
+    <p>If you did not request a password reset, please ignore this email.</p>
+    <br/>
+    <p>Alternatively, you can use the following OTP to reset your password:</p>
+    <h3>${otp}</h3>
+    <p>This OTP is valid for 10 minutes.</p>
+    `;
 
   await sendMail({
     to: email,
@@ -241,8 +249,46 @@ const forget_password_from_db = async (email: string) => {
     htmlBody: emailTemplate,
   });
 
-  return "Verification code sent to your email";
+  return "New verification code sent to your email";
 };
+// const forget_password_from_db = async (email: string) => {
+//   const isAccountExists = await isAccountExist(email);
+
+//   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+//   await Account_Model.findByIdAndUpdate(isAccountExists._id, {
+//     resetPasswordCode: otp,
+//     resetPasswordExpire: new Date(Date.now() + 10 * 60 * 1000), // 10 min
+//   });
+
+//   const resetToken = jwtHelpers.generateToken(
+//     {
+//       email: isAccountExists.email,
+//       activeRole: isAccountExists.activeRole,
+//     },
+//     configs.jwt.reset_secret as Secret,
+//     configs.jwt.reset_expires as string,
+//   );
+
+//   const resetPasswordLink = `${configs.jwt.front_end_url}/reset?token=${resetToken}&email=${isAccountExists.email}`;
+//   const emailTemplate = `<p>Click the link below to reset your password:</p><a href="${resetPasswordLink}">Reset Password</a>
+//   <p>This link will expire in 10 minutes.</p>
+//   <p>If you did not request a password reset, please ignore this email.</p>
+//   <br/>
+//   <p>Alternatively, you can use the following OTP to reset your password:</p>
+//   <h3>${otp}</h3>
+//   <p>This OTP is valid for 10 minutes.</p>
+//   `;
+
+//   await sendMail({
+//     to: email,
+//     subject: "Password Reset Code!",
+//     textBody: "Your password is successfully reset.",
+//     htmlBody: emailTemplate,
+//   });
+
+//   return "Verification code sent to your email";
+// };
 const verify_reset_code_from_db = async (email: string, code: string) => {
   const account = await Account_Model.findOne({ email });
 

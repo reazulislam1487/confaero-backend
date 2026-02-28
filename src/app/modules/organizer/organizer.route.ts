@@ -32,7 +32,18 @@ router.patch(
 // get all floorMap
 router.get(
   "/events/:eventId/floormaps",
-  auth("ORGANIZER", "SUPER_ADMIN"),
+  auth(
+    "SUPER_ADMIN",
+    "ORGANIZER",
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   organizer_controller.get_event_floormaps,
 );
 
