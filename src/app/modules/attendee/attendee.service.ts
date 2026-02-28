@@ -229,6 +229,41 @@ export const finalize_attendee_registration = async (
   });
 };
 
+//
+
+const get_my_all_registered_events_from_db = async (userId: Types.ObjectId) => {
+  const now = new Date();
+
+  const result = await attendee_model
+    .find(
+      {
+        account: userId,
+        status: "VERIFIED",
+      },
+      {
+        event: 1,
+        status: 1,
+      },
+    )
+    .populate({
+      path: "event",
+      match: {
+        endDate: { $gte: now },
+      },
+      select: "title startDate endDate bannerImageUrl location",
+    })
+    .lean();
+
+  if (!result?.length) return [];
+
+  // populate match fail হলে event = null আসে → filter করা দরকার
+  return result
+    .filter((item) => item.event)
+    .map((item) => ({
+      event: item.event,
+      status: item.status,
+    }));
+};
 const get_my_registered_events_from_db = async (userId: Types.ObjectId) => {
   const now = new Date();
 
@@ -248,7 +283,7 @@ const get_my_registered_events_from_db = async (userId: Types.ObjectId) => {
       match: {
         endDate: { $gte: now },
       },
-      select: "title bannerImageUrl startDate endDate bannerImageUrl location",
+      select: "title startDate endDate bannerImageUrl location",
     })
     .lean();
 
@@ -264,7 +299,10 @@ const get_my_registered_events_from_db = async (userId: Types.ObjectId) => {
 };
 //
 
-const get_single_event_from_db = async (eventId: Types.ObjectId) => {
+const get_single_event_from_db = async (
+  eventId: Types.ObjectId,
+  id: string,
+) => {
   const event = await Event_Model.findOne(
     {
       _id: eventId,
@@ -287,10 +325,28 @@ const get_single_event_from_db = async (eventId: Types.ObjectId) => {
       createdAt: 1,
     },
   ).lean();
-
   if (!event) return null;
 
-  return event;
+  let registrationStatus: "NOT_REGISTERED" | "PENDING" | "VERIFIED" =
+    "NOT_REGISTERED";
+
+  if (id) {
+    const registration = await attendee_model
+      .findOne({
+        account: id,
+        event: eventId,
+      })
+      .select("status");
+
+    if (registration) {
+      registrationStatus = registration.status as any;
+    }
+  }
+
+  return {
+    ...event,
+    registrationStatus,
+  };
 };
 const get_event_sessions_from_db = async (eventId: Types.ObjectId) => {
   const event = (await Event_Model.findById(eventId)
@@ -348,6 +404,7 @@ const generate_qr_token_from_db = async (
 export const attendee_service = {
   get_all_upcoming_events_from_db,
   register_attendee_into_event,
+  get_my_all_registered_events_from_db,
   get_my_registered_events_from_db,
   get_single_event_from_db,
   get_event_sessions_from_db,

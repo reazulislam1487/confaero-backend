@@ -7,52 +7,139 @@ const attendee_router = Router();
 
 attendee_router.get(
   "/events",
-  auth("ATTENDEE"),
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   attendee_controller.get_all_upcoming_events,
 );
 
 attendee_router.post(
   "/events/:eventId/register",
-  auth("ATTENDEE"),
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   attendee_controller.register_event,
 );
 // real register flow
 attendee_router.post(
   "/events/:eventId/initiate-registration",
-  auth("ATTENDEE"),
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   attendee_controller.initiate_attendee_registration,
 );
+//
+attendee_router.get(
+  "/my-event",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ), // eventAccess(),
+  attendee_controller.get_my_all_events,
+);
+//
 attendee_router.get(
   "/my-events/:eventId",
-  auth("ATTENDEE"),
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   eventAccess(),
 
   attendee_controller.get_my_events,
 );
 attendee_router.get(
   "/events/:eventId",
-  auth("ATTENDEE"),
-  eventAccess(),
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ), // eventAccess(),
   attendee_controller.get_single_event,
 );
 
 attendee_router.get(
   "/events/:eventId/sessions",
-  auth("ATTENDEE"),
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   eventAccess(),
   attendee_controller.get_event_sessions,
 );
 
 attendee_router.get(
   "/events/:eventId/home",
-  auth("ATTENDEE"),
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   eventAccess(),
   attendee_controller.get_event_home,
 );
 
 attendee_router.get(
   "/events/:eventId/qr-token",
-  auth("ATTENDEE"),
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
   eventAccess(),
   attendee_controller.generate_qr_token,
 );

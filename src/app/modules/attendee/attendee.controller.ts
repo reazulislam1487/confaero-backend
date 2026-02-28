@@ -41,6 +41,19 @@ const initiate_attendee_registration = catchAsync(async (req, res) => {
   });
 });
 
+//
+const get_my_all_events = catchAsync(async (req, res) => {
+  const result = await attendee_service.get_my_registered_events_from_db(
+    req.user?.id,
+  );
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "My events fetched successfully",
+    data: result,
+  });
+});
+//
 const get_my_events = catchAsync(async (req, res) => {
   const result = await attendee_service.get_my_registered_events_from_db(
     req.user?.id,
@@ -59,6 +72,7 @@ const get_single_event = catchAsync(async (req, res) => {
 
   const result = await attendee_service.get_single_event_from_db(
     eventId as unknown as any,
+    req.user?.id,
   );
 
   manageResponse(res, {
@@ -119,6 +133,7 @@ const generate_qr_token = catchAsync(async (req, res) => {
 export const attendee_controller = {
   get_all_upcoming_events,
   register_event,
+  get_my_all_events,
   get_my_events,
   get_single_event,
   get_event_sessions,
