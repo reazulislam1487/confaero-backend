@@ -49,10 +49,11 @@ const get_event = async (user: any, eventId: any) => {
     throw new AppError("Event not found", httpStatus.NOT_FOUND);
   }
 
-  if (!event.organizerEmails.includes(user.email)) {
-    throw new AppError("Forbidden", httpStatus.FORBIDDEN);
+  if (user.activeRole !== "SUPER_ADMIN") {
+    if (!event.organizerEmails.includes(user.email)) {
+      throw new AppError("Forbidden", httpStatus.FORBIDDEN);
+    }
   }
-
   // ensure agenda structure
   if (!event.agenda) {
     event.agenda = { sessions: [] };

@@ -26,6 +26,7 @@ type TCreateEventPayload = {
   expectedAttendee?: number;
   boothSlot?: number;
   details?: string;
+  price?: number;
   bannerImageUrl?: string;
   // floorMapImageUrl?: string[];
   // agenda?: string[];
@@ -151,6 +152,7 @@ const create_event_by_super_admin_into_db = async (
           details: payload.details,
           organizers: organizerAccountIds,
           organizerEmails: payload.organizerEmails,
+          price: payload.price ?? 0,
           bannerImageUrl: payload.bannerImageUrl ?? "",
           // floorMapImageUrl: payload.floorMapImageUrl ?? [],
           // agenda: payload.agenda ?? [],

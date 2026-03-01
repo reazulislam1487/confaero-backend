@@ -9,8 +9,9 @@ const get_my_events_from_db = async (user: any) => {
   if (!user?.email) {
     throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
   }
-
-  return Event_Model.find({ organizerEmails: user.email });
+  const event = await Event_Model.findOne({ organizerEmails: user.email });
+  console.log(event);
+  return event;
 };
 
 const update_my_event_in_db = async (user: any, eventId: any, payload: any) => {
@@ -20,8 +21,10 @@ const update_my_event_in_db = async (user: any, eventId: any, payload: any) => {
     throw new AppError("Event not found", httpStatus.NOT_FOUND);
   }
 
-  if (!event.organizerEmails.includes(user.email)) {
-    throw new AppError("Forbidden", httpStatus.FORBIDDEN);
+  if (user.activeRole === "ORGANIZER") {
+    if (!event.organizerEmails.includes(user.email)) {
+      throw new AppError("Forbidden", httpStatus.FORBIDDEN);
+    }
   }
 
   /* ---------- Floor Map ADD ONLY ---------- */
@@ -43,7 +46,7 @@ const update_my_event_in_db = async (user: any, eventId: any, payload: any) => {
   /* ---------- UPDATE EVENT ---------- */
   Object.assign(event, payload);
   await event.save();
-
+  console.log(event);
   return event;
 };
 

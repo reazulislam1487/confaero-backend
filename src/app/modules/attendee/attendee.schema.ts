@@ -16,10 +16,7 @@ const attendee_schema = new Schema<T_Attendee_Registration>(
       default: "FREE",
     },
     referenceId: String,
-    // stripeSessionId: String,
     stripePaymentIntentId: String,
-    // amount: Number,
-    // currency: String,
   },
   { timestamps: true },
 );

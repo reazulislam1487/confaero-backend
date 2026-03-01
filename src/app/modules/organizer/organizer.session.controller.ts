@@ -101,7 +101,6 @@ const delete_session = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 const upload_sessions_csv = catchAsync(async (req: Request, res: Response) => {
   if (!req.file) {
     throw new AppError("CSV file is required", httpStatus.BAD_REQUEST);

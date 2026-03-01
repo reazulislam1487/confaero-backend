@@ -8,39 +8,39 @@ const router = Router();
 
 router.get(
   "/events/:eventId/sessions",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   organizer_session_controllers.get_sessions,
 );
 
 router.get(
   "/events/:eventId/sessions/:sessionId",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   organizer_session_controllers.get_single_session,
 );
 
 router.post(
   "/events/:eventId/sessions",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   upload.single("floorMap"),
   organizer_session_controllers.add_session,
 );
 
 router.patch(
   "/events/:eventId/sessions/:sessionId",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   upload.single("floorMap"),
   organizer_session_controllers.update_session,
 );
 
 router.delete(
   "/events/:eventId/sessions/:sessionId",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   organizer_session_controllers.delete_session,
 );
 
 router.post(
   "/events/:eventId/sessions/upload-csv",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   upload.single("file"),
   organizer_session_controllers.upload_sessions_csv,
 );

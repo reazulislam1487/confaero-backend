@@ -14,6 +14,8 @@ const create_new_verify_email_into_db = async (
   }
 
   // organizer must own event
+  const role = user?.activeRole;
+  console.log(role);
   const event = await Event_Model.findOne({
     _id: eventId,
     organizerEmails: user.email,
@@ -120,10 +122,11 @@ const add_verified_emails_into_db = async (
     _id: eventId,
     organizerEmails: user.email,
   });
-
-  if (!event) {
-    throw new AppError("Event not found", httpStatus.NOT_FOUND);
-  }
+  // work
+ 
+    if (!event) {
+      throw new AppError("Event not found", httpStatus.NOT_FOUND);
+    }
 
   // normalize emails
   const normalizedEmails = emails.map((e) => e.toLowerCase().trim());
