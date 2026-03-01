@@ -4,6 +4,29 @@ import { Event_Model } from "../superAdmin/event.schema";
 import { AppError } from "../../utils/app_error";
 import { verify_email_model } from "./verifyEmail.schema";
 
+// utils
+const findEventWithRoleAccess = async (user: any, eventId: string) => {
+  let query: any = { _id: eventId };
+
+  // 🔐 Role-based filter
+  if (user.activeRole === "ORGANIZER") {
+    query.organizerEmails = user.email;
+  }
+
+  // SUPER_ADMIN → no extra condition
+
+  const event = await Event_Model.findOne(query);
+
+  if (!event) {
+    throw new AppError(
+      "Event not found or access denied",
+      httpStatus.NOT_FOUND,
+    );
+  }
+
+  return event;
+};
+
 const create_new_verify_email_into_db = async (
   user: any,
   eventId: any,
@@ -14,12 +37,7 @@ const create_new_verify_email_into_db = async (
   }
 
   // organizer must own event
-  const role = user?.activeRole;
-  console.log(role);
-  const event = await Event_Model.findOne({
-    _id: eventId,
-    organizerEmails: user.email,
-  });
+  const event = await findEventWithRoleAccess(user, eventId);
 
   if (!event) {
     throw new AppError("Event not found", httpStatus.NOT_FOUND);
@@ -60,10 +78,7 @@ const create_new_verify_email_into_db = async (
 //
 const get_all_verify_emails_from_db = async (user: any, eventId: any) => {
   // organizer ownership check
-  const event = await Event_Model.findOne({
-    _id: eventId,
-    organizerEmails: user.email,
-  });
+  const event = await findEventWithRoleAccess(user, eventId);
 
   if (!event) {
     throw new AppError("Event not found", httpStatus.NOT_FOUND);
@@ -82,10 +97,7 @@ const delete_verify_email_from_db = async (
   verifyEmailId: any,
 ) => {
   // organizer ownership check
-  const event = await Event_Model.findOne({
-    _id: eventId,
-    organizerEmails: user.email,
-  });
+  const event = await findEventWithRoleAccess(user, eventId);
 
   if (!event) {
     throw new AppError("Event not found", httpStatus.NOT_FOUND);
@@ -118,15 +130,13 @@ const add_verified_emails_into_db = async (
   emails: string[],
 ) => {
   // organizer ownership check
-  const event = await Event_Model.findOne({
-    _id: eventId,
-    organizerEmails: user.email,
-  });
+
+  const event = await findEventWithRoleAccess(user, eventId);
   // work
- 
-    if (!event) {
-      throw new AppError("Event not found", httpStatus.NOT_FOUND);
-    }
+
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
 
   // normalize emails
   const normalizedEmails = emails.map((e) => e.toLowerCase().trim());
