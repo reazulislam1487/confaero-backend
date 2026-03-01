@@ -26,7 +26,7 @@ const findEventWithRoleAccess = async (user: any, eventId: string) => {
 
   return event;
 };
-
+// test
 const create_new_verify_email_into_db = async (
   user: any,
   eventId: any,
