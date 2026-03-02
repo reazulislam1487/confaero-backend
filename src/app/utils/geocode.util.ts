@@ -1,4 +1,4 @@
-import fetch from "node-fetch";
+import { configs } from "../configs";
 
 export const getCoordinatesFromMapUrl = async (
   mapUrl: string,
@@ -19,6 +19,7 @@ export const getCoordinatesFromMapUrl = async (
   const finalUrl = resolvedResponse.url;
 
   console.log("Resolved URL:", finalUrl);
+  console.log(finalUrl)
 
   /* ================================
      STEP 2: Try @lat,lng pattern
@@ -66,9 +67,7 @@ export const getCoordinatesFromMapUrl = async (
   const placeMatch = finalUrl.match(/place\/([^/]+)/);
 
   if (placeMatch) {
-    const placeName = decodeURIComponent(
-      placeMatch[1].replace(/\+/g, " "),
-    );
+    const placeName = decodeURIComponent(placeMatch[1].replace(/\+/g, " "));
 
     return await geocodeByAddress(placeName);
   }
@@ -85,7 +84,7 @@ const geocodeByAddress = async (address: string) => {
 
   const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
     cleanAddress,
-  )}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
+  )}&key=${configs.api.google_map_api}`;
 
   const response = await fetch(geocodeUrl);
   const data = await response.json();
