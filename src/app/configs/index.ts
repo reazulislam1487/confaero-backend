@@ -39,4 +39,7 @@ export const configs = {
   qr: {
     secret: process.env.QR_SECRET,
   },
+  api: {
+    google_map_api: process.env.GOOGLE_MAPS_API_KEY,
+  },
 };

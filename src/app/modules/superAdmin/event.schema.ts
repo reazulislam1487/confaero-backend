@@ -29,6 +29,8 @@ const eventSchema = new Schema(
     organizers: [{ type: Types.ObjectId, ref: "Account", required: true }],
     organizerEmails: [{ type: String }],
     bannerImageUrl: { type: String },
+    latitude: { type: Number, default: null },
+    longitude: { type: Number, default: null },
     floorMaps: {
       type: [
         {
