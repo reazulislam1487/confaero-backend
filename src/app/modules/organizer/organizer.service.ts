@@ -5,6 +5,7 @@ import { UserProfile_Model } from "../user/user.schema";
 import { Account_Model } from "../auth/auth.schema";
 import { attendee_model } from "../attendee/attendee.schema";
 import { invitation_model } from "../invitation/invitation.schema";
+import { getCoordinatesFromMapUrl } from "../../utils/geocode.util";
 const get_my_events_from_db = async (user: any) => {
   if (!user?.email) {
     throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
@@ -14,7 +15,46 @@ const get_my_events_from_db = async (user: any) => {
   return event;
 };
 
-const update_my_event_in_db = async (user: any, eventId: any, payload: any) => {
+// const update_my_event_in_db = async (user: any, eventId: any, payload: any) => {
+//   const event = await Event_Model.findById(eventId);
+
+//   if (!event) {
+//     throw new AppError("Event not found", httpStatus.NOT_FOUND);
+//   }
+
+//   if (user.activeRole === "ORGANIZER") {
+//     if (!event.organizerEmails.includes(user.email)) {
+//       throw new AppError("Forbidden", httpStatus.FORBIDDEN);
+//     }
+//   }
+
+//   /* ---------- Floor Map ADD ONLY ---------- */
+//   if (payload.__floorMapImageUrl && payload.floorMapTitle) {
+//     event.floorMaps.push({
+//       title: payload.floorMapTitle,
+//       imageUrl: payload.__floorMapImageUrl,
+//     });
+//   }
+
+//   /* ---------- LOCKED ---------- */
+//   delete payload.title;
+//   delete payload.googleMapLink;
+
+//   /* ---------- CLEANUP ---------- */
+//   delete payload.__floorMapImageUrl;
+//   delete payload.floorMapTitle;
+
+//   /* ---------- UPDATE EVENT ---------- */
+//   Object.assign(event, payload);
+//   await event.save();
+//   console.log(event);
+//   return event;
+// };
+const update_my_event_in_db = async (
+  user: any,
+  eventId: string,
+  payload: any,
+) => {
   const event = await Event_Model.findById(eventId);
 
   if (!event) {
@@ -27,7 +67,17 @@ const update_my_event_in_db = async (user: any, eventId: any, payload: any) => {
     }
   }
 
-  /* ---------- Floor Map ADD ONLY ---------- */
+  /* ===================================================
+     🔥 Detect Map URL Change
+     =================================================== */
+
+  const isMapUrlChanged =
+    payload.googleMapLink && payload.googleMapLink !== event.googleMapLink;
+
+  /* ===================================================
+     🔵 Floor Map ADD ONLY
+     =================================================== */
+
   if (payload.__floorMapImageUrl && payload.floorMapTitle) {
     event.floorMaps.push({
       title: payload.floorMapTitle,
@@ -35,21 +85,59 @@ const update_my_event_in_db = async (user: any, eventId: any, payload: any) => {
     });
   }
 
-  /* ---------- LOCKED ---------- */
-  delete payload.title;
-  delete payload.googleMapLink;
+  /* ===================================================
+     🔥 If Map Changed → Reset Coordinates
+     =================================================== */
 
-  /* ---------- CLEANUP ---------- */
+  if (isMapUrlChanged) {
+    event.latitude = null;
+    event.longitude = null;
+  }
+
+  /* ===================================================
+     🔵 Locked Fields
+     =================================================== */
+
+  delete payload.title; // still locked if needed
+
+  /* ===================================================
+     🔵 Cleanup Temp Fields
+     =================================================== */
+
   delete payload.__floorMapImageUrl;
   delete payload.floorMapTitle;
 
-  /* ---------- UPDATE EVENT ---------- */
+  /* ===================================================
+     🔵 Apply All Other Updates
+     =================================================== */
+
   Object.assign(event, payload);
+
   await event.save();
-  console.log(event);
+
+  /* ===================================================
+     🔥 Background Geocode (Non Blocking)
+     =================================================== */
+
+  if (isMapUrlChanged) {
+    setImmediate(async () => {
+      try {
+        const coordinates = await getCoordinatesFromMapUrl(
+          payload.googleMapLink,
+        );
+
+        await Event_Model.findByIdAndUpdate(event._id, {
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude,
+        });
+      } catch (error) {
+        console.error("Background geocode failed:", error);
+      }
+    });
+  }
+
   return event;
 };
-
 const get_all_register_from_db = async (
   user: any,
   query: {

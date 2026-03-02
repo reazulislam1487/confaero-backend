@@ -19,8 +19,6 @@ export const getCoordinatesFromMapUrl = async (
   const finalUrl = resolvedResponse.url;
 
   console.log("Resolved URL:", finalUrl);
-  console.log(finalUrl)
-
   /* ================================
      STEP 2: Try @lat,lng pattern
      ================================ */
