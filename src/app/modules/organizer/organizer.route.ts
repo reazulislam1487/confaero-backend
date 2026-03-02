@@ -5,7 +5,7 @@ import { upload } from "../../middlewares/upload";
 import eventAccess from "../../middlewares/eventAccess.middleware";
 
 const router = Router();
-
+// test
 router.get(
   "/events",
   auth("ORGANIZER", "SUPER_ADMIN"),
