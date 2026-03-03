@@ -216,6 +216,17 @@ const create_event_by_super_admin_into_db = async (
   try {
     session.startTransaction();
 
+    const existingEvent = await Event_Model.findOne({
+      organizerEmails: { $in: payload.organizerEmails },
+    }).session(session);
+
+    if (existingEvent) {
+      throw new AppError(
+        "This organizer already has an event. One organizer can create only one event.",
+        httpStatus.BAD_REQUEST,
+      );
+    }
+
     const organizerAccountIds: mongoose.Types.ObjectId[] = [];
     const uniqueEmails = new Set<string>();
 
