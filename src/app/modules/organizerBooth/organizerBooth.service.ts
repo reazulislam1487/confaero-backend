@@ -5,15 +5,28 @@ import { booth_model } from "../booth/booth.schema";
 import { Types } from "mongoose";
 
 // check if organizer has access to the event
-const check_event_access = async (
+const check_event_access = async (eventId: string, organizerId: string) => {
+  const event = await Event_Model.findOne({
+    _id: eventId,
+    organizers: organizerId,
+  });
+
+  console.log(eventId, organizerId);
+  if (!event) {
+    throw new AppError("Event access denied", httpStatus.FORBIDDEN);
+  }
+};
+
+const get_event_booths_into_db = async (
   eventId: string,
-  userRole: string,
   organizerId: string,
+  userRole: string,
+  isAccepted?: string,
 ) => {
   let query: any = { _id: eventId };
 
   if (userRole === "ORGANIZER") {
-    query.organizerEmails = userRole;
+    query.organizerId = organizerId;
   }
   // for other role → no extra condition
 
@@ -25,25 +38,7 @@ const check_event_access = async (
       httpStatus.NOT_FOUND,
     );
   }
-
-  // const event = await Event_Model.findOne({
-  //   _id: eventId,
-  //   organizers: organizerId,
-  // });
-
-  // console.log(eventId, organizerId);
-  // if (!event) {
-  //   throw new AppError("Event access denied", httpStatus.FORBIDDEN);
-  // }
-};
-
-const get_event_booths_into_db = async (
-  eventId: string,
-  organizerId: string,
-  userRole: string,
-  isAccepted?: string,
-) => {
-  await check_event_access(eventId, userRole, organizerId);
+  // await check_event_access(eventId, organizerId);
 
   const filter: any = {
     eventId: new Types.ObjectId(eventId),
@@ -65,7 +60,7 @@ const get_booth_details_into_db = async (
     throw new AppError("Booth not found", httpStatus.NOT_FOUND);
   }
 
-  await check_event_access(booth.eventId.toString(), organizerId);
+  // await check_event_access(booth.eventId.toString(), organizerId);
   return booth;
 };
 
