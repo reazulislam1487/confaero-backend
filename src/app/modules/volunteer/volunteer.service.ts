@@ -162,37 +162,48 @@ const get_today_progress = async (volunteerId: any) => {
 };
 
 // search by email
-const search_event_volunteer_by_email = async (eventId: any, email: string) => {
-  // 1️⃣ find user account
-  const account = await Account_Model.findOne({ email });
-  if (!account) {
-    throw new AppError("No user found with this email", httpStatus.NOT_FOUND);
-  }
+const search_event_volunteer_by_email = async (
+  eventId: any,
+  email?: string,
+) => {
+  // 1️⃣ find event first
+  const event = await Event_Model.findById(eventId).populate(
+    "participants.accountId",
+    "email",
+  );
 
-  // 2️⃣ find event
-  const event = await Event_Model.findById(eventId);
   if (!event) {
     throw new AppError("Event not found", httpStatus.NOT_FOUND);
   }
 
-  // 3️⃣ check participant & role
-  const participant = event.participants.find(
-    (p) =>
-      p.accountId.toString() === account._id.toString() &&
-      p.role === "VOLUNTEER",
+  // 2️⃣ filter only VOLUNTEERS
+  const volunteers = event.participants.filter(
+    (p: any) => p.role === "VOLUNTEER",
   );
 
-  if (!participant) {
+  // 3️⃣ if no email provided → return all volunteers
+  if (!email || email.trim() === "") {
+    return volunteers.map((v: any) => ({
+      accountId: v.accountId._id,
+      email: v.accountId.email,
+    }));
+  }
+
+  // 4️⃣ if email provided → find specific volunteer
+  const matchedVolunteer = volunteers.find(
+    (v: any) => v.accountId.email.toLowerCase() === email.toLowerCase(),
+  );
+
+  if (!matchedVolunteer) {
     throw new AppError(
       "This user is not a volunteer of this event",
       httpStatus.BAD_REQUEST,
     );
   }
 
-  // 4️⃣ return minimal UI-safe data
   return {
-    accountId: account._id,
-    email: account.email,
+    accountId: matchedVolunteer.accountId._id,
+    email: matchedVolunteer.accountId.email,
   };
 };
 const get_volunteers_dashboard = async ({ page, limit, eventId }: any) => {

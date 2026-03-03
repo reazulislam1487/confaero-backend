@@ -7,6 +7,7 @@ const get_event_booths = catchAsync(async (req, res) => {
   const result = await organizer_booth_service.get_event_booths_into_db(
     req.params.eventId as string,
     req.user?.id,
+    req.user?.activeRole,
     req.query.isAccepted as string,
   );
 
