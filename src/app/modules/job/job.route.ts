@@ -38,6 +38,9 @@ job_router.delete(
   auth("ORGANIZER", "SUPER_ADMIN"),
   job_controller.delete_job,
 );
-
+job_router.get(
+  "/my/:jobId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  job_controller.get_single_my_job,
+);
 export default job_router;
-

@@ -95,10 +95,23 @@ const delete_job = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const get_single_my_job = catchAsync(async (req, res) => {
+  const result = await job_service.get_single_my_job(
+    req.params.jobId as string,
+    req.user,
+  );
 
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Job fetched successfully",
+    data: result,
+  });
+});
 export const job_controller = {
   create_new_job,
   my_jobs,
+  get_single_my_job,
   review_jobs,
   public_jobs,
   job_details,

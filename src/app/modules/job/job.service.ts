@@ -107,10 +107,22 @@ const delete_job = async (jobId: string, user: any) => {
     postedBy: user.id,
   });
 };
+const get_single_my_job = async (jobId: string, user: any) => {
+  const job = await job_model.findOne({
+    _id: jobId,
+    postedBy: user.id,
+  });
 
+  if (!job) {
+    throw new Error("Job not found or access denied");
+  }
+
+  return job;
+};
 export const job_service = {
   create_new_job_into_db,
   get_my_jobs,
+  get_single_my_job,
   get_review_jobs,
   get_public_jobs,
   get_job_details,
