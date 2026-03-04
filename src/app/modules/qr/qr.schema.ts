@@ -1,5 +1,5 @@
 import { Schema, model, Types } from "mongoose";
-// 
+
 const attendanceSchema = new Schema(
   {
     eventId: {
