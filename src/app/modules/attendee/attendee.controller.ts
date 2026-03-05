@@ -130,6 +130,23 @@ const generate_qr_token = catchAsync(async (req, res) => {
   });
 });
 
+const join_event = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  const userId = req.user?.id;
+
+  const result = await attendee_service.join_event_from_db(
+    userId,
+    eventId,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "user join successfully",
+    data: result,
+  });
+});
+
 export const attendee_controller = {
   get_all_upcoming_events,
   register_event,
@@ -140,4 +157,5 @@ export const attendee_controller = {
   get_event_home,
   generate_qr_token,
   initiate_attendee_registration,
+  join_event,
 };

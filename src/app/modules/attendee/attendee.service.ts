@@ -409,6 +409,15 @@ const generate_qr_token_from_db = async (
     qrToken: token,
   };
 };
+const join_event_from_db = async (userId: Types.ObjectId, eventId: any) => {
+  const updatedUser = await Account_Model.findByIdAndUpdate(
+    { _id: new ObjectId(userId) },
+    { activeRole: "ATTENDEE" },
+    { new: true },
+  );
+  return updatedUser;
+};
+
 export const attendee_service = {
   get_all_upcoming_events_from_db,
   register_attendee_into_event,
@@ -419,4 +428,5 @@ export const attendee_service = {
   get_event_home_from_db,
   generate_qr_token_from_db,
   initiate_attendee_registration,
+  join_event_from_db,
 };

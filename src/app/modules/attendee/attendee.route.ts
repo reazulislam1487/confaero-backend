@@ -143,5 +143,19 @@ attendee_router.get(
   eventAccess(),
   attendee_controller.generate_qr_token,
 );
-
+attendee_router.patch(
+  "/event/:eventId/join",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  eventAccess(),
+  attendee_controller.join_event,
+);
 export default attendee_router;
