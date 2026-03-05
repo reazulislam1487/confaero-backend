@@ -134,9 +134,12 @@ const join_event = catchAsync(async (req, res) => {
   const { eventId } = req.params;
   const userId = req.user?.id;
 
+  const role = req.query.role; // 👈 query role
+
   const result = await attendee_service.join_event_from_db(
     userId,
     eventId,
+    role,
   );
 
   manageResponse(res, {

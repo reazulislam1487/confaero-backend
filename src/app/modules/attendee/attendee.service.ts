@@ -409,15 +409,28 @@ const generate_qr_token_from_db = async (
     qrToken: token,
   };
 };
-const join_event_from_db = async (userId: Types.ObjectId, eventId: any ) => {
-  const updatedUser = await Account_Model.findByIdAndUpdate(
+const join_event_from_db = async (
+  userId: Types.ObjectId,
+  eventId: any,
+  role?: any,
+) => {
+  const allowedRoles = [
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ];
+  const activeRole = allowedRoles.includes(role) ? role : "ATTENDEE";
 
-
-    { _id: new ObjectId(userId) },
-    { activeRole: "ATTENDEE" },
+  return Account_Model.findByIdAndUpdate(
+    userId,
+    { activeEvent: eventId, activeRole },
     { new: true },
   );
-  return updatedUser;
 };
 
 export const attendee_service = {
