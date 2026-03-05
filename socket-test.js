@@ -16,9 +16,6 @@ socket.on("message:new", (msg) => {
   console.log("📩 New message:", msg.text);
 });
 /* 
-1. i am learning english, so i will write in english to improve my english skills.
-2.i am a software engineer, so i will write about software engineering topics to improve my technical writing skills.
-3. i will write about my daily life and experiences to improve my storytelling skills.
-4. test case
+added all code march 05
 
 */
