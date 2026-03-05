@@ -136,7 +136,7 @@ const getSurveyAnalytics = async (eventId: any, page = 1, limit = 10) => {
 /* ===================== FETCH ===================== */
 
 const getQnas = async (eventId: any) => {
-  const qna = await QNA_Model.find({ eventId, isActive: true });
+  const qna = await QNA_Model.find({ eventId });
 
   return qna;
 };

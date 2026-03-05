@@ -38,7 +38,7 @@ router.patch(
 
 router.delete(
   "/qna/:id/:eventId",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   eventAccess(),
   delete_qna,
 );
@@ -139,6 +139,8 @@ router.get(
   "/event/qna/:eventId",
   auth(
     "ATTENDEE",
+    "ORGANIZER",
+    "SUPER_ADMIN",
     "SPEAKER",
     "EXHIBITOR",
     "STAFF",
@@ -154,6 +156,8 @@ router.get(
 router.get(
   "/event/poll/:eventId",
   auth(
+    "ORGANIZER",
+    "SUPER_ADMIN",
     "ATTENDEE",
     "SPEAKER",
     "EXHIBITOR",
