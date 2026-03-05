@@ -8,6 +8,8 @@ import { Organizer_Model } from "../superAdmin/superAdmin.schema";
 import { stripe } from "../../configs/stripe";
 import { verify_email_model } from "../verifyEmail/verifyEmail.schema";
 import { configs } from "../../configs";
+import { Account_Model } from "../auth/auth.schema";
+import { ObjectId } from "mongodb";
 
 const get_all_upcoming_events_from_db = async () => {
   const now = new Date();
@@ -119,7 +121,10 @@ const initiate_attendee_registration = async (
         },
       },
     });
-
+    await Account_Model.findByIdAndUpdate(
+      { _id: new ObjectId(userId) },
+      { activeRole: "ATTENDEE" },
+    );
     return attendee_model.create({
       account: userId,
       event: eventId,
@@ -219,7 +224,10 @@ export const finalize_attendee_registration = async (
       },
     },
   });
-
+  await Account_Model.findByIdAndUpdate(
+    { _id: new ObjectId(userId) },
+    { activeRole: "ATTENDEE" },
+  );
   return attendee_model.create({
     account: userId,
     event: eventId,
