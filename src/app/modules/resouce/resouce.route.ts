@@ -22,9 +22,19 @@ const router = Router();
 
 /* ========= ORGANIZER ========= */
 
-router.post("/qna/:eventId", auth("ORGANIZER"), eventAccess(), create_qna);
+router.post(
+  "/qna/:eventId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  eventAccess(),
+  create_qna,
+);
 
-router.patch("/qna/:id/:eventId", auth("ORGANIZER"), eventAccess(), update_qna);
+router.patch(
+  "/qna/:id/:eventId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  eventAccess(),
+  update_qna,
+);
 
 router.delete(
   "/qna/:id/:eventId",
@@ -33,7 +43,12 @@ router.delete(
   delete_qna,
 );
 
-router.post("/poll/:eventId", auth("ORGANIZER"), eventAccess(), create_poll);
+router.post(
+  "/poll/:eventId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  eventAccess(),
+  create_poll,
+);
 
 /* ===== USER SUBMIT ===== */
 router.post(
@@ -56,7 +71,7 @@ router.post(
 /* ===== ORGANIZER VIEW ===== */
 router.get(
   "/survey/:eventId/analytics",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   eventAccess(),
   get_survey_analytics,
 );
@@ -97,7 +112,7 @@ router.post(
 // UPDATE poll
 router.patch(
   "/poll/:pollId/:eventId",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   eventAccess(),
   update_poll,
 );
@@ -105,7 +120,7 @@ router.patch(
 // DELETE poll
 router.delete(
   "/poll/:pollId/:eventId",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   eventAccess(),
   delete_poll,
 );
@@ -113,7 +128,7 @@ router.delete(
 // VIEW poll votes / analytics
 router.get(
   "/poll/:pollId/:eventId/votes",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   eventAccess(),
   view_poll_votes,
 );
