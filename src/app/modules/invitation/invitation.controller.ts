@@ -60,6 +60,19 @@ const get_my_invitations = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const get_my_invitations_by_id = catchAsync(async (req, res) => {
+  const result = await invitation_service.get_my_invitations_detail_by_id(
+    req.user?.email,
+    req.params.invitedId as any,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "My invitations fetched",
+    data: result,
+  });
+});
 
 // see all invitations for an event (organizer)
 // 🔹 View all invitations of an event
@@ -142,6 +155,7 @@ export const invitation_controller = {
   accept_invitation,
   reject_invitation,
   get_event_invitations,
+  get_my_invitations_by_id,
   resend_invitation,
   delete_invitation,
   get_event_sessions,

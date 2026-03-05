@@ -45,7 +45,7 @@ invitation_router.patch(
 );
 
 invitation_router.get(
-  "/my-invitations/:eventId",
+  "/my-invitations",
   auth(
     "ATTENDEE",
     "SPEAKER",
@@ -56,8 +56,21 @@ invitation_router.get(
     "ABSTRACT_REVIEWER",
     "TRACK_CHAIR",
   ),
-  eventAccess(),
   invitation_controller.get_my_invitations,
+);
+invitation_router.get(
+  "/my-invitations/:invitedId",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  invitation_controller.get_my_invitations_by_id,
 );
 invitation_router.get(
   "/event/:eventId",

@@ -103,10 +103,19 @@ const reject_invitation = async (invitationId: any, email: any) => {
 const get_my_invitations = async (email: any) => {
   return invitation_model
     .find({ email })
-    .populate("eventId")
+    .populate({
+      path: "eventId",
+      select: "title startDate endDate location bannerImageUrl",
+    })
     .sort({ createdAt: -1 });
 };
 
+const get_my_invitations_detail_by_id = async (email: any, invitedId: any) => {
+  return invitation_model
+    .findById(invitedId)
+    .populate("eventId")
+    .sort({ createdAt: -1 });
+};
 // get event invitations
 
 const get_event_invitations = async (eventId: any, query: any) => {
@@ -353,6 +362,7 @@ export const invitation_service = {
   accept_invitation,
   reject_invitation,
   get_my_invitations,
+  get_my_invitations_detail_by_id,
   get_event_invitations,
   resend_invitation,
   delete_invitation,

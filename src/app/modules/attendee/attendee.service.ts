@@ -409,8 +409,10 @@ const generate_qr_token_from_db = async (
     qrToken: token,
   };
 };
-const join_event_from_db = async (userId: Types.ObjectId, eventId: any) => {
+const join_event_from_db = async (userId: Types.ObjectId, eventId: any ) => {
   const updatedUser = await Account_Model.findByIdAndUpdate(
+
+
     { _id: new ObjectId(userId) },
     { activeRole: "ATTENDEE" },
     { new: true },

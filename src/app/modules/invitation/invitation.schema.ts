@@ -4,12 +4,14 @@ const invitation_schema = new Schema(
   {
     eventId: {
       type: Schema.Types.ObjectId,
+      ref: "Event",
       required: true,
       index: true,
     },
 
     organizerId: {
       type: Schema.Types.ObjectId,
+      ref: "account",
       required: true,
     },
 
