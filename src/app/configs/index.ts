@@ -42,4 +42,7 @@ export const configs = {
   api: {
     google_map_api: process.env.GOOGLE_MAPS_API_KEY,
   },
+  ip: {
+    backend_ip: process.env.BACKEND_IP,
+  },
 };
