@@ -41,7 +41,7 @@ const update_my_event = catchAsync(async (req, res) => {
 
   const result = await organizer_service.update_my_event_in_db(
     req.user,
-    req.params.eventId,
+    req.params.eventId as string,
     payload,
   );
 
