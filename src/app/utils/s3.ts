@@ -1,5 +1,6 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { v4 as uuidv4 } from "uuid";
+// import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 import path from "path";
 import { configs } from "../configs";
 
@@ -16,7 +17,9 @@ export const uploadToS3 = async (
   folder = "uploads",
 ) => {
   const ext = path.extname(file.originalname);
-  const key = `${folder}/${uuidv4()}${ext}`;
+  // const key = `${folder}/${uuidv4()}${ext}`;
+  const key = `${folder}/${randomUUID()}${ext}`;
+
 
   await s3.send(
     new PutObjectCommand({
