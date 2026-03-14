@@ -16,8 +16,10 @@ async function main() {
   // app.listen(configs.port, () => {
   //   console.log(`Server listening on port ${configs.port}`);
   // });
+  // server.listen(configs.port, configs.ip.backend_ip as any, () => {
+
   server.listen(configs.port, configs.ip.backend_ip as any, () => {
-    console.log(`Server listening on port ${configs.ip.backend_ip}`);
+    console.log(`Server listening on port ${configs.port}`);
   });
 }
 main().catch((err) => console.log(err));
