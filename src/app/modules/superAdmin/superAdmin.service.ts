@@ -88,7 +88,6 @@ const create_new_organizer_into_db = async (
   }
 };
 
-
 const create_event_by_super_admin_into_db = async (
   payload: TCreateEventPayload,
 ) => {
@@ -308,7 +307,7 @@ const get_all_events_from_db = async (limit?: number) => {
   const query = Event_Model.find()
     .sort({ createdAt: -1 })
     .select(
-      "title location startDate endDate website expectedAttendee boothSlot",
+      "title location startDate endDate website expectedAttendee boothSlot bannerImageUrl",
     );
 
   if (limit) {
