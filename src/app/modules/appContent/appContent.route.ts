@@ -1,8 +1,6 @@
 // appContent.route.ts
 import { Router } from "express";
-import RequestValidator from "../../middlewares/request_validator";
 import { app_content_controller } from "./appContent.controller";
-import { app_content_validations } from "./appContent.validation";
 import auth from "../../middlewares/auth";
 
 const app_content_router = Router();
@@ -14,7 +12,6 @@ const app_content_router = Router();
 app_content_router.post(
   "/create",
   auth("SUPER_ADMIN", "ORGANIZER"),
-  RequestValidator(app_content_validations.create),
   app_content_controller.create_or_update_app_content,
 );
 

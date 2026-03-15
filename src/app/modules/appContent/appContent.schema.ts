@@ -1,13 +1,13 @@
 import { Schema, model } from "mongoose";
-import { T_AppContent } from "./appContent.interface";
+import { T_AppContent, APP_CONTENT_TYPES } from "./appContent.interface";
 
 const appContentSchema = new Schema<T_AppContent>(
   {
     type: {
       type: String,
-      enum: ["ORGANIZER_GUIDELINE", "TERMS_CONDITION", "PRIVACY_POLICY"],
+      enum: APP_CONTENT_TYPES,
       required: true,
-      unique: true, // 🔥 one doc per type
+      unique: true,
       index: true,
     },
 
@@ -39,7 +39,7 @@ const appContentSchema = new Schema<T_AppContent>(
     },
   },
   {
-    timestamps: true, // createdAt, updatedAt auto
+    timestamps: true,
   },
 );
 
