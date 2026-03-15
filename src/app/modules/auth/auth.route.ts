@@ -37,6 +37,7 @@ authRoute.post("/refresh-token", auth_controllers.refresh_token);
 authRoute.post(
   "/change-password",
   auth(
+    "SUPER_ADMIN",
     "ORGANIZER",
     "ATTENDEE",
     "SPEAKER",

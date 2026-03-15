@@ -175,7 +175,7 @@ export const bulk_add_sessions = async (
   }
 
   const event: any = await Event_Model.findOne({
-    organizerEmails: user.email,
+    // organizerEmails: user.email,
     _id: eventId,
   });
 
