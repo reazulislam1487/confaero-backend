@@ -46,6 +46,13 @@ poster_assign_router.post(
   poster_assign_controller.reassign_reviewer,
 );
 
+// poster_assign_router.get(
+//   "/reviewer-stats/:eventId",
+//   auth("ORGANIZER", "SUPER_ADMIN"),
+//   eventAccess(),
+//   poster_assign_controller.get_reviewer_stats,
+// );
+
 poster_assign_router.get(
   "/reviewer-stats/:eventId",
   auth("ORGANIZER", "SUPER_ADMIN"),

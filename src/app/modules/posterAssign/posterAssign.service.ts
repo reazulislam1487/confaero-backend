@@ -6,7 +6,6 @@ import { Event_Model } from "../superAdmin/event.schema";
 import { Account_Model } from "../auth/auth.schema";
 import sendMail from "../../utils/mail_sender";
 
-
 const create_new_poster_assign_into_db = async (payload: {
   items: {
     posterId: string;
@@ -450,21 +449,14 @@ const reassign_reviewer = async (payload: {
     status: "reassigned",
   });
 };
-
-const get_reviewer_stats = async (eventId: any) => {
+const get_reviewer_stats = async (eventId: string) => {
   return poster_assign_model.aggregate([
-    /* =========================
-       1️⃣ Event filter
-    ========================= */
     {
       $match: {
         eventId: new Types.ObjectId(eventId),
       },
     },
 
-    /* =========================
-       2️⃣ Join poster (for attachment)
-    ========================= */
     {
       $lookup: {
         from: "posters",
@@ -473,17 +465,19 @@ const get_reviewer_stats = async (eventId: any) => {
         as: "poster",
       },
     },
-    { $unwind: "$poster" },
+    {
+      $unwind: {
+        path: "$poster",
+        preserveNullAndEmptyArrays: false,
+      },
+    },
 
-    /* =========================
-       3️⃣ Extract assigned attachment
-    ========================= */
     {
       $addFields: {
         attachment: {
           $first: {
             $filter: {
-              input: "$poster.attachments",
+              input: { $ifNull: ["$poster.attachments", []] },
               as: "a",
               cond: { $eq: ["$$a._id", "$attachmentId"] },
             },
@@ -492,9 +486,6 @@ const get_reviewer_stats = async (eventId: any) => {
       },
     },
 
-    /* =========================
-       4️⃣ Extract IMAGE numeric scores
-    ========================= */
     {
       $addFields: {
         numericScores: {
@@ -502,7 +493,6 @@ const get_reviewer_stats = async (eventId: any) => {
             {
               $and: [
                 { $eq: ["$status", "completed"] },
-                { $eq: ["$attachment.type", "image"] },
                 { $ne: ["$attachment.reviewScore", null] },
               ],
             },
@@ -510,7 +500,11 @@ const get_reviewer_stats = async (eventId: any) => {
               $map: {
                 input: {
                   $filter: {
-                    input: { $objectToArray: "$attachment.reviewScore" },
+                    input: {
+                      $objectToArray: {
+                        $ifNull: ["$attachment.reviewScore", {}],
+                      },
+                    },
                     as: "kv",
                     cond: {
                       $in: [
@@ -530,45 +524,38 @@ const get_reviewer_stats = async (eventId: any) => {
       },
     },
 
-    /* =========================
-       5️⃣ Group by reviewer (accountId)
-    ========================= */
     {
       $group: {
-        _id: "$reviewerId", // reviewerId === accountId
-
+        _id: "$reviewerId",
         assigned: { $sum: 1 },
-
         completed: {
           $sum: {
             $cond: [{ $eq: ["$status", "completed"] }, 1, 0],
           },
         },
-
-        allScores: { $push: "$numericScores" },
+        allScores: {
+          $push: { $ifNull: ["$numericScores", []] },
+        },
       },
     },
 
-    /* =========================
-       6️⃣ Flatten scores
-    ========================= */
     {
       $addFields: {
         flatScores: {
           $reduce: {
-            input: "$allScores",
+            input: { $ifNull: ["$allScores", []] },
             initialValue: [],
-            in: { $concatArrays: ["$$value", "$$this"] },
+            in: {
+              $concatArrays: ["$$value", { $ifNull: ["$$this", []] }],
+            },
           },
         },
       },
     },
 
-    /* =========================
-       7️⃣ Avg Score
-    ========================= */
     {
       $addFields: {
+        scoreCount: { $size: "$flatScores" },
         avgScore: {
           $cond: [
             { $eq: [{ $size: "$flatScores" }, 0] },
@@ -579,9 +566,6 @@ const get_reviewer_stats = async (eventId: any) => {
       },
     },
 
-    /* =========================
-       8️⃣ Progress %
-    ========================= */
     {
       $addFields: {
         progress: {
@@ -601,41 +585,50 @@ const get_reviewer_stats = async (eventId: any) => {
       },
     },
 
-    /* =========================
-       9️⃣ Join USER PROFILE (SOURCE OF TRUTH)
-    ========================= */
     {
       $lookup: {
         from: "user_profiles",
-        localField: "_id", // reviewerId
-        foreignField: "accountId", // accountId
+        localField: "_id",
+        foreignField: "accountId",
         as: "profile",
       },
     },
-    { $unwind: { path: "$profile", preserveNullAndEmptyArrays: true } },
+    {
+      $unwind: {
+        path: "$profile",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
 
-    /* =========================
-       🔟 Final UI-ready shape
-    ========================= */
+    {
+      $lookup: {
+        from: "accounts",
+        localField: "_id",
+        foreignField: "_id",
+        as: "account",
+      },
+    },
+    {
+      $unwind: {
+        path: "$account",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
     {
       $project: {
         reviewerId: "$_id",
-
         name: "$profile.name",
         avatar: "$profile.avatar",
-        email: "$profile.contact.email",
+        email: "$account.email",
         assigned: 1,
         completed: 1,
         progress: 1,
         avgScore: 1,
-
         _id: 0,
       },
     },
 
-    /* =========================
-       1️⃣1️⃣ Sort (best reviewers first)
-    ========================= */
     {
       $sort: {
         avgScore: -1,

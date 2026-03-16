@@ -84,8 +84,6 @@ const get_reported_files = catchAsync(async (req, res) => {
   });
 });
 
-
-
 const reassign_reviewer = catchAsync(async (req, res) => {
   const assignedBy = req.user!.id;
   const { eventId } = req.params;
@@ -106,8 +104,10 @@ const reassign_reviewer = catchAsync(async (req, res) => {
 
 const get_reviewer_stats = catchAsync(async (req, res) => {
   const { eventId } = req.params;
-
-  const data = await poster_assign_service.get_reviewer_stats(eventId);
+  console.log(eventId);
+  const data = await poster_assign_service.get_reviewer_stats(
+    eventId as string,
+  );
 
   manageResponse(res, {
     statusCode: httpStatus.OK,
