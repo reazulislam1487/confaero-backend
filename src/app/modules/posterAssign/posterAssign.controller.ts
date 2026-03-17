@@ -44,7 +44,9 @@ const reassign_poster_to_reviewer = catchAsync(async (req, res) => {
 const get_unassigned_files = catchAsync(async (req, res) => {
   const { eventId } = req.params;
 
-  const data = await poster_assign_service.get_unassigned_files(eventId);
+  const data = await poster_assign_service.get_unassigned_files(
+    eventId as string,
+  );
 
   manageResponse(res, {
     statusCode: httpStatus.OK,
@@ -83,8 +85,6 @@ const get_reported_files = catchAsync(async (req, res) => {
     data,
   });
 });
-
-
 
 const get_reviewer_stats = catchAsync(async (req, res) => {
   const { eventId } = req.params;

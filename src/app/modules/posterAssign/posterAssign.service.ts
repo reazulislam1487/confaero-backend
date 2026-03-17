@@ -5,7 +5,23 @@ import { UserProfile_Model } from "../user/user.schema";
 import { Event_Model } from "../superAdmin/event.schema";
 import { Account_Model } from "../auth/auth.schema";
 import sendMail from "../../utils/mail_sender";
+type PopulatedAuthor = {
+  _id: Types.ObjectId;
+  name: string;
+  email: string;
+};
 
+// ✅ Poster type with populated author
+type PosterWithAuthor = {
+  _id: Types.ObjectId;
+  title: string;
+  authorId: PopulatedAuthor;
+  attachments: {
+    _id: Types.ObjectId;
+    [key: string]: any;
+  }[];
+  createdAt: Date;
+};
 const create_new_poster_assign_into_db = async (payload: {
   items: {
     posterId: string;
@@ -104,11 +120,16 @@ const reassign_poster_to_reviewer_into_db = async (payload: {
   };
 };
 
-const get_unassigned_files = async (eventId: any) => {
+const get_unassigned_files = async (eventId: string) => {
+  // ✅ get assigned attachment ids
   const assignedIds = await poster_assign_model.distinct("attachmentId", {
     eventId: new Types.ObjectId(eventId),
   });
 
+  // ✅ O(1) lookup
+  const assignedSet = new Set(assignedIds.map((id) => id.toString()));
+
+  // ✅ fetch posters + populate author
   const posters = await poster_model
     .find(
       { eventId: new Types.ObjectId(eventId) },
@@ -119,27 +140,84 @@ const get_unassigned_files = async (eventId: any) => {
         createdAt: 1,
       },
     )
+    .populate({
+      path: "authorId",
+      select: "email",
+    })
     .lean();
 
-  return posters
+  // ✅ process data
+  const result = posters
     .map((poster) => {
       const unassignedAttachments = poster.attachments.filter(
-        (att: any) =>
-          !assignedIds.some((id: any) => id.toString() === att._id.toString()),
+        (att: any) => !assignedSet.has(att._id.toString()),
       );
 
       if (!unassignedAttachments.length) return null;
 
+      // ✅ safe cast (because union type)
+      const author = poster.authorId as {
+        _id: Types.ObjectId;
+        email: string;
+      };
+
       return {
         posterId: poster._id,
         title: poster.title,
-        authorId: poster.authorId,
+
+        author: {
+          _id: author?._id,
+          email: author?.email || "",
+        },
+
         attachments: unassignedAttachments,
         createdAt: poster.createdAt,
       };
     })
     .filter(Boolean);
+
+  return result;
 };
+// const get_unassigned_files = async (eventId: any) => {
+//   const assignedIds = await poster_assign_model.distinct("attachmentId", {
+//     eventId: new Types.ObjectId(eventId),
+//   });
+
+//   const posters = await poster_model
+//     .find(
+//       { eventId: new Types.ObjectId(eventId) },
+//       {
+//         title: 1,
+//         authorId: 1,
+//         attachments: 1,
+//         createdAt: 1,
+//       },
+//     )
+//     .populate({
+//       path: "authorId",
+//       select: "name",
+//     })
+//     .lean();
+
+//   return posters
+//     .map((poster) => {
+//       const unassignedAttachments = poster.attachments.filter(
+//         (att: any) =>
+//           !assignedIds.some((id: any) => id.toString() === att._id.toString()),
+//       );
+
+//       if (!unassignedAttachments.length) return null;
+
+//       return {
+//         posterId: poster._id,
+//         title: poster.title,
+//         authorId: poster.authorId,
+//         attachments: unassignedAttachments,
+//         createdAt: poster.createdAt,
+//       };
+//     })
+//     .filter(Boolean);
+// };
 
 const get_assigned_files = async (eventId: any, type: "pdf" | "image") => {
   const assigns = await poster_assign_model
@@ -254,101 +332,6 @@ const get_assigned_files = async (eventId: any, type: "pdf" | "image") => {
     });
 };
 
-// const get_assigned_files = async (eventId: any, type: "pdf" | "image") => {
-//   const assigns = await poster_assign_model
-//     .find({ eventId: new Types.ObjectId(eventId) })
-//     .sort({ createdAt: -1 })
-//     .lean();
-
-//   if (!assigns.length) return [];
-
-//   const posterIds = assigns.map((a) => a.posterId);
-//   const reviewerIds = assigns.map((a) => a.reviewerId);
-
-//   const posters = await poster_model
-//     .find(
-//       { _id: { $in: posterIds } },
-//       { title: 1, authorId: 1, attachments: 1 },
-//     )
-//     .lean();
-
-//   const posterMap = new Map(posters.map((p) => [p._id.toString(), p]));
-
-//   const authorIds = posters.map((p) => p.authorId);
-
-//   const profiles = await UserProfile_Model.find({
-//     accountId: { $in: [...authorIds, ...reviewerIds] },
-//   })
-//     .select("accountId name avatar")
-//     .lean();
-
-//   const profileMap = new Map(profiles.map((p) => [p.accountId.toString(), p]));
-
-//   return assigns
-//     .map((assign) => {
-//       const poster = posterMap.get(assign.posterId.toString());
-//       if (!poster) return null;
-
-//       const attachment = poster.attachments.find(
-//         (a: any) =>
-//           a._id.toString() === assign.attachmentId.toString() &&
-//           a.type === type,
-//       );
-
-//       if (!attachment) return null;
-
-//       const score = attachment.reviewScore;
-
-//       if (!score || typeof score !== "object") {
-//         return {
-//           ...attachment,
-//           averageScore: null,
-//         };
-//       }
-
-//       const numericScores = Object.values(score).filter(
-//         (v) => typeof v === "number",
-//       );
-
-//       const averageScore =
-//         numericScores.length > 0
-//           ? Number(
-//               (
-//                 numericScores.reduce((sum, v) => sum + v, 0) /
-//                 numericScores.length
-//               ).toFixed(2),
-//             )
-//           : null;
-//       return {
-//         assignmentId: assign._id,
-//         posterId: poster._id,
-//         attachmentId: attachment._id,
-
-//         title: poster.title,
-
-//         author: profileMap.get(poster.authorId.toString()) || null,
-//         reviewer: profileMap.get(assign.reviewerId.toString()) || null,
-
-//         dueDate: assign.dueDate,
-
-//         status: attachment.reviewStatus,
-//         reviewReason: attachment.reviewReason,
-
-//         file: {
-//           url: attachment.url,
-//           name: attachment.name,
-//           size: attachment.size,
-//           type: attachment.type,
-//           status: attachment.reviewStatus,
-//           score: averageScore,
-//         },
-
-//         createdAt: assign.createdAt,
-//       };
-//     })
-//     .filter(Boolean);
-// };
-
 /* REPORTED FILES */
 const get_reported_files = async (eventId: any) => {
   const eventObjectId = new Types.ObjectId(eventId);
@@ -429,7 +412,6 @@ const get_reported_files = async (eventId: any) => {
 
   return results;
 };
-
 
 const get_reviewer_stats = async (eventId: string) => {
   return poster_assign_model.aggregate([

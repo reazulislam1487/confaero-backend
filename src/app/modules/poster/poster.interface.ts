@@ -34,8 +34,12 @@ export type T_Presenter = {
 
 export type T_Poster = {
   eventId: Types.ObjectId;
-  authorId: Types.ObjectId;
-
+  authorId:
+    | Types.ObjectId
+    | {
+        _id: Types.ObjectId;
+        email: string;
+      };
   title: string;
   abstract: string;
   banner: string;

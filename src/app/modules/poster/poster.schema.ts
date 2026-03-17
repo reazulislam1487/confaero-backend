@@ -3,8 +3,13 @@ import { T_Poster } from "./poster.interface";
 
 const poster_schema = new Schema<T_Poster>(
   {
-    eventId: { type: Schema.Types.ObjectId, required: true, index: true },
-    authorId: { type: Schema.Types.ObjectId, required: true },
+    eventId: {
+      type: Schema.Types.ObjectId,
+      ref: "Event",
+      required: true,
+      index: true,
+    },
+    authorId: { type: Schema.Types.ObjectId, ref: "account", required: true },
 
     title: { type: String, required: true, maxlength: 25 },
     abstract: { type: String, required: true, maxlength: 200 },

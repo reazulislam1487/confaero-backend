@@ -3,8 +3,18 @@ import { T_PosterAssign } from "./posterAssign.interface";
 
 const poster_assign_schema = new Schema<T_PosterAssign>(
   {
-    eventId: { type: Schema.Types.ObjectId, required: true, index: true },
-    posterId: { type: Schema.Types.ObjectId, required: true, index: true },
+    eventId: {
+      type: Schema.Types.ObjectId,
+      ref: "Event",
+      required: true,
+      index: true,
+    },
+    posterId: {
+      type: Schema.Types.ObjectId,
+      ref: "poster",
+      required: true,
+      index: true,
+    },
     attachmentId: { type: Schema.Types.ObjectId, required: true },
     dueDate: { type: Date },
     reviewerId: { type: Schema.Types.ObjectId, required: true },
