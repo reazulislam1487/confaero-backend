@@ -75,6 +75,7 @@ const approve_attachment = catchAsync(async (req, res) => {
   const result = await reviewer_service.approve_attachment_from_db(
     req.user!.id,
     req.params.attachmentId,
+    // req.user!.activeRole,
   );
 
   manageResponse(res, {
@@ -86,11 +87,12 @@ const approve_attachment = catchAsync(async (req, res) => {
 });
 
 const reject_attachment = catchAsync(async (req, res) => {
-  const { reason } = req.body;
+  const { reason } = req.body || {};
   const result = await reviewer_service.reject_attachment_from_db(
     req.user!.id,
     req.params.attachmentId,
     reason,
+    // req.user!.activeRole,
   );
 
   manageResponse(res, {
@@ -102,12 +104,13 @@ const reject_attachment = catchAsync(async (req, res) => {
 });
 
 const revise_attachment = catchAsync(async (req, res) => {
-  const { reason } = req.body;
+  const { reason } = req.body || {};
 
   const result = await reviewer_service.revise_attachment_from_db(
     req.user!.id,
     req.params.attachmentId,
     reason,
+    // req.user!.activeRole,
   );
 
   manageResponse(res, {
@@ -140,13 +143,13 @@ const review_image_attachment = catchAsync(async (req, res) => {
     req.user!.id,
     req.params.attachmentId,
     req.body,
+    // req.user!.activeRole,
   );
 
   manageResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Poster image reviewed successfully",
-
     data: result,
   });
 });
