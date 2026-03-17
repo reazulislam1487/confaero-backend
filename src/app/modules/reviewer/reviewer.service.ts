@@ -468,6 +468,10 @@ const review_image_attachment_from_db = async (
     throw new Error("Review reason is required");
   }
 
+  if (!payload.overall && !payload.reviewReason?.trim()) {
+    throw new Error("Review reason is required");
+  }
+
   const attachmentStatus = payload.overall
     ? "approved"
     : payload.reviewStatus || "rejected";

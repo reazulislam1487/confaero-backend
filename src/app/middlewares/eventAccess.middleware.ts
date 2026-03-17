@@ -3,17 +3,9 @@ import { attendee_model } from "../modules/attendee/attendee.schema";
 import httpStatus from "http-status";
 import { Event_Model } from "../modules/superAdmin/event.schema";
 import { invitation_model } from "../modules/invitation/invitation.schema";
-import { poster_model } from "../modules/poster/poster.schema";
 
 const eventAccess = () => async (req: any, res: any, next: NextFunction) => {
-  let { eventId } = req.params;
-
-  if (!eventId && req.params.attachmentId) {
-    const poster = await poster_model.findOne({
-      "attachments._id": req.params.attachmentId,
-    });
-    if (poster) eventId = poster.eventId.toString();
-  }
+  const { eventId } = req.params;
 
   const userId = req.user.id;
   const userEmail = req.user.email;
