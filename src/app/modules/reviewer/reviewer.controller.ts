@@ -75,7 +75,7 @@ const approve_attachment = catchAsync(async (req, res) => {
   const result = await reviewer_service.approve_attachment_from_db(
     req.user!.id,
     req.params.attachmentId,
-    // req.user!.activeRole,
+    req.user!.role,
   );
 
   manageResponse(res, {
@@ -92,7 +92,7 @@ const reject_attachment = catchAsync(async (req, res) => {
     req.user!.id,
     req.params.attachmentId,
     reason,
-    // req.user!.activeRole,
+    req.user!.role,
   );
 
   manageResponse(res, {
@@ -110,7 +110,7 @@ const revise_attachment = catchAsync(async (req, res) => {
     req.user!.id,
     req.params.attachmentId,
     reason,
-    // req.user!.activeRole,
+    req.user!.role,
   );
 
   manageResponse(res, {

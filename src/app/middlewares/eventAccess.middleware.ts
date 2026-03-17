@@ -3,9 +3,17 @@ import { attendee_model } from "../modules/attendee/attendee.schema";
 import httpStatus from "http-status";
 import { Event_Model } from "../modules/superAdmin/event.schema";
 import { invitation_model } from "../modules/invitation/invitation.schema";
+import { poster_model } from "../modules/poster/poster.schema";
 
 const eventAccess = () => async (req: any, res: any, next: NextFunction) => {
-  const { eventId } = req.params;
+  let { eventId } = req.params;
+
+  if (!eventId && req.params.attachmentId) {
+    const poster = await poster_model.findOne({
+      "attachments._id": req.params.attachmentId,
+    });
+    if (poster) eventId = poster.eventId.toString();
+  }
 
   const userId = req.user.id;
   const userEmail = req.user.email;
@@ -38,7 +46,7 @@ const eventAccess = () => async (req: any, res: any, next: NextFunction) => {
     status: { $in: ["PENDING", "ACCEPTED"] },
   });
 
-  if (req.user.activeRole == "ATTENDEE" && !invitation) {
+  if (req.user.role == "ATTENDEE" && !invitation) {
     const registration = await attendee_model.findOne({
       account: userId,
       event: eventId,
