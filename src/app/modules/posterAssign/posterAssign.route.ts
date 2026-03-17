@@ -39,12 +39,7 @@ poster_assign_router.get(
   poster_assign_controller.get_reported_files,
 );
 
-poster_assign_router.post(
-  "/reassign/:eventId",
-  auth("ORGANIZER", "SUPER_ADMIN"),
-  eventAccess(),
-  poster_assign_controller.reassign_reviewer,
-);
+
 
 // poster_assign_router.get(
 //   "/reviewer-stats/:eventId",

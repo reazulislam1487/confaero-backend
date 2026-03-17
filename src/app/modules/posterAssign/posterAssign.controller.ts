@@ -84,23 +84,7 @@ const get_reported_files = catchAsync(async (req, res) => {
   });
 });
 
-const reassign_reviewer = catchAsync(async (req, res) => {
-  const assignedBy = req.user!.id;
-  const { eventId } = req.params;
 
-  const result = await poster_assign_service.reassign_reviewer({
-    ...req.body,
-    eventId,
-    assignedBy,
-  });
-
-  manageResponse(res, {
-    statusCode: httpStatus.CREATED,
-    success: true,
-    message: "Reviewer reassigned successfully",
-    data: result,
-  });
-});
 
 const get_reviewer_stats = catchAsync(async (req, res) => {
   const { eventId } = req.params;
@@ -172,7 +156,6 @@ export const poster_assign_controller = {
   get_assigned_files,
   get_reported_files,
   // submit_review,
-  reassign_reviewer,
   get_reviewer_stats,
   search_speakers,
   search_unassigned_files,
