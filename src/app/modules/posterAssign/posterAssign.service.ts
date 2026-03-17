@@ -13,9 +13,11 @@ const create_new_poster_assign_into_db = async (payload: {
   }[];
   reviewerId: string;
   assignedBy: string;
+  eventId: string;
   dueDate?: string;
 }) => {
   const assignments = payload.items.map((item) => ({
+    eventId: new Types.ObjectId(payload.eventId),
     posterId: new Types.ObjectId(item.posterId),
     attachmentId: new Types.ObjectId(item.attachmentId),
     reviewerId: new Types.ObjectId(payload.reviewerId),
@@ -645,9 +647,10 @@ const search_event_speakers = async (eventId: any, search: string) => {
     .lean();
 
   if (!event) return [];
+  const allowedRoles = new Set(["ABSTRACT_REVIEWER", "TRACK_CHAIR"]);
 
   const speakerIds = event.participants
-    .filter((p: any) => p.role === "ABSTRACT_REVIEWER")
+    .filter((p: any) => allowedRoles.has(p.role))
     .map((p: any) => p.accountId);
 
   if (!speakerIds.length) return [];
