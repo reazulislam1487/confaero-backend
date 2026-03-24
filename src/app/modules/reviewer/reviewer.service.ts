@@ -290,9 +290,9 @@ const validate_assignment = async (
   attachmentId: string,
 ) => {
   const assign = await poster_assign_model.findOne({
-    reviewerId: new Types.ObjectId(reviewerId),
+    // reviewerId: new Types.ObjectId(reviewerId),
     attachmentId: new Types.ObjectId(attachmentId),
-    status: "assigned",
+    // status: "assigned",
   });
 
   if (!assign) throw new Error("Not authorized");
@@ -345,11 +345,26 @@ const update_attachment_status = async (
     return;
   }
 };
+
 const approve_attachment_from_db = async (
-  reviewerId: any,
-  attachmentId: any,
+  role: string,
+  userId: string,
+
+  attachmentId: string,
 ) => {
-  const assign = await validate_assignment(reviewerId, attachmentId);
+  let assign;
+
+  // SUPER_ADMIN & ORGANIZER হলে assignment check skip
+  if (role === "SUPER_ADMIN" || role === "ORGANIZER") {
+    assign = await poster_assign_model.findOne({
+      attachmentId: new Types.ObjectId(attachmentId),
+    });
+
+    if (!assign) throw new Error("Assignment not found");
+  } else {
+    // Reviewer হলে assignment validate must
+    assign = await validate_assignment(userId, attachmentId);
+  }
 
   await update_attachment_status(
     assign.posterId,
@@ -364,6 +379,26 @@ const approve_attachment_from_db = async (
 
   return { attachmentId };
 };
+// const approve_attachment_from_db = async (
+//   reviewerId: any,
+//   attachmentId: any,
+// ) => {
+//   const assign = await validate_assignment(reviewerId, attachmentId);
+//   console.log("ASSIGN:", assign);
+
+//   await update_attachment_status(
+//     assign.posterId,
+//     assign.attachmentId,
+//     "approved",
+//   );
+
+//   await poster_assign_model.updateOne(
+//     { _id: assign._id },
+//     { $set: { status: "completed" } },
+//   );
+
+//   return { attachmentId };
+// };
 
 const reject_attachment_from_db = async (
   reviewerId: any,
@@ -442,9 +477,9 @@ const review_image_attachment_from_db = async (
   payload: any,
 ) => {
   const assign = await poster_assign_model.findOne({
-    reviewerId: new Types.ObjectId(reviewerId),
+    // reviewerId: new Types.ObjectId(reviewerId),
     attachmentId: new Types.ObjectId(attachmentId),
-    status: "assigned",
+    // status: "assigned",
   });
 
   if (!assign) throw new Error("Not authorized");

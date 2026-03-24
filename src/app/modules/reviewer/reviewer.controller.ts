@@ -72,9 +72,12 @@ const get_attachment_details = catchAsync(async (req, res) => {
 });
 // 4 actions
 const approve_attachment = catchAsync(async (req, res) => {
+  console.log(req.user?.id, req.params.attachmentId);
+
   const result = await reviewer_service.approve_attachment_from_db(
+    req.user!.activeRole,
     req.user!.id,
-    req.params.attachmentId,
+    req.params.attachmentId as any,
   );
 
   manageResponse(res, {

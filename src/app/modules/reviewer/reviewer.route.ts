@@ -33,14 +33,14 @@ reviewer_router.get(
 reviewer_router.patch(
   "/attachments/:attachmentId/approve",
   auth("ORGANIZER", "SUPER_ADMIN", "ABSTRACT_REVIEWER", "TRACK_CHAIR"),
-  eventAccess(),
+  // eventAccess(),
   reviewer_controller.approve_attachment,
 );
 
 reviewer_router.patch(
   "/attachments/:attachmentId/reject",
   auth("ORGANIZER", "SUPER_ADMIN", "ABSTRACT_REVIEWER", "TRACK_CHAIR"),
-  eventAccess(),
+  // eventAccess(),
   reviewer_controller.reject_attachment,
 );
 
@@ -53,7 +53,7 @@ reviewer_router.patch(
 reviewer_router.patch(
   "/attachments/:attachmentId/flag-admin",
   auth("ORGANIZER", "SUPER_ADMIN", "ABSTRACT_REVIEWER", "TRACK_CHAIR"),
-  eventAccess(),
+  // eventAccess(),
   reviewer_controller.flag_attachment_for_admin,
 );
 reviewer_router.post(
