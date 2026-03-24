@@ -81,19 +81,66 @@ const submitSurvey = async (eventId: any, userId: any, payload: any) => {
 };
 
 /* ================= ANALYTICS ================= */
-
 const getSurveyAnalytics = async (eventId: any, page = 1, limit = 10) => {
   const skip = (page - 1) * limit;
   const eventObjectId = new Types.ObjectId(eventId);
 
-  const submissions = await SurveyResponse_Model.find({
-    eventId: eventObjectId,
-  })
-    .populate("userId", "name email")
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .lean();
+  // Submissions with user profile name
+  const submissions = await SurveyResponse_Model.aggregate([
+    {
+      $match: { eventId: eventObjectId },
+    },
+    {
+      $sort: { createdAt: -1 },
+    },
+    {
+      $skip: skip,
+    },
+    {
+      $limit: limit,
+    },
+    // account collection join
+    {
+      $lookup: {
+        from: "accounts",
+        localField: "userId",
+        foreignField: "_id",
+        as: "account",
+      },
+    },
+    {
+      $unwind: {
+        path: "$account",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    // user_profile join using accountId
+    {
+      $lookup: {
+        from: "user_profiles",
+        localField: "account._id",
+        foreignField: "accountId",
+        as: "profile",
+      },
+    },
+    {
+      $unwind: {
+        path: "$profile",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        rating: 1,
+        helpful: 1,
+        comment: 1,
+        suggestion: 1,
+        createdAt: 1,
+        userName: "$profile.name",
+        userEmail: "$account.email",
+      },
+    },
+  ]);
 
   const totalResponses = await SurveyResponse_Model.countDocuments({
     eventId: eventObjectId,
@@ -132,6 +179,56 @@ const getSurveyAnalytics = async (eventId: any, page = 1, limit = 10) => {
     },
   };
 };
+// const getSurveyAnalytics = async (eventId: any, page = 1, limit = 10) => {
+//   const skip = (page - 1) * limit;
+//   const eventObjectId = new Types.ObjectId(eventId);
+
+//   const submissions = await SurveyResponse_Model.find({
+//     eventId: eventObjectId,
+//   })
+//     .populate("userId", "name email")
+//     .sort({ createdAt: -1 })
+//     .skip(skip)
+//     .limit(limit)
+//     .lean();
+
+//   const totalResponses = await SurveyResponse_Model.countDocuments({
+//     eventId: eventObjectId,
+//   });
+
+//   const avgAgg = await SurveyResponse_Model.aggregate([
+//     { $match: { eventId: eventObjectId } },
+//     {
+//       $group: {
+//         _id: null,
+//         avgRating: { $avg: "$rating" },
+//       },
+//     },
+//   ]);
+
+//   const positiveCount = await SurveyResponse_Model.countDocuments({
+//     eventId: eventObjectId,
+//     helpful: true,
+//   });
+
+//   return {
+//     summary: {
+//       totalResponses,
+//       averageRating:
+//         avgAgg.length > 0 ? Number(avgAgg[0].avgRating.toFixed(1)) : 0,
+//       positiveFeedback:
+//         totalResponses === 0
+//           ? 0
+//           : Math.round((positiveCount / totalResponses) * 100),
+//     },
+//     submissions,
+//     meta: {
+//       page,
+//       limit,
+//       total: totalResponses,
+//     },
+//   };
+// };
 
 /* ===================== FETCH ===================== */
 
