@@ -206,24 +206,37 @@ const search_event_volunteer_by_email = async (
     email: matchedVolunteer.accountId.email,
   };
 };
-const get_volunteers_dashboard = async ({ page, limit, eventId }: any) => {
+
+const get_volunteers_dashboard = async ({ page, limit }: any) => {
   const skip = (page - 1) * limit;
 
-  // 1️⃣ get event volunteers
-  const event = await Event_Model.findById(eventId);
-  const volunteers = event?.participants.filter(
-    (p: any) => p.role === "VOLUNTEER",
-  );
+  // 1️⃣ get all events
+  const events = await Event_Model.find();
 
-  const total = volunteers?.length;
-  const paginated = volunteers?.slice(skip, skip + limit);
 
-  // 2️⃣ find event
-  if (!paginated) {
-    throw new AppError("Paginated not found", httpStatus.NOT_FOUND);
+  if (!events || events.length === 0) {
+    throw new AppError("No events found", httpStatus.NOT_FOUND);
   }
 
-  // 2️⃣ map volunteer cards
+  // 2️⃣ collect all volunteers from all events
+  let volunteers: any[] = [];
+
+  events.forEach((event: any) => {
+    const eventVolunteers = event.participants
+      .filter((p: any) => p.role === "VOLUNTEER")
+      .map((p: any) => ({
+        accountId: p.accountId,
+        eventId: event._id,
+        eventTitle: event.title,
+      }));
+
+    volunteers = [...volunteers, ...eventVolunteers];
+  });
+
+  const total = volunteers.length;
+  const paginated = volunteers.slice(skip, skip + limit);
+
+  // 3️⃣ build dashboard cards
   const cards = await Promise.all(
     paginated.map(async (v: any) => {
       const account = await Account_Model.findById(v.accountId);
@@ -231,11 +244,11 @@ const get_volunteers_dashboard = async ({ page, limit, eventId }: any) => {
         accountId: v.accountId,
       });
 
-      // latest task
+      // latest task for this volunteer in this event
       const latestTask = await task_model
         .findOne({
           assignedVolunteer: v.accountId,
-          eventId,
+          eventId: v.eventId,
         })
         .sort({ createdAt: -1 });
 
@@ -245,6 +258,10 @@ const get_volunteers_dashboard = async ({ page, limit, eventId }: any) => {
         .sort({ createdAt: -1 });
 
       return {
+        event: {
+          eventId: v.eventId,
+          title: v.eventTitle,
+        },
         volunteer: {
           accountId: account?._id,
           name: userProfile?.name,
@@ -269,6 +286,69 @@ const get_volunteers_dashboard = async ({ page, limit, eventId }: any) => {
     data: cards,
   };
 };
+// const get_volunteers_dashboard = async ({ page, limit, eventId }: any) => {
+//   const skip = (page - 1) * limit;
+
+//   // 1️⃣ get event volunteers
+//   const event = await Event_Model.findById(eventId);
+//   const volunteers = event?.participants.filter(
+//     (p: any) => p.role === "VOLUNTEER",
+//   );
+
+//   const total = volunteers?.length;
+//   const paginated = volunteers?.slice(skip, skip + limit);
+
+//   // 2️⃣ find event
+//   if (!paginated) {
+//     throw new AppError("Paginated not found", httpStatus.NOT_FOUND);
+//   }
+
+//   // 2️⃣ map volunteer cards
+//   const cards = await Promise.all(
+//     paginated.map(async (v: any) => {
+//       const account = await Account_Model.findById(v.accountId);
+//       const userProfile = await UserProfile_Model.findOne({
+//         accountId: v.accountId,
+//       });
+
+//       // latest task
+//       const latestTask = await task_model
+//         .findOne({
+//           assignedVolunteer: v.accountId,
+//           eventId,
+//         })
+//         .sort({ createdAt: -1 });
+
+//       // reports
+//       const reports = await task_report_model
+//         .find({ volunteerId: v.accountId })
+//         .sort({ createdAt: -1 });
+
+//       return {
+//         volunteer: {
+//           accountId: account?._id,
+//           name: userProfile?.name,
+//           email: account?.email,
+//         },
+//         taskStatus:
+//           latestTask?.status === "COMPLETED" ? "Completed" : "Pending",
+//         assignedArea: latestTask?.location || "—",
+//         reportsCount: reports.length,
+//         recentReports: reports.slice(0, 2).map((r) => ({
+//           _id: r._id,
+//           title: "Task Report",
+//           summary: r.description?.slice(0, 50),
+//           date: r.createdAt.toISOString().split("T")[0],
+//         })),
+//       };
+//     }),
+//   );
+
+//   return {
+//     meta: { page, limit, total },
+//     data: cards,
+//   };
+// };
 
 const get_single_report = async (reportId: any) => {
   const report = await task_report_model.findById(reportId);
