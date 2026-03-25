@@ -1,6 +1,7 @@
 import catchAsync from "../../utils/catch_async";
 import manageResponse from "../../utils/manage_response";
 import httpStatus from "http-status";
+import { AppError } from "../../utils/app_error";
 import { document_service } from "./document.service";
 
 /* Speaker */
@@ -8,11 +9,20 @@ import { document_service } from "./document.service";
 const create_new_document = catchAsync(async (req, res) => {
   const { eventId } = req.params;
   const uploadedBy = req.user?.id;
+  const activeRole = req.user?.activeRole;
+
+  if (
+    req.body.documentUrl &&
+    !req.body.documentUrl.toLowerCase().endsWith(".pdf")
+  ) {
+    throw new AppError("Only PDF files are allowed", httpStatus.BAD_REQUEST);
+  }
 
   const result = await document_service.create_new_document_into_db(
     eventId,
     uploadedBy,
     req.body,
+    activeRole,
   );
 
   manageResponse(res, {

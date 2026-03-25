@@ -7,13 +7,20 @@ const create_new_document_into_db = async (
   eventId: any,
   uploadedBy: string,
   payload: { documentType: string; documentUrl: string; documentName?: string },
+  activeRole?: string
 ) => {
+  const status =
+    activeRole === "SUPER_ADMIN" || activeRole === "ORGANIZER"
+      ? "approved"
+      : "pending";
+
   return document_model.create({
     eventId: new Types.ObjectId(eventId),
     uploadedBy: new Types.ObjectId(uploadedBy),
     documentType: payload.documentType,
     documentUrl: payload.documentUrl,
     documentName: payload.documentName,
+    status,
   });
 };
 
