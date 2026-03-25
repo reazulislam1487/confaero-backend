@@ -1,14 +1,19 @@
 import { Types } from "mongoose";
 
 export type T_JobStatus = "PENDING" | "APPROVED" | "REJECTED";
-export type T_JobRole = "ORGANIZER" | "SUPER_ADMIN" | "EXHIBITOR" | "STAFF";
+export type T_JobRole =
+  | "ORGANIZER"
+  | "SUPER_ADMIN"
+  | "EXHIBITOR"
+  | "STAFF"
+  | "SPONSOR";
 
 export type T_Job = {
   title: string;
   company: string;
 
   bannerImage?: string;
-//   logoImage?: string;
+  //   logoImage?: string;
 
   description: string;
   requirements?: string;

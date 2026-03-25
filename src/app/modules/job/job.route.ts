@@ -6,11 +6,13 @@ const job_router = Router();
 
 job_router.post(
   "/",
-  auth("ORGANIZER", "SUPER_ADMIN", "EXHIBITOR", "STAFF"),
+  auth("ORGANIZER", "SUPER_ADMIN", "EXHIBITOR", "STAFF", "SPONSOR"),
   job_controller.create_new_job,
 );
 
 job_router.get("/my", auth("ORGANIZER", "SUPER_ADMIN"), job_controller.my_jobs);
+
+//! have to fixed (remove sonsor)
 
 job_router.get(
   "/review",

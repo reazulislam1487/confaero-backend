@@ -37,7 +37,7 @@ const job_schema = new Schema<T_Job>(
     postedBy: { type: Schema.Types.ObjectId, ref: "account", required: true },
     posterRole: {
       type: String,
-      enum: ["ORGANIZER", "SUPER_ADMIN", "EXHIBITOR", "STAFF"],
+      enum: ["ORGANIZER", "SUPER_ADMIN", "EXHIBITOR", "STAFF", "SPONSOR"],
       required: true,
     },
 
