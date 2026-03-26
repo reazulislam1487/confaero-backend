@@ -195,36 +195,26 @@ const get_notifications = async (
   };
 };
 
-// const mark_notification_read = async (id: any, organizerId: any) => {
-//   console.log("hello");
-//   return organizer_notification_model.findOneAndUpdate(
-//     {
-//       _id: new Types.ObjectId(id),
-//       receiverId: new Types.ObjectId(organizerId),
-//     },
-//     { isRead: true },
-//     { new: true },
-//   );
-// };
 const mark_notification_read = async (
   notificationId: string,
   organizerId: string,
   eventId: string,
 ) => {
-  return organizer_notification_model.findOneAndUpdate(
+  const notification = await organizer_notification_model.findOneAndUpdate(
     {
       _id: new Types.ObjectId(notificationId),
       receiverId: new Types.ObjectId(organizerId),
       eventId: new Types.ObjectId(eventId),
-      isRead: false,
     },
     {
       $set: { isRead: true },
     },
     {
       new: true,
-    },
+    }
   );
+
+  return notification;
 };
 const get_user_presence = async (accountId: any, eventId: any) => {
   const userObjectId = new Types.ObjectId(accountId);
