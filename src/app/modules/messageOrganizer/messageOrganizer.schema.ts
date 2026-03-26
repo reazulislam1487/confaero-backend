@@ -13,7 +13,7 @@ const organizer_notification_schema = new Schema<T_OrganizerNotification>(
     },
 
     refId: { type: Schema.Types.ObjectId }, // sessionId
-   title: { type: String, required: true },   // 👈 UI title
+    title: { type: String, required: true }, // 👈 UI title
     message: { type: String, required: true }, // 👈 details text
     isRead: { type: Boolean, default: false },
 
