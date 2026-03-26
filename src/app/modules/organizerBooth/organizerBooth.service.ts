@@ -2,7 +2,7 @@ import httpStatus from "http-status";
 import { Event_Model } from "../superAdmin/event.schema";
 import { AppError } from "../../utils/app_error";
 import { booth_model } from "../booth/booth.schema";
-import { Types } from "mongoose";
+import { Query, Types } from "mongoose";
 
 // check if organizer has access to the event
 const check_event_access = async (eventId: string, organizerId: string) => {
@@ -25,13 +25,12 @@ const get_event_booths_into_db = async (
 ) => {
   let query: any = { _id: eventId };
 
-  if (userRole === "ORGANIZER") {
-    query.organizerId = organizerId;
-  }
+  // if (userRole === "ORGANIZER") {
+  //   query.organizerId = organizerId;
+  // }
   // for other role → no extra condition
 
   const event = await Event_Model.findOne(query);
-
   if (!event) {
     throw new AppError(
       "Event not found or access denied",

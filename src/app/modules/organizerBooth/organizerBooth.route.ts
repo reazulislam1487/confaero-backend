@@ -1,6 +1,7 @@
 import { Router } from "express";
 import auth from "../../middlewares/auth";
 import { organizer_booth_controller } from "./organizerBooth.controller";
+import eventAccess from "../../middlewares/eventAccess.middleware";
 
 const organizer_booth_router = Router();
 
@@ -18,7 +19,7 @@ organizer_booth_router.get(
     "ABSTRACT_REVIEWER",
     "TRACK_CHAIR",
   ),
-  // eventAccess(),
+  eventAccess(),
   organizer_booth_controller.get_event_booths,
 );
 

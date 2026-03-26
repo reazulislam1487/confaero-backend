@@ -28,10 +28,15 @@ const auth = (...roles: Role[]) => {
       // 🔑 Extract token
       const token = authHeader.split(" ")[1];
 
-      const verifiedUser = jwtHelpers.verifyToken(
-        token,
-        configs.jwt.access_token as string,
-      );
+      let verifiedUser;
+      try {
+        verifiedUser = jwtHelpers.verifyToken(
+          token,
+          configs.jwt.access_token as string,
+        );
+      } catch (error) {
+        throw new AppError("Token expired or invalid", 401);
+      }
 
       if (!roles.length || !roles.includes(verifiedUser.activeRole)) {
         throw new AppError("You are not authorize!!", 401);
