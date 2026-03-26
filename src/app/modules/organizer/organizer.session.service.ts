@@ -107,8 +107,7 @@ export const add_session = async (
     type: "SESSION_CREATED",
 
     title: "New Session has been Created!",
-    message:
-      "An existing session has been updated. Please review the changes in the agenda.",
+    message: "A sessions have been created to the event agenda.",
     sendToEmail: true,
   });
 
@@ -133,23 +132,19 @@ export const update_session = async (
 
   Object.assign(session, payload);
   await event.save();
-  Object.assign(session, payload);
-  await event.save();
 
   await sendSessionNotification({
     eventId: event._id,
     actorId: user.id,
-    sessionId: session._id, // ✅ exists here too
+    sessionId: session._id,
     type: "SESSION_UPDATED",
-    title: "New Session has been Updated!",
-    message:
-      "A new session has been updated for the event by the organizer. Please check the agenda for details.",
-
+    title: "Session Updated",
+    message: "A session has been updated. Please check the agenda.",
     sendToEmail: true,
   });
+
   return session;
 };
-
 export const delete_session = async (
   user: any,
   eventId: any,
@@ -175,7 +170,6 @@ export const bulk_add_sessions = async (
   }
 
   const event: any = await Event_Model.findOne({
-    // organizerEmails: user.email,
     _id: eventId,
   });
 
@@ -186,7 +180,6 @@ export const bulk_add_sessions = async (
   const validatedSessions = sessions.map((session, index) => {
     const { title, floorMapLocation, details, date, time } = session;
 
-    // 🔐 required fields
     if (!title || !floorMapLocation || !details || !date || !time) {
       throw new AppError(
         `Invalid SVG data at row ${index + 1}: title, floorMapLocation, date, time, and details are required`,
@@ -194,7 +187,6 @@ export const bulk_add_sessions = async (
       );
     }
 
-    // 🔗 URL validation
     if (!isValidUrl(floorMapLocation)) {
       throw new AppError(
         `Invalid floorMapLocation URL at row ${index + 1}`,
@@ -202,23 +194,85 @@ export const bulk_add_sessions = async (
       );
     }
 
-    // 🕒 normalize time
-    // const normalizedTime = normalizeTime(time);
-
     return {
       title: String(title).trim(),
       floorMapLocation,
       details: String(details).trim(),
-      date, // ✅ from SVG
-      time: time, // ✅ HH:mm
+      date,
+      time,
     };
   });
 
   event.agenda.sessions.push(...validatedSessions);
   await event.save();
 
+  /* 🔔 Send Notification AFTER bulk upload */
+  await sendSessionNotification({
+    eventId: event._id,
+    actorId: user.id,
+    sessionId: event._id, // bulk upload reference
+    type: "SESSION_CREATED",
+    title: "Bulk Sessions Uploaded",
+    message: `${validatedSessions.length} sessions have been created to the event agenda.`,
+    sendToEmail: true,
+  });
+
   return event.agenda.sessions;
 };
+// export const bulk_add_sessions = async (
+//   user: any,
+//   eventId: string,
+//   sessions: any[],
+// ) => {
+//   if (!Array.isArray(sessions) || !sessions.length) {
+//     throw new AppError("Sessions data is empty", httpStatus.BAD_REQUEST);
+//   }
+
+//   const event: any = await Event_Model.findOne({
+//     // organizerEmails: user.email,
+//     _id: eventId,
+//   });
+
+//   if (!event) {
+//     throw new AppError("Event not found", httpStatus.NOT_FOUND);
+//   }
+
+//   const validatedSessions = sessions.map((session, index) => {
+//     const { title, floorMapLocation, details, date, time } = session;
+
+//     // 🔐 required fields
+//     if (!title || !floorMapLocation || !details || !date || !time) {
+//       throw new AppError(
+//         `Invalid SVG data at row ${index + 1}: title, floorMapLocation, date, time, and details are required`,
+//         httpStatus.BAD_REQUEST,
+//       );
+//     }
+
+//     // 🔗 URL validation
+//     if (!isValidUrl(floorMapLocation)) {
+//       throw new AppError(
+//         `Invalid floorMapLocation URL at row ${index + 1}`,
+//         httpStatus.BAD_REQUEST,
+//       );
+//     }
+
+//     // 🕒 normalize time
+//     // const normalizedTime = normalizeTime(time);
+
+//     return {
+//       title: String(title).trim(),
+//       floorMapLocation,
+//       details: String(details).trim(),
+//       date, // ✅ from SVG
+//       time: time, // ✅ HH:mm
+//     };
+//   });
+
+//   event.agenda.sessions.push(...validatedSessions);
+//   await event.save();
+
+//   return event.agenda.sessions;
+// };
 
 // for agenda
 const get_event_fun = async (eventId: any) => {

@@ -30,15 +30,17 @@ export const sendSessionNotification = async ({
   const participantIds = event.participants.map((p: any) =>
     p.accountId.toString(),
   );
-  // event.organizers already contains organizer accountIds
+
+  /* 3️⃣ Organizer IDs */
   const organizerIds = event.organizers.map((id: any) => id.toString());
-  /* 3️⃣ Super admins */
+
+  /* 4️⃣ Super admins */
   const superAdmins = await Account_Model.find(
     { role: "SUPER_ADMIN" },
     { _id: 1 },
   ).lean();
 
-  /* 4️⃣ Final receiver list (unique) */
+  /* 5️⃣ Final receiver list (unique) */
   const receiverIds = [
     ...new Set([
       ...participantIds,
@@ -49,30 +51,25 @@ export const sendSessionNotification = async ({
 
   if (!receiverIds.length) return;
 
-  /* 5️⃣ Load user accounts */
+  /* 6️⃣ Load user accounts */
   const users = await Account_Model.find(
     { _id: { $in: receiverIds } },
     { _id: 1, email: 1, name: 1, emailNotificationOn: 1 },
   ).lean();
 
-  /* 6️⃣ In-app notifications (SELF SKIP) */
-  const inAppNotifications = users
-    .filter((u: any) => u._id.toString() !== actorId.toString())
-    .map((u: any) => ({
-      receiverId: u._id,
-      eventId,
-      type,
-      title,
-      message,
-      refId: sessionId,
-      sendToEmail,
-    }));
+  /* ✅ 7️⃣ Create ONLY ONE in-app notification */
+  await organizer_notification_model.create({
+    receiverId: actorId, // required field
+    eventId,
+    type,
+    title,
+    message,
+    refId: sessionId,
+    sendToEmail,
+    isRead: false,
+  });
 
-  if (inAppNotifications.length) {
-    await organizer_notification_model.insertMany(inAppNotifications);
-  }
-
-  /* 7️⃣ Realtime socket (GLOBAL EVENT ROOM) */
+  /* 8️⃣ Realtime socket (GLOBAL EVENT ROOM) */
   emitEventNotification(eventId.toString(), {
     type,
     refId: sessionId.toString(),
@@ -80,12 +77,10 @@ export const sendSessionNotification = async ({
     message,
   });
 
-  /* 8️⃣ Email notification (SELF INCLUDED) */
+  /* 9️⃣ Email notification (SELF INCLUDED) */
   if (sendToEmail) {
     users.forEach((u: any) => {
       if (!u.email) return;
-
-      // ❌ user globally email OFF
       if (u.emailNotificationOn === false) return;
 
       sendMail({
