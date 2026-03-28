@@ -130,12 +130,13 @@ const mark_notification_read = catchAsync(async (req, res) => {
     throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
   }
 
-  const { id } = req.params;
+  const { id, eventId } = req.params;
   const organizerId = req.user.id;
 
   const result = await message_organizer_service.mark_notification_read(
-    id,
-    organizerId,
+    id as string,
+    organizerId as string,
+    eventId as string,
   );
 
   manageResponse(res, {
