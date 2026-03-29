@@ -778,6 +778,69 @@ Due Date: ${assign.dueDate ?? "N/A"}
   });
   return { assignmentId };
 };
+
+const get_top_posters_into_db = async (eventId: string, limit: number) => {
+  const posters = await poster_model
+    .find({
+      eventId: new Types.ObjectId(eventId),
+      "attachments.reviewScore": { $exists: true },
+    })
+    .lean();
+
+  const results = posters.map((poster) => {
+    // Calculate rating as average of all numeric sub-scores in any attachment
+    let maxRating = 0;
+    poster.attachments.forEach((att: any) => {
+      if (att.reviewScore) {
+        const scores = [
+          att.reviewScore.originality,
+          att.reviewScore.scientificRigor,
+          att.reviewScore.clarity,
+          att.reviewScore.visualDesign,
+          att.reviewScore.impact,
+          att.reviewScore.presentation,
+        ].filter((s) => typeof s === "number");
+
+        if (scores.length > 0) {
+          const avg = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+          if (avg > maxRating) maxRating = avg;
+        }
+      }
+    });
+
+    return {
+      _id: poster._id,
+      title: poster.title,
+      authorId: poster.authorId,
+      rating: Number(maxRating.toFixed(1)),
+    };
+  });
+
+  // Sort by rating descending and limit
+  const topPosters = results
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, Number(limit) || 3);
+
+  // Populate author names
+  const finalData = await Promise.all(
+    topPosters.map(async (p) => {
+      const profile = await UserProfile_Model.findOne({
+        accountId: p.authorId,
+      })
+        .select("name")
+        .lean();
+      return {
+        _id: p._id,
+        title: p.title,
+        authorName: profile?.name || "Unknown Author",
+        rating: p.rating,
+      };
+    }),
+  );
+
+  return finalData;
+};
+
 export const poster_assign_service = {
   create_new_poster_assign_into_db,
   reassign_poster_to_reviewer_into_db,
@@ -791,4 +854,5 @@ export const poster_assign_service = {
   get_assigned_abstracts_by_reviewer_test,
 
   send_review_reminder_into_db,
+  get_top_posters_into_db,
 };

@@ -150,6 +150,23 @@ const send_review_reminder = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+const get_top_posters = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  const limit = req.query.limit ? Number(req.query.limit) : 3;
+
+  const result = await poster_assign_service.get_top_posters_into_db(
+    eventId as string,
+    limit,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Top posters fetched successfully",
+    data: result,
+  });
+});
 export const poster_assign_controller = {
   create_new_poster_assign,
   get_unassigned_files,
@@ -161,4 +178,5 @@ export const poster_assign_controller = {
   search_unassigned_files,
   reassign_poster_to_reviewer,
   send_review_reminder,
+  get_top_posters,
 };

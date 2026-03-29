@@ -10,6 +10,9 @@ import formatDateRange from "../../utils/formatDateRange";
 import sendMail from "../../utils/mail_sender";
 import { stripe } from "../../configs/stripe";
 import { getCoordinatesFromMapUrl } from "../../utils/geocode.util";
+import { attendee_model } from "../attendee/attendee.schema";
+import { Attendance } from "../qr/qr.schema";
+import { invitation_model } from "../invitation/invitation.schema";
 
 type TCreateOrganizerPayload = {
   email: string;
@@ -409,6 +412,14 @@ const get_event_overview_from_db = async (eventId: any) => {
     throw new AppError("Event not found", httpStatus.NOT_FOUND);
   }
 
+  const [totalRegistrations, checkedInAttendees, exhibitors, pendingRequests] =
+    await Promise.all([
+      attendee_model.countDocuments({ event: eventId }),
+      Attendance.countDocuments({ eventId }),
+      invitation_model.countDocuments({ eventId, role: "EXHIBITOR", status: "ACCEPTED" }),
+      invitation_model.countDocuments({ eventId, status: "PENDING" }),
+    ]);
+
   return {
     eventInfo: {
       title: event.title,
@@ -420,10 +431,10 @@ const get_event_overview_from_db = async (eventId: any) => {
     },
 
     stats: {
-      totalRegistrations: event.expectedAttendee || 0,
-      checkedInAttendees: 0,
-      exhibitors: 0,
-      pendingRequests: 0,
+      totalRegistrations: totalRegistrations || event.expectedAttendee || 0,
+      checkedInAttendees,
+      exhibitors,
+      pendingRequests,
     },
 
     registrationTrend: [

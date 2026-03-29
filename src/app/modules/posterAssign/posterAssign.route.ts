@@ -63,5 +63,11 @@ poster_assign_router.post(
   // eventAccess(),
   poster_assign_controller.send_review_reminder,
 );
+poster_assign_router.get(
+  "/top-posters/:eventId",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  eventAccess(),
+  poster_assign_controller.get_top_posters,
+);
 
 export default poster_assign_router;
