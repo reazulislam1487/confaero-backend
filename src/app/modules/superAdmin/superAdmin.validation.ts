@@ -39,7 +39,6 @@ const update_event = z.object({
   boothSlots: z.number().optional(),
   image: z.string().url().optional(),
   status: z.enum(["UPCOMING", "ONGOING", "COMPLETED", "CANCELLED"]).optional(),
-  addOrganizers: z.array(z.string().email()).optional(),
   googleMapLink: z.string().optional(),
   floorMapImageUrl: z.array(z.string().url()).optional(),
   agenda: z.array(z.string()).optional(),

@@ -858,45 +858,6 @@ const update_event_in_db = async (eventId: string, payload: any) => {
 
   const mongoUpdate: any = { $set: updateData };
 
-  if (payload.addOrganizers && Array.isArray(payload.addOrganizers)) {
-    const newOrganizersAccIds: mongoose.Types.ObjectId[] = [];
-    const newOrganizersEmails: string[] = [];
-
-    for (const email of payload.addOrganizers) {
-      const account = await Account_Model.findOne({ email });
-      if (!account) {
-        throw new AppError(`User with email ${email} not found`, httpStatus.NOT_FOUND);
-      }
-
-      // Check if user should be added as organizer role
-      if (!account.role?.includes("ORGANIZER")) {
-        account.role = [...(account.role || []), "ORGANIZER"];
-        account.activeRole = "ORGANIZER";
-        await account.save();
-
-        // Also check if an Organizer profile exists for them, if not create one
-        const existingOrganizer = await Organizer_Model.findOne({ accountId: account._id });
-        if (!existingOrganizer) {
-          await Organizer_Model.create({
-            accountId: account._id,
-            organizationName: event.title || "Organizer",
-            verifiedBySuperAdmin: true,
-          });
-        }
-      }
-
-      newOrganizersAccIds.push(account._id);
-      newOrganizersEmails.push(email);
-    }
-
-    if (newOrganizersAccIds.length > 0) {
-      mongoUpdate.$addToSet = {
-        organizers: { $each: newOrganizersAccIds },
-        organizerEmails: { $each: newOrganizersEmails }
-      };
-    }
-  }
-
   const result = await Event_Model.findByIdAndUpdate(eventId, mongoUpdate, {
     new: true,
     runValidators: true,
