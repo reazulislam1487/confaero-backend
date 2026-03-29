@@ -28,7 +28,25 @@ const create_event = z.object({
   agenda: z.array(z.string()).optional(),
 });
 
+const update_event = z.object({
+  title: z.string().min(2).optional(),
+  location: z.string().min(2).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  website: z.string().url().optional(),
+  description: z.string().optional(),
+  expectedParticipants: z.number().optional(),
+  boothSlots: z.number().optional(),
+  image: z.string().url().optional(),
+  status: z.enum(["UPCOMING", "ONGOING", "COMPLETED", "CANCELLED"]).optional(),
+  addOrganizers: z.array(z.string().email()).optional(),
+  googleMapLink: z.string().url().optional(),
+  floorMapImageUrl: z.array(z.string().url()).optional(),
+  agenda: z.array(z.string()).optional(),
+});
+
 export const super_admin_validations = {
   create_organizer,
   create_event,
+  update_event,
 };

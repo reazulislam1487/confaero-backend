@@ -44,6 +44,19 @@ super_admin_router.get(
   "/events/:eventId",
   super_admin_controller.get_event_details,
 );
+
+super_admin_router.patch(
+  "/events/:eventId",
+  auth("SUPER_ADMIN"),
+  RequestValidator(super_admin_validations.update_event),
+  super_admin_controller.update_event,
+);
+
+super_admin_router.delete(
+  "/events/:eventId",
+  auth("SUPER_ADMIN"),
+  super_admin_controller.delete_event,
+);
 super_admin_router.get(
   "/organizers/:organizerId/events/:eventId",
   auth("SUPER_ADMIN"),
@@ -75,6 +88,12 @@ super_admin_router.get(
   "/dashboard/overview",
   auth("SUPER_ADMIN"),
   super_admin_controller.get_dashboard_overview,
+);
+
+super_admin_router.get(
+  "/events-trend",
+  auth("SUPER_ADMIN"),
+  super_admin_controller.get_global_event_trend,
 );
 
 export default super_admin_router;

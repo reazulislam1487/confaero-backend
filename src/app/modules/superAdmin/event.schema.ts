@@ -12,6 +12,11 @@ const eventSchema = new Schema(
       enum: ["OFFLINE", "ONLINE", "HYBRID"],
       default: "OFFLINE",
     },
+    status: {
+      type: String,
+      enum: ["UPCOMING", "ONGOING", "COMPLETED", "CANCELLED"],
+      default: "UPCOMING",
+    },
     price: { type: Number, default: 0 },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },

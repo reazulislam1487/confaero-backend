@@ -14,6 +14,7 @@ import { attendee_model } from "../attendee/attendee.schema";
 import { Attendance } from "../qr/qr.schema";
 import { invitation_model } from "../invitation/invitation.schema";
 import { sponsor_model } from "../sponsor/sponsor.schema";
+import { booth_model, booth_staff_model } from "../booth/booth.schema";
 
 type TCreateOrganizerPayload = {
   email: string;
@@ -307,18 +308,125 @@ const get_specific_event_of_organizer_from_db = async (
   return event;
 };
 
-const get_all_events_from_db = async (limit?: number) => {
-  const query = Event_Model.find()
-    .sort({ createdAt: -1 })
-    .select(
-      "title location startDate endDate website expectedAttendee boothSlot bannerImageUrl",
-    );
+const get_all_events_from_db = async (params: {
+  search?: string;
+  createdSort?: string;
+  eventDate?: string;
+  condition?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  const {
+    search,
+    createdSort = "Recently",
+    eventDate,
+    condition,
+    page = 1,
+    limit = 10,
+  } = params;
 
-  if (limit) {
-    query.limit(limit);
+  const pipeline: any[] = [];
+  const matchConditions: any[] = [];
+
+  // 1. Search Logic
+  if (search && search.trim()) {
+    matchConditions.push({
+      $or: [
+        { title: { $regex: search, $options: "i" } },
+        { location: { $regex: search, $options: "i" } },
+      ],
+    });
   }
 
-  return query.lean();
+  const now = new Date();
+
+  // 2. Event Date Filter
+  if (eventDate) {
+    if (eventDate === "Recently") {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(now.getDate() - 7);
+      matchConditions.push({ createdAt: { $gte: sevenDaysAgo } });
+    } else if (eventDate === "This Month") {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      matchConditions.push({ startDate: { $gte: startOfMonth, $lte: endOfMonth } });
+    } else if (eventDate === "Next Month") {
+      const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const endOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+      matchConditions.push({ startDate: { $gte: startOfNextMonth, $lte: endOfNextMonth } });
+    }
+  }
+
+  // 3. Condition Filter
+  if (condition) {
+    if (condition === "Upcoming") {
+      matchConditions.push({ startDate: { $gt: now } });
+    } else if (condition === "Ongoing") {
+      matchConditions.push({
+        startDate: { $lte: now },
+        endDate: { $gte: now },
+      });
+    } else if (condition === "Completed") {
+      matchConditions.push({ endDate: { $lt: now } });
+    }
+  }
+
+  // Final Match Object
+  const matchQuery = matchConditions.length > 0 ? { $and: matchConditions } : {};
+  console.log("EVENT FILTER QUERY:", JSON.stringify(matchQuery, null, 2));
+  pipeline.push({ $match: matchQuery });
+
+  // 4. Registration Metric (Lookup from attendee collection)
+  pipeline.push({
+    $lookup: {
+      from: "attendee_registrations",
+      localField: "_id",
+      foreignField: "event",
+      as: "registration_data",
+    },
+  });
+
+  // 5. Add Dynamic Fields
+  pipeline.push({
+    $addFields: {
+      registrationCount: { $size: "$registration_data" },
+      organizerCount: { $size: { $ifNull: ["$organizers", []] } },
+    },
+  });
+
+  // 6. Sorting
+  let sortField: any = { createdAt: -1 };
+  if (createdSort === "Oldest") {
+    sortField = { createdAt: 1 };
+  } else if (createdSort === "Most Popular") {
+    sortField = { registrationCount: -1 };
+  }
+  console.log("SORT:", JSON.stringify(sortField, null, 2));
+  pipeline.push({ $sort: sortField });
+
+  // 7. Pagination
+  pipeline.push({ $skip: (page - 1) * limit });
+  pipeline.push({ $limit: limit });
+
+  // 8. Projection
+  pipeline.push({
+    $project: {
+      title: 1,
+      location: 1,
+      startDate: 1,
+      endDate: 1,
+      expectedAttendee: 1,
+      boothSlot: 1,
+      bannerImageUrl: 1,
+      website: 1,
+      registrationCount: 1,
+      organizerCount: 1,
+      createdAt: 1,
+    },
+  });
+
+  const result = await Event_Model.aggregate(pipeline);
+  return result;
 };
 
 //
@@ -706,6 +814,116 @@ const connect_organizer_stripe_account = async (organizerId: any) => {
     onboardingUrl: accountLink.url,
   };
 };
+const get_global_event_trend_from_db = async () => {
+  return Event_Model.aggregate([
+    {
+      $group: {
+        _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { _id: 1 } },
+    {
+      $project: {
+        date: "$_id",
+        count: 1,
+        _id: 0,
+      },
+    },
+  ]);
+};
+
+const update_event_in_db = async (eventId: string, payload: any) => {
+  const event = await Event_Model.findById(eventId);
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  const updateData: any = {};
+  if (payload.title) updateData.title = payload.title;
+  if (payload.location) updateData.location = payload.location;
+  if (payload.startDate) updateData.startDate = new Date(payload.startDate);
+  if (payload.endDate) updateData.endDate = new Date(payload.endDate);
+  if (payload.website) updateData.website = payload.website;
+  if (payload.description) updateData.details = payload.description;
+  if (payload.expectedParticipants)
+    updateData.expectedAttendee = payload.expectedParticipants;
+  if (payload.boothSlots) updateData.boothSlot = payload.boothSlots;
+  if (payload.image) updateData.bannerImageUrl = payload.image;
+  if (payload.status) updateData.status = payload.status;
+  if (payload.googleMapLink) updateData.googleMapLink = payload.googleMapLink;
+  if (payload.floorMapImageUrl)
+    updateData.floorMapImageUrl = payload.floorMapImageUrl;
+  if (payload.agenda) updateData.agenda = payload.agenda;
+
+  const mongoUpdate: any = { $set: updateData };
+
+  if (payload.addOrganizers && Array.isArray(payload.addOrganizers)) {
+    const newOrganizersAccIds: mongoose.Types.ObjectId[] = [];
+    const newOrganizersEmails: string[] = [];
+
+    for (const email of payload.addOrganizers) {
+      const account = await Account_Model.findOne({ email });
+      if (!account) {
+        throw new AppError(`User with email ${email} not found`, httpStatus.NOT_FOUND);
+      }
+
+      // Check if user should be added as organizer role
+      if (!account.role?.includes("ORGANIZER")) {
+        account.role = [...(account.role || []), "ORGANIZER"];
+        account.activeRole = "ORGANIZER";
+        await account.save();
+
+        // Also check if an Organizer profile exists for them, if not create one
+        const existingOrganizer = await Organizer_Model.findOne({ accountId: account._id });
+        if (!existingOrganizer) {
+          await Organizer_Model.create({
+            accountId: account._id,
+            organizationName: event.title || "Organizer",
+            verifiedBySuperAdmin: true,
+          });
+        }
+      }
+
+      newOrganizersAccIds.push(account._id);
+      newOrganizersEmails.push(email);
+    }
+
+    if (newOrganizersAccIds.length > 0) {
+      mongoUpdate.$addToSet = {
+        organizers: { $each: newOrganizersAccIds },
+        organizerEmails: { $each: newOrganizersEmails }
+      };
+    }
+  }
+
+  const result = await Event_Model.findByIdAndUpdate(eventId, mongoUpdate, {
+    new: true,
+    runValidators: true,
+  });
+
+  return result;
+};
+
+const delete_event_from_db = async (eventId: string) => {
+  const event = await Event_Model.findById(eventId);
+  if (!event) {
+    throw new AppError("Event not found", httpStatus.NOT_FOUND);
+  }
+
+  // Cascading delete
+  const relatedBooths = await booth_model.find({ eventId: eventId }).select("_id");
+  const boothIds = relatedBooths.map((b) => b._id);
+  
+  await attendee_model.deleteMany({ event: eventId });
+  await booth_model.deleteMany({ eventId: eventId });
+  await booth_staff_model.deleteMany({ boothId: { $in: boothIds } });
+  await invitation_model.deleteMany({ eventId: eventId });
+
+  const result = await Event_Model.findByIdAndDelete(eventId);
+  return result;
+};
+
 export const super_admin_service = {
   create_new_organizer_into_db,
   create_event_by_super_admin_into_db,
@@ -723,4 +941,7 @@ export const super_admin_service = {
   get_event_details_from_db,
   get_single_event_details_from_db,
   connect_organizer_stripe_account,
+  get_global_event_trend_from_db,
+  update_event_in_db,
+  delete_event_from_db,
 };

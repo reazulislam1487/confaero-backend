@@ -5,10 +5,20 @@ import { Event_Model } from "../modules/superAdmin/event.schema";
 import { invitation_model } from "../modules/invitation/invitation.schema";
 
 const eventAccess = () => async (req: any, res: any, next: NextFunction) => {
-  const { eventId } = req.params;
+  // ✅ Extract eventId from params or headers (as requested)
+  const eventId = req.params.eventId || req.params.eventid || req.headers.eventid;
 
-  const userId = req.user.id;
-  const userEmail = req.user.email;
+  if (process.env.NODE_ENV === "development") {
+    console.log("Backend Activity - EventID Check:", {
+      url: req.url,
+      pathParam: req.params.eventId || req.params.eventid,
+      headerParam: req.headers.eventid,
+      user: req.user?.id,
+    });
+  }
+
+  const userId = req.user?.id;
+  const userEmail = req.user?.email;
 
   if (!req.user) {
     return res.status(401).json({

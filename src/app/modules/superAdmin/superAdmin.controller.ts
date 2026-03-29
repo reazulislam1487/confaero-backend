@@ -87,9 +87,16 @@ const get_specific_event_of_organizer = catchAsync(async (req, res) => {
 
 //   – Super Admin → All Events
 const get_all_events = catchAsync(async (req, res) => {
-  const limit = Number(req.query.limit) || undefined;
+  const { search, createdSort, eventDate, condition, page, limit } = req.query;
 
-  const result = await super_admin_service.get_all_events_from_db(limit);
+  const result = await super_admin_service.get_all_events_from_db({
+    search: search as string,
+    createdSort: createdSort as string,
+    eventDate: eventDate as string,
+    condition: condition as string,
+    page: Number(page) || 1,
+    limit: Number(limit) || 10,
+  });
 
   manageResponse(res, {
     statusCode: httpStatus.OK,
@@ -187,6 +194,41 @@ const get_dashboard_overview = catchAsync(async (req, res) => {
   });
 });
 
+const get_global_event_trend = catchAsync(async (req, res) => {
+  const result = await super_admin_service.get_global_event_trend_from_db();
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Global event trend fetched successfully",
+    data: result,
+  });
+});
+
+const update_event = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  const result = await super_admin_service.update_event_in_db(eventId as string, req.body);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Event updated successfully",
+    data: result,
+  });
+});
+
+const delete_event = catchAsync(async (req, res) => {
+  const { eventId } = req.params;
+  await super_admin_service.delete_event_from_db(eventId as string);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Event deleted successfully",
+    data: null,
+  });
+});
+
 export const super_admin_controller = {
   create_new_organizer,
   create_event_by_super_admin,
@@ -202,4 +244,7 @@ export const super_admin_controller = {
   get_event_overview,
   get_dashboard_overview,
   get_event_details,
+  get_global_event_trend,
+  update_event,
+  delete_event,
 };
