@@ -15,41 +15,7 @@ const get_my_events_from_db = async (user: any) => {
   return event;
 };
 
-// const update_my_event_in_db = async (user: any, eventId: any, payload: any) => {
-//   const event = await Event_Model.findById(eventId);
 
-//   if (!event) {
-//     throw new AppError("Event not found", httpStatus.NOT_FOUND);
-//   }
-
-//   if (user.activeRole === "ORGANIZER") {
-//     if (!event.organizerEmails.includes(user.email)) {
-//       throw new AppError("Forbidden", httpStatus.FORBIDDEN);
-//     }
-//   }
-
-//   /* ---------- Floor Map ADD ONLY ---------- */
-//   if (payload.__floorMapImageUrl && payload.floorMapTitle) {
-//     event.floorMaps.push({
-//       title: payload.floorMapTitle,
-//       imageUrl: payload.__floorMapImageUrl,
-//     });
-//   }
-
-//   /* ---------- LOCKED ---------- */
-//   delete payload.title;
-//   delete payload.googleMapLink;
-
-//   /* ---------- CLEANUP ---------- */
-//   delete payload.__floorMapImageUrl;
-//   delete payload.floorMapTitle;
-
-//   /* ---------- UPDATE EVENT ---------- */
-//   Object.assign(event, payload);
-//   await event.save();
-//   console.log(event);
-//   return event;
-// };
 const update_my_event_in_db = async (
   user: any,
   eventId: string,
