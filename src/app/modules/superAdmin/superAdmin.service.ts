@@ -13,6 +13,7 @@ import { getCoordinatesFromMapUrl } from "../../utils/geocode.util";
 import { attendee_model } from "../attendee/attendee.schema";
 import { Attendance } from "../qr/qr.schema";
 import { invitation_model } from "../invitation/invitation.schema";
+import { sponsor_model } from "../sponsor/sponsor.schema";
 
 type TCreateOrganizerPayload = {
   email: string;
@@ -424,7 +425,10 @@ const delete_user_from_db = async (userId: string) => {
     }
 
     // Delete Profile
-    await UserProfile_Model.findOneAndDelete({ accountId: userId }, { session });
+    await UserProfile_Model.findOneAndDelete(
+      { accountId: userId },
+      { session },
+    );
 
     // Delete Account
     const deletedAccount = await Account_Model.findByIdAndDelete(userId, {
@@ -450,13 +454,75 @@ const get_event_overview_from_db = async (eventId: any) => {
     throw new AppError("Event not found", httpStatus.NOT_FOUND);
   }
 
-  const [totalRegistrations, checkedInAttendees, exhibitors, pendingRequests] =
-    await Promise.all([
-      attendee_model.countDocuments({ event: eventId }),
-      Attendance.countDocuments({ eventId }),
-      invitation_model.countDocuments({ eventId, role: "EXHIBITOR", status: "ACCEPTED" }),
-      invitation_model.countDocuments({ eventId, status: "PENDING" }),
-    ]);
+  const [
+    totalRegistrations,
+    checkedInAttendees,
+    exhibitors,
+    pendingRequests,
+    registrationTrend,
+    recentRegs,
+    topPartnersRaw,
+  ] = await Promise.all([
+    attendee_model.countDocuments({ event: eventId }),
+    Attendance.countDocuments({ eventId }),
+    invitation_model.countDocuments({
+      eventId,
+      role: "EXHIBITOR",
+      status: "ACCEPTED",
+    }),
+    invitation_model.countDocuments({ eventId, status: "PENDING" }),
+    attendee_model.aggregate([
+      { $match: { event: new mongoose.Types.ObjectId(eventId) } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+      { $project: { date: "$_id", count: 1, _id: 0 } },
+    ]),
+    attendee_model
+      .find({ event: eventId })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("account", "email")
+      .lean(),
+    sponsor_model
+      .find({ eventId, status: "approved" })
+      .sort({ profileView: -1 })
+      .limit(5)
+      .select("companyName logoUrl profileView")
+      .lean(),
+  ]);
+
+  // Map user profiles for recent registrations
+  const accountIds = recentRegs.map((r: any) => r.account?._id);
+  const profiles = await UserProfile_Model.find({
+    accountId: { $in: accountIds },
+  })
+    .select("accountId name avatar")
+    .lean();
+
+  const profileMap = new Map(
+    profiles.map((p: any) => [p.accountId.toString(), p]),
+  );
+
+  const recentRegistrations = recentRegs.map((r: any) => ({
+    id: r._id,
+    name: profileMap.get(r.account?._id.toString())?.name || "Anonymous",
+    email: r.account?.email || "N/A",
+    avatar: profileMap.get(r.account?._id.toString())?.avatar || "",
+    role: "Attendee", // Default
+    createdAt: r.createdAt,
+  }));
+
+  const topPartners = topPartnersRaw.map((s: any) => ({
+    id: s._id,
+    name: s.companyName,
+    logo: s.logoUrl,
+    views: s.profileView || 0,
+  }));
 
   return {
     eventInfo: {
@@ -475,15 +541,9 @@ const get_event_overview_from_db = async (eventId: any) => {
       pendingRequests,
     },
 
-    registrationTrend: [
-      { date: "2026-06-01", count: 120 },
-      { date: "2026-06-02", count: 240 },
-      { date: "2026-06-03", count: 180 },
-    ],
-
-    recentRegistrations: [],
-
-    topPartners: [],
+    registrationTrend,
+    recentRegistrations,
+    topPartners,
   };
 };
 
