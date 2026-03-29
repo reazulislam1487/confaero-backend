@@ -152,6 +152,17 @@ const suspend_user = catchAsync(async (req, res) => {
   });
 });
 
+const delete_user = catchAsync(async (req, res) => {
+  await super_admin_service.delete_user_from_db(req.params.userId as string);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User deleted successfully",
+    data: null,
+  });
+});
+
 const get_event_overview = catchAsync(async (req, res) => {
   const result = await super_admin_service.get_event_overview_from_db(
     req.params.eventId,
@@ -187,6 +198,7 @@ export const super_admin_controller = {
   get_all_users,
   get_user_details,
   suspend_user,
+  delete_user,
   get_event_overview,
   get_dashboard_overview,
   get_event_details,

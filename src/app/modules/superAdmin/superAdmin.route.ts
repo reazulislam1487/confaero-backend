@@ -62,9 +62,9 @@ super_admin_router.get(
   super_admin_controller.get_user_details,
 );
 super_admin_router.delete(
-  "/users/suspend",
+  "/users/:userId",
   auth("SUPER_ADMIN"),
-  super_admin_controller.suspend_user,
+  super_admin_controller.delete_user,
 );
 super_admin_router.get(
   "/singleEvent/:eventId/overview",

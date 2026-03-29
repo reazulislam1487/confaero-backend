@@ -403,6 +403,44 @@ const suspend_user_from_db = async (email: any) => {
   return deleteUser;
 };
 
+const delete_user_from_db = async (userId: string) => {
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    const account = await Account_Model.findById(userId).session(session);
+
+    if (!account) {
+      throw new AppError("Account not found", httpStatus.NOT_FOUND);
+    }
+
+    // Safety check: Don't allow deleting another Super Admin from this route
+    if (account.role?.includes("SUPER_ADMIN")) {
+      throw new AppError(
+        "Cannot delete another Super Admin.",
+        httpStatus.BAD_REQUEST,
+      );
+    }
+
+    // Delete Profile
+    await UserProfile_Model.findOneAndDelete({ accountId: userId }, { session });
+
+    // Delete Account
+    const deletedAccount = await Account_Model.findByIdAndDelete(userId, {
+      session,
+    });
+
+    await session.commitTransaction();
+    return deletedAccount;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
+  }
+};
+
 const get_event_overview_from_db = async (eventId: any) => {
   const event = await Event_Model.findById(eventId)
     .select("title location startDate endDate expectedAttendee")
@@ -619,6 +657,7 @@ export const super_admin_service = {
   get_user_details_from_db,
   get_all_users_from_db,
   suspend_user_from_db,
+  delete_user_from_db,
   get_event_overview_from_db,
   get_dashboard_overview_from_db,
   get_event_details_from_db,
