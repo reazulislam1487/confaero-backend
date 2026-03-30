@@ -23,6 +23,7 @@ const get_all_verify_emails = catchAsync(async (req, res) => {
   const result = await verify_email_service.get_all_verify_emails_from_db(
     req.user,
     eventId,
+    req.query,
   );
 
   manageResponse(res, {
