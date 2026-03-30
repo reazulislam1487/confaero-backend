@@ -63,7 +63,6 @@ const register_user_into_db = async (payload: TRegisterPayload) => {
       session,
     });
 
-
     // 2️ User profile create
     await UserProfile_Model.create({
       accountId: newAccount[0]._id,
