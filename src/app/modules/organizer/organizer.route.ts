@@ -68,13 +68,13 @@ router.get(
 );
 router.get(
   "/stripe/status",
-  auth("ORGANIZER"),
+  auth("ORGANIZER","SUPER_ADMIN"),
   organizer_controller.getStripeStatusController,
 );
 
 router.post(
   "/stripe/connect",
-  auth("ORGANIZER"),
+  auth("ORGANIZER", "SUPER_ADMIN"),
   organizer_controller.connectOrganizerStripeController,
 );
 export default router;
