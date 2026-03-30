@@ -30,6 +30,16 @@ const organizerSchema = new Schema<TOrganizer>(
       type: Boolean,
       default: false,
     },
+
+    stripeChargesEnabled: {
+      type: Boolean,
+      default: false,
+    },
+
+    stripePayoutsEnabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

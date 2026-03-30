@@ -775,9 +775,8 @@ const get_single_event_details_from_db = async (eventId: any) => {
   return event;
 };
 
-// stripe
-const connect_organizer_stripe_account = async (organizerId: any) => {
-  const organizer = await Organizer_Model.findById(organizerId);
+const connect_organizer_stripe_account = async (accountId: any) => {
+  const organizer = await Organizer_Model.findOne({ accountId });
 
   if (!organizer) {
     throw new AppError("Organizer not found", httpStatus.NOT_FOUND);
@@ -812,6 +811,21 @@ const connect_organizer_stripe_account = async (organizerId: any) => {
 
   return {
     onboardingUrl: accountLink.url,
+  };
+};
+
+const get_organizer_stripe_status = async (accountId: any) => {
+  const organizer = await Organizer_Model.findOne({ accountId });
+
+  if (!organizer) {
+    throw new AppError("Organizer not found", httpStatus.NOT_FOUND);
+  }
+
+  return {
+    stripeAccountId: organizer.stripeAccountId,
+    stripeConnected: organizer.stripeConnected,
+    stripeChargesEnabled: organizer.stripeChargesEnabled || false,
+    stripePayoutsEnabled: organizer.stripePayoutsEnabled || false,
   };
 };
 const get_global_event_trend_from_db = async () => {
@@ -928,6 +942,7 @@ export const super_admin_service = {
   get_event_details_from_db,
   get_single_event_details_from_db,
   connect_organizer_stripe_account,
+  get_organizer_stripe_status,
   get_global_event_trend_from_db,
   update_event_in_db,
   delete_event_from_db,

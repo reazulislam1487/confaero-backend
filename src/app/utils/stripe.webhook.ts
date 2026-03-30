@@ -26,13 +26,15 @@ export const stripeWebhookController = async (req: Request, res: Response) => {
   switch (event.type) {
     case "account.updated": {
       const account = event.data.object as Stripe.Account;
-      // Stripe says: this organizer can now receive payments
-      if (account.charges_enabled === true) {
-        await Organizer_Model.findOneAndUpdate(
-          { stripeAccountId: account.id },
-          { stripeConnected: true },
-        );
-      }
+      // Seamlessly sync account status to DB
+      await Organizer_Model.findOneAndUpdate(
+        { stripeAccountId: account.id },
+        { 
+          stripeConnected: account.charges_enabled && account.payouts_enabled,
+          stripeChargesEnabled: account.charges_enabled,
+          stripePayoutsEnabled: account.payouts_enabled
+        }
+      );
       /*       console.log("this is account:", account.id);
       const exists = await Organizer_Model.findOne({
         stripeAccountId: account.id,

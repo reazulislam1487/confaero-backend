@@ -66,8 +66,14 @@ router.get(
   eventAccess(),
   organizer_controller.get_attendee_details,
 );
+router.get(
+  "/stripe/status",
+  auth("ORGANIZER"),
+  organizer_controller.getStripeStatusController,
+);
+
 router.post(
-  "/organizers/:organizerId/stripe/connect",
+  "/stripe/connect",
   auth("ORGANIZER"),
   organizer_controller.connectOrganizerStripeController,
 );

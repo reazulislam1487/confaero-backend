@@ -6,5 +6,7 @@ export type TOrganizer = {
   verifiedBySuperAdmin?: boolean;
   stripeAccountId?: string | null;
   stripeConnected?: boolean;
+  stripeChargesEnabled?: boolean;
+  stripePayoutsEnabled?: boolean;
 };
 export interface T_SuperAdmin {}
