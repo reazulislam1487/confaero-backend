@@ -29,8 +29,6 @@ const get_all_upcoming_events_from_db = async () => {
     .sort({ startDate: 1 })
     .lean();
 };
-;
-
 const initiate_attendee_registration = async (
   userId: Types.ObjectId,
   userEmail: any,

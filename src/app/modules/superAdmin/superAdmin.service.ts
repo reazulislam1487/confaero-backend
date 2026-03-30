@@ -839,6 +839,9 @@ const update_event_in_db = async (eventId: string, payload: any) => {
     throw new AppError("Event not found", httpStatus.NOT_FOUND);
   }
 
+  const isMapUrlChanged =
+    payload.googleMapLink && payload.googleMapLink !== event.googleMapLink;
+
   const updateData: any = {};
   if (payload.title) updateData.title = payload.title;
   if (payload.location) updateData.location = payload.location;
@@ -857,12 +860,34 @@ const update_event_in_db = async (eventId: string, payload: any) => {
     updateData.floorMapImageUrl = payload.floorMapImageUrl;
   if (payload.agenda) updateData.agenda = payload.agenda;
 
+  if (isMapUrlChanged) {
+    updateData.latitude = null;
+    updateData.longitude = null;
+  }
+
   const mongoUpdate: any = { $set: updateData };
 
   const result = await Event_Model.findByIdAndUpdate(eventId, mongoUpdate, {
     new: true,
     runValidators: true,
   });
+
+  if (isMapUrlChanged) {
+    setImmediate(async () => {
+      try {
+        const coordinates = await getCoordinatesFromMapUrl(
+          payload.googleMapLink,
+        );
+
+        await Event_Model.findByIdAndUpdate(eventId, {
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude,
+        });
+      } catch (error) {
+        console.error("Background geocode failed:", error);
+      }
+    });
+  }
 
   return result;
 };
