@@ -20,7 +20,7 @@ const auth = (...roles: Role[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authHeader = req.headers.authorization;
-
+      console.log(authHeader);
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
         throw new AppError("Unauthorized", 401);
       }
@@ -37,6 +37,8 @@ const auth = (...roles: Role[]) => {
       } catch (error) {
         throw new AppError("Token expired or invalid", 401);
       }
+
+      console.log(roles, verifiedUser.activeRole);
 
       if (!roles.length || !roles.includes(verifiedUser.activeRole)) {
         throw new AppError("You are not authorize!!", 401);
