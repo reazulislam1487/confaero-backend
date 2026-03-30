@@ -394,7 +394,6 @@ const join_event_from_db = async (
 
 export const attendee_service = {
   get_all_upcoming_events_from_db,
-  register_attendee_into_event,
   get_my_all_registered_events_from_db,
   get_my_registered_events_from_db,
   get_single_event_from_db,
