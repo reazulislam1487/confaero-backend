@@ -34,7 +34,7 @@ import verifyEmailRoute from "./app/modules/verifyEmail/verifyEmail.route";
 const appRouter = Router();
 
 const moduleRoutes = [
-  { path: "/verifyEmail", route: verifyEmailRoute },
+  { path: "/organizer/verify-email", route: verifyEmailRoute },
   { path: "/appContent", route: appContentRoute },
   { path: "/eventLive", route: eventLiveRoute },
   { path: "/job", route: jobRoute },

@@ -77,4 +77,10 @@ router.post(
   auth("ORGANIZER", "SUPER_ADMIN"),
   organizer_controller.connectOrganizerStripeController,
 );
+
+router.get(
+  "/stripe/onboarding-link",
+  auth("ORGANIZER", "SUPER_ADMIN"),
+  organizer_controller.getOnboardingLinkController,
+);
 export default router;

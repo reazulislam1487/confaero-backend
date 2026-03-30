@@ -4,9 +4,10 @@ import httpStatus from "http-status";
 import { verify_email_service } from "./verifyEmail.service";
 
 const create_new_verify_email = catchAsync(async (req, res) => {
+  const eventId = req.params.eventId || req.headers["eventid"] || req.body.eventId;
   const result = await verify_email_service.create_new_verify_email_into_db(
     req.user,
-    req.params.eventId,
+    eventId,
     req.file as Express.Multer.File,
   );
 
@@ -18,9 +19,10 @@ const create_new_verify_email = catchAsync(async (req, res) => {
   });
 });
 const get_all_verify_emails = catchAsync(async (req, res) => {
+  const eventId = req.params.eventId || req.headers["eventid"];
   const result = await verify_email_service.get_all_verify_emails_from_db(
     req.user,
-    req.params.eventId,
+    eventId,
   );
 
   manageResponse(res, {
@@ -31,9 +33,10 @@ const get_all_verify_emails = catchAsync(async (req, res) => {
   });
 });
 const delete_verify_email = catchAsync(async (req, res) => {
+  const eventId = req.params.eventId || req.headers["eventid"];
   const result = await verify_email_service.delete_verify_email_from_db(
     req.user,
-    req.params.eventId,
+    eventId,
     req.params.verifyEmailId,
   );
 
@@ -46,9 +49,10 @@ const delete_verify_email = catchAsync(async (req, res) => {
 });
 
 const add_verified_emails = catchAsync(async (req, res) => {
+  const eventId = req.params.eventId || req.headers["eventid"] || req.body.eventId;
   const result = await verify_email_service.add_verified_emails_into_db(
     req.user,
-    req.params.eventId,
+    eventId,
     req.body.emails,
   );
 

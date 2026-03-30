@@ -63,6 +63,16 @@ export const stripeWebhookController = async (req: Request, res: Response) => {
       console.log("PaymentIntent was successful!", paymentIntent.id);
       break;
     }
+    case "payment_intent.payment_failed": {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      console.log("❌ Payment failed for intent:", paymentIntent.id);
+      
+      // Optionally notify the frontend or delete pending attendee model logic here
+      // if tracking PENDING attendee state (currently attendee registration ignores failures 
+      // and leaves them out of db/verified status)
+      
+      break;
+    }
 
     default:
       console.log(`Unhandled event type: ${event.type}`);

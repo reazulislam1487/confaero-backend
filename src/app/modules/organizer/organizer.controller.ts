@@ -175,6 +175,18 @@ const connectOrganizerStripeController = catchAsync(async (req, res) => {
   });
 });
 
+const getOnboardingLinkController = catchAsync(async (req, res) => {
+  const accountId = req.user!.id;
+  const result = await super_admin_service.get_stripe_onboarding_link(accountId);
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Stripe onboarding link retrieved successfully",
+    data: result,
+  });
+});
+
 export const organizer_controller = {
   get_my_events,
   update_my_event,
@@ -185,4 +197,5 @@ export const organizer_controller = {
   delete_floor_map,
   getStripeStatusController,
   connectOrganizerStripeController,
+  getOnboardingLinkController,
 };

@@ -9,8 +9,8 @@ const findEventWithRoleAccess = async (user: any, eventId: string) => {
   let query: any = { _id: eventId };
 
   // 🔐 Role-based filter
-  if (user.activeRole === "ORGANIZER") {
-    query.organizerEmails = user.email;
+  if (user.activeRole === "ORGANIZER" && user.email) {
+    query.organizerEmails = user.email.toLowerCase().trim();
   }
 
   // SUPER_ADMIN → no extra condition

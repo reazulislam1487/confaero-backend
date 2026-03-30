@@ -73,6 +73,10 @@ const create_new_organizer_into_db = async (
           accountId: account._id,
           organizationName: payload.organizationName,
           verifiedBySuperAdmin: true,
+          stripeAccountId: null,
+          stripeConnected: false,
+          stripeChargesEnabled: false,
+          stripePayoutsEnabled: false,
         },
       ],
       { session },
@@ -149,6 +153,10 @@ const create_event_by_super_admin_into_db = async (
               accountId: account._id,
               organizationName: payload.title,
               verifiedBySuperAdmin: true,
+              stripeAccountId: null,
+              stripeConnected: false,
+              stripeChargesEnabled: false,
+              stripePayoutsEnabled: false,
             },
           ],
           { session },
@@ -804,8 +812,27 @@ const connect_organizer_stripe_account = async (accountId: any) => {
   // ✅ Case-2: account exists but onboarding incomplete
   const accountLink = await stripe.accountLinks.create({
     account: stripeAccountId,
-    refresh_url: `http://localhost:3000/stripe/refresh`,
-    return_url: `http://localhost:3000/stripe/success`,
+    refresh_url: `http://localhost:3000/dashboard/payment-management`,
+    return_url: `http://localhost:3000/dashboard/payment-management`,
+    type: "account_onboarding",
+  });
+
+  return {
+    onboardingUrl: accountLink.url,
+  };
+};
+
+const get_stripe_onboarding_link = async (accountId: any) => {
+  const organizer = await Organizer_Model.findOne({ accountId });
+
+  if (!organizer || !organizer.stripeAccountId) {
+    throw new AppError("Stripe account not initiated yet", httpStatus.BAD_REQUEST);
+  }
+
+  const accountLink = await stripe.accountLinks.create({
+    account: organizer.stripeAccountId,
+    refresh_url: `http://localhost:3000/dashboard/payment-management`,
+    return_url: `http://localhost:3000/dashboard/payment-management`,
     type: "account_onboarding",
   });
 
@@ -819,6 +846,21 @@ const get_organizer_stripe_status = async (accountId: any) => {
 
   if (!organizer) {
     throw new AppError("Organizer not found", httpStatus.NOT_FOUND);
+  }
+
+  // ✅ Actively fetch from Stripe if account exists
+  if (organizer.stripeAccountId) {
+    try {
+      const account = await stripe.accounts.retrieve(organizer.stripeAccountId);
+      
+      organizer.stripeConnected = account.details_submitted;
+      organizer.stripeChargesEnabled = account.charges_enabled;
+      organizer.stripePayoutsEnabled = account.payouts_enabled;
+
+      await organizer.save();
+    } catch (err) {
+      console.error("Failed to retrieve Stripe account status:", err);
+    }
   }
 
   return {
@@ -943,6 +985,7 @@ export const super_admin_service = {
   get_single_event_details_from_db,
   connect_organizer_stripe_account,
   get_organizer_stripe_status,
+  get_stripe_onboarding_link,
   get_global_event_trend_from_db,
   update_event_in_db,
   delete_event_from_db,
