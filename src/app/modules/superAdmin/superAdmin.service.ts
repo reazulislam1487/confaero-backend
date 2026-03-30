@@ -846,6 +846,7 @@ const update_event_in_db = async (eventId: string, payload: any) => {
   if (payload.endDate) updateData.endDate = new Date(payload.endDate);
   if (payload.website) updateData.website = payload.website;
   if (payload.description) updateData.details = payload.description;
+  if (payload.price !== undefined) updateData.price = payload.price;
   if (payload.expectedParticipants)
     updateData.expectedAttendee = payload.expectedParticipants;
   if (payload.boothSlots) updateData.boothSlot = payload.boothSlots;

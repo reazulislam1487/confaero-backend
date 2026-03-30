@@ -63,8 +63,8 @@ const update_my_event_in_db = async (
   /* ===================================================
      🔵 Locked Fields
      =================================================== */
-
-  delete payload.title; // still locked if needed
+  
+  // Title update is now permitted
 
   /* ===================================================
      🔵 Cleanup Temp Fields
