@@ -74,12 +74,6 @@ const accept_invitation = async (
     { new: true },
   );
 
-  // 4️⃣ Update account role
-  // await Account_Model.findByIdAndUpdate(account._id, {
-  //   $addToSet: { role: "SPEAKER" },
-  //   activeRole: "SPEAKER",
-  // });
-
   return invitation;
 };
 
@@ -206,21 +200,52 @@ const resend_invitation = async (invitationId: any) => {
     throw new Error("Cannot resend an accepted invitation");
   }
 
-  // await sendMail({
-  //   to: invitation.email,
-  //   subject: "Event Invitation Reminder",
-  //   textBody: "You have been invited to an event",
-  //   htmlBody: `
-  //     <p>You are invited as <b>${invitation.role}</b></p>
-  //     <p>Please login to your dashboard to accept or reject.</p>
-  //   `,
-  // });
+  console.log("Sending mail to:", invitation.email);
+
+  await sendMail({
+    to: invitation.email,
+    subject: "Event Invitation Reminder",
+    textBody: "You have been invited to an event",
+    htmlBody: `
+      <p>You are invited as <b>${invitation.role}</b></p>
+      <p>Please login to your dashboard to accept or reject.</p>
+    `,
+  });
+
+  console.log("Mail function executed");
 
   invitation.status = "PENDING";
   await invitation.save();
 
   return invitation;
 };
+
+// const resend_invitation = async (invitationId: any) => {
+//   const invitation = await invitation_model.findById(invitationId);
+
+//   if (!invitation) {
+//     throw new Error("Invitation not found");
+//   }
+
+//   if (invitation.status === "ACCEPTED") {
+//     throw new Error("Cannot resend an accepted invitation");
+//   }
+
+//   await sendMail({
+//     to: invitation.email,
+//     subject: "Event Invitation Reminder",
+//     textBody: "You have been invited to an event",
+//     htmlBody: `
+//       <p>You are invited as <b>${invitation.role}</b></p>
+//       <p>Please login to your dashboard to accept or reject.</p>
+//     `,
+//   });
+
+//   invitation.status = "PENDING";
+//   await invitation.save();
+
+//   return invitation;
+// };
 
 const delete_invitation = async (invitationId: any) => {
   const invitation = await invitation_model.findById(invitationId);
@@ -284,6 +309,79 @@ const get_event_sessions = async (eventId: any) => {
 };
 
 // 🔹 MAKE SPEAKER (NO invitation)
+// const make_speaker = async (
+//   organizerId: any,
+//   eventId: any,
+//   email: string,
+//   sessionIndex: number,
+// ) => {
+//   const normalizedEmail = email.toLowerCase();
+
+//   const alreadyInvited = await invitation_model.findOne({
+//     eventId,
+//     email,
+//     status: "ACCEPTED",
+//   });
+
+//   if (alreadyInvited) {
+//     throw new Error("User already invited");
+//   }
+
+//   // 1️⃣ Find account
+//   const account = await Account_Model.findOne({
+//     email: normalizedEmail,
+//   });
+
+//   if (!account) {
+//     throw new Error("Account not found with this email");
+//   }
+
+//   // 2️⃣ Get event & validate sessionIndex
+//   const event = await Event_Model.findById(eventId);
+//   if (!event) {
+//     throw new Error("Event not found");
+//   }
+
+//   const agenda = event.agenda as any;
+//   if (sessionIndex < 0 || sessionIndex >= agenda.sessions.length) {
+//     throw new Error("Invalid session selected");
+//   }
+
+//   // 3️⃣ Add speaker to event
+//   await Event_Model.updateOne(
+//     { _id: new Types.ObjectId(eventId) },
+//     {
+//       $addToSet: {
+//         participants: {
+//           accountId: account._id,
+//           role: "SPEAKER",
+//           sessionIndex,
+//         },
+//       },
+//     },
+//   );
+
+//   // 4️⃣ Update account role
+//   await Account_Model.findByIdAndUpdate(account._id, {
+//     $addToSet: { role: "SPEAKER" },
+//     activeRole: "SPEAKER",
+//   });
+
+//   await invitation_model.create({
+//     organizerId,
+//     eventId,
+//     email,
+//     role: "SPEAKER",
+//     status: "ACCEPTED",
+//   });
+
+//   return {
+//     email: account.email,
+//     role: "SPEAKER",
+//     session: (event.agenda as any)!.sessions[sessionIndex],
+//   };
+// };
+
 const make_speaker = async (
   organizerId: any,
   eventId: any,
@@ -292,9 +390,10 @@ const make_speaker = async (
 ) => {
   const normalizedEmail = email.toLowerCase();
 
+  // 1. Already invited check
   const alreadyInvited = await invitation_model.findOne({
     eventId,
-    email,
+    email: normalizedEmail,
     status: "ACCEPTED",
   });
 
@@ -302,7 +401,7 @@ const make_speaker = async (
     throw new Error("User already invited");
   }
 
-  // 1️⃣ Find account
+  // 2. Find account
   const account = await Account_Model.findOne({
     email: normalizedEmail,
   });
@@ -311,41 +410,75 @@ const make_speaker = async (
     throw new Error("Account not found with this email");
   }
 
-  // 2️⃣ Get event & validate sessionIndex
+  // 3. Get event
   const event = await Event_Model.findById(eventId);
   if (!event) {
     throw new Error("Event not found");
   }
 
   const agenda = event.agenda as any;
+
+  if (!agenda?.sessions?.length) {
+    throw new Error("Event sessions not found");
+  }
+
+  // 4. Validate session index
   if (sessionIndex < 0 || sessionIndex >= agenda.sessions.length) {
     throw new Error("Invalid session selected");
   }
 
-  // 3️⃣ Add speaker to event
-  await Event_Model.updateOne(
-    { _id: new Types.ObjectId(eventId) },
-    {
-      $addToSet: {
-        participants: {
-          accountId: account._id,
-          role: "SPEAKER",
-          sessionIndex,
-        },
+  // 5. Check participant exists
+  const participant = await Event_Model.findOne({
+    _id: eventId,
+    participants: {
+      $elemMatch: {
+        accountId: account._id,
+        role: "SPEAKER",
       },
     },
-  );
+  });
 
-  // 4️⃣ Update account role
+  if (participant) {
+    // 6. Add session to existing participant
+    await Event_Model.updateOne(
+      {
+        _id: eventId,
+        "participants.accountId": account._id,
+        "participants.role": "SPEAKER",
+      },
+      {
+        $addToSet: {
+          "participants.$.sessionIndex": sessionIndex,
+        },
+      },
+    );
+  } else {
+    // 7. Create new participant
+    await Event_Model.updateOne(
+      { _id: eventId },
+      {
+        $push: {
+          participants: {
+            accountId: account._id,
+            role: "SPEAKER",
+            sessionIndex: [sessionIndex],
+          },
+        },
+      },
+    );
+  }
+
+  // 8. Update account role
   await Account_Model.findByIdAndUpdate(account._id, {
     $addToSet: { role: "SPEAKER" },
     activeRole: "SPEAKER",
   });
 
+  // 9. Create invitation
   await invitation_model.create({
     organizerId,
     eventId,
-    email,
+    email: normalizedEmail,
     role: "SPEAKER",
     status: "ACCEPTED",
   });
@@ -353,7 +486,7 @@ const make_speaker = async (
   return {
     email: account.email,
     role: "SPEAKER",
-    session: (event.agenda as any)!.sessions[sessionIndex],
+    session: agenda.sessions[sessionIndex],
   };
 };
 
