@@ -13,18 +13,6 @@ const get_all_upcoming_events = catchAsync(async (req, res) => {
   });
 });
 
-const register_event = catchAsync(async (req, res) => {
-  const result = await attendee_service.register_attendee_into_event(
-    req.user?.id,
-    req.params.eventId,
-  );
-  manageResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Event registered successfully",
-    data: result,
-  });
-});
 
 // real register flow
 const initiate_attendee_registration = catchAsync(async (req, res) => {
@@ -152,7 +140,6 @@ const join_event = catchAsync(async (req, res) => {
 
 export const attendee_controller = {
   get_all_upcoming_events,
-  register_event,
   get_my_all_events,
   get_my_events,
   get_single_event,

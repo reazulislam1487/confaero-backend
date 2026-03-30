@@ -20,20 +20,7 @@ attendee_router.get(
   attendee_controller.get_all_upcoming_events,
 );
 
-attendee_router.post(
-  "/events/:eventId/register",
-  auth(
-    "ATTENDEE",
-    "SPEAKER",
-    "EXHIBITOR",
-    "STAFF",
-    "SPONSOR",
-    "VOLUNTEER",
-    "ABSTRACT_REVIEWER",
-    "TRACK_CHAIR",
-  ),
-  attendee_controller.register_event,
-);
+
 // real register flow
 attendee_router.post(
   "/events/:eventId/initiate-registration",

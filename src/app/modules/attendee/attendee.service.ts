@@ -29,48 +29,7 @@ const get_all_upcoming_events_from_db = async () => {
     .sort({ startDate: 1 })
     .lean();
 };
-
-const register_attendee_into_event = async (
-  userId: Types.ObjectId,
-  eventId: any,
-) => {
-  const exists = await attendee_model.findOne({ user: userId, event: eventId });
-  if (exists) return exists;
-
-  const event = await Event_Model.findById(eventId);
-  if (!event) {
-    throw new AppError("Account not found", httpStatus.NOT_FOUND);
-  }
-
-  // already joined check
-  const alreadyJoined = event.participants.find(
-    (p: any) => p.accountId.toString() === userId.toString(),
-  );
-
-  if (alreadyJoined) {
-    throw new AppError(
-      "You already registered for this event",
-      httpStatus.NOT_FOUND,
-    );
-  }
-
-  await Event_Model.findByIdAndUpdate(eventId, {
-    $push: {
-      participants: {
-        accountId: userId,
-        role: "ATTENDEE",
-        sessionIndex: [],
-      },
-    },
-  });
-
-  return attendee_model.create({
-    account: userId,
-    event: eventId,
-    status: "VERIFIED",
-    paymentProvider: "FREE",
-  });
-};
+;
 
 const initiate_attendee_registration = async (
   userId: Types.ObjectId,
