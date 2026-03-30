@@ -76,7 +76,14 @@ const create_new_verify_email_into_db = async (
   };
 };
 //
-const get_all_verify_emails_from_db = async (user: any, eventId: any) => {
+const get_all_verify_emails_from_db = async (
+  user: any,
+  eventId: any,
+  query: any = {},
+) => {
+  const { page = 1, limit = 10 } = query;
+  const skip = (Number(page) - 1) * Number(limit);
+
   // organizer ownership check
   const event = await findEventWithRoleAccess(user, eventId);
 
@@ -85,10 +92,22 @@ const get_all_verify_emails_from_db = async (user: any, eventId: any) => {
   }
 
   const emails = await verify_email_model
-    .find({ event: eventId }, { email: 1, isUsed: 1, usedAt: 1 })
-    .sort({ createdAt: -1 });
+    .find({ event: eventId }, { email: 1, isUsed: 1, usedAt: 1, createdAt: 1 })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(Number(limit));
 
-  return emails;
+  const total = await verify_email_model.countDocuments({ event: eventId });
+
+  return {
+    data: emails,
+    meta: {
+      page: Number(page),
+      limit: Number(limit),
+      total,
+      totalPage: Math.ceil(total / Number(limit)),
+    },
+  };
 };
 
 const delete_verify_email_from_db = async (
