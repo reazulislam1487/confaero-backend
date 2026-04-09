@@ -1,11 +1,48 @@
 export const uploadSwaggerDocs = {
-  "/api/upload/create": {
+  "/api/v1/upload/chat-attachment": {
     post: {
-      tags: ["upload"],
-      summary: "upload create",
-      description: "This is auto generated upload create API",
-      requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["name"], properties: { name: { type: "string", example: "John Doe" } } } } } },
-      responses: { 201: { description: "upload created successfully" }, 400: { description: "Validation error" } }
-    }
-  }
+      tags: ["Upload"],
+      summary: "Upload chat attachment",
+      description: "Upload a file as a chat attachment.",
+      security: [{ AuthorizationToken: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          "multipart/form-data": {
+            schema: {
+              type: "object",
+              required: ["file"],
+              properties: {
+                file: { type: "string", format: "binary", description: "File to upload" },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "File uploaded successfully",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  status: { type: "string", example: "success" },
+                  data: {
+                    type: "object",
+                    properties: {
+                      url: { type: "string", example: "https://..." },
+                      fileName: { type: "string" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        400: { description: "No file provided" },
+        401: { description: "Unauthorized" },
+      },
+    },
+  },
 };

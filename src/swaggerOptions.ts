@@ -4,6 +4,7 @@ import { authSwaggerDocs } from "./app/modules/auth/auth.swagger";
 import { userSwaggerDocs } from "./app/modules/user/user.swagger";
 import { superAdminSwaggerDocs } from "./app/modules/superAdmin/superAdmin.swagger";
 import { organizerSwaggerDocs } from "./app/modules/organizer/organizer.swagger";
+import { organizerSessionSwaggerDocs } from "./app/modules/organizer/organizer.session.swagger";
 import { attendeeSwaggerDocs } from "./app/modules/attendee/attendee.swagger";
 import { qrSwaggerDocs } from "./app/modules/qr/qr.swagger";
 import { invitationSwaggerDocs } from "./app/modules/invitation/invitation.swagger";
@@ -27,6 +28,7 @@ import { photoSwaggerDocs } from "./app/modules/photo/photo.swagger";
 import { volunteerSwaggerDocs } from "./app/modules/volunteer/volunteer.swagger";
 import { reportSwaggerDocs } from "./app/modules/report/report.swagger";
 import { jobSwaggerDocs } from "./app/modules/job/job.swagger";
+import { eventLiveSwaggerDocs } from "./app/modules/eventLive/eventLive.swagger";
 import { appContentSwaggerDocs } from "./app/modules/appContent/appContent.swagger";
 import { verifyEmailSwaggerDocs } from "./app/modules/verifyEmail/verifyEmail.swagger";
 
@@ -45,6 +47,7 @@ export const swaggerOptions = {
       ...superAdminSwaggerDocs,
 
       ...organizerSwaggerDocs,
+      ...organizerSessionSwaggerDocs,
       ...attendeeSwaggerDocs,
 
       ...qrSwaggerDocs,

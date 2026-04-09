@@ -1,11 +1,15 @@
 export const reportSwaggerDocs = {
-  "/api/report/create": {
+  "/api/v1/report/report": {
     post: {
-      tags: ["report"],
-      summary: "report create",
-      description: "This is auto generated report create API",
-      requestBody: { required: true, content: { "application/json": { schema: { type: "object", required: ["name"], properties: { name: { type: "string", example: "John Doe" } } } } } },
-      responses: { 201: { description: "report created successfully" }, 400: { description: "Validation error" } }
-    }
-  }
+      tags: ["Report"],
+      summary: "Report task issue",
+      description: "Report an issue with a task (volunteer only).",
+      security: [{ AuthorizationToken: [] }],
+      requestBody: {
+        required: true,
+        content: { "application/json": { schema: { type: "object", required: ["taskId", "description"], properties: { taskId: { type: "string" }, description: { type: "string", example: "Issue description here" } } } } },
+      },
+      responses: { 201: { description: "Issue reported successfully" }, 400: { description: "Validation error" }, 401: { description: "Unauthorized" }, 403: { description: "Forbidden - Volunteer only" } },
+    },
+  },
 };
