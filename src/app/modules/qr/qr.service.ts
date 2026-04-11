@@ -6,12 +6,12 @@ const QR_SECRET = process.env.QR_SECRET as string;
 
 const generate_qr_token = (
   userId: string,
-  activeRole: TQrPayload["activeRole"],
-  eventId: any,
+  activeRole?: TQrPayload["activeRole"],
+  eventId?: any,
 ) => {
   const payload: TQrPayload = {
     userId,
-    activeRole,
+    activeRole: activeRole || "ATTENDEE",
     eventId,
     type: "QR_ACCESS",
   };

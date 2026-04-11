@@ -80,7 +80,13 @@ export const swaggerOptions = {
     servers:
       configs.env === "production"
         ? [{ url: "https://live-url.com" }, { url: "http://localhost:8080" }]
-        : [{ url: "http://localhost:5000" }, { url: "https://live-url.com" }],
+
+
+
+
+
+
+        : [{ url: "http://localhost:8080" }, { url: "https://live-url.com" }],
     components: {
       securitySchemes: {
         AuthorizationToken: {

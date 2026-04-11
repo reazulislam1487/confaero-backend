@@ -13,6 +13,7 @@ import {
   update_lead_note_service,
   update_lead_tags_service,
 } from "./leadService";
+import { TQrPayload } from "./qr.interface";
 
 const generate_qr = catchAsync(async (req, res) => {
   const { eventId } = req.params;
@@ -20,7 +21,7 @@ const generate_qr = catchAsync(async (req, res) => {
 
   const result = qr_service.generate_qr_token(
     user?.id,
-    user?.activeRole,
+    user?.activeRole as TQrPayload["activeRole"] | undefined,
     eventId,
   );
 

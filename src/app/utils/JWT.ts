@@ -20,7 +20,7 @@ export const jwtHelpers = {
 export type JwtPayloadType = JwtPayload & {
   email: string;
   role: string;
-  // activeRole: string;
+  activeRole: string;
   iat: number;
   exp: number;
 };

@@ -20,7 +20,7 @@ const check_event_access = async (eventId: string, organizerId: string) => {
 const get_event_booths_into_db = async (
   eventId: string,
   organizerId: string,
-  userRole: string,
+  userRole?: string,
   isAccepted?: string,
 ) => {
   let query: any = { _id: eventId };

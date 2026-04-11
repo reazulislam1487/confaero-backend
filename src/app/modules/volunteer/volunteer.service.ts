@@ -60,7 +60,7 @@ const create_task_and_assign = async (payload: any, creatorId: string) => {
 const get_task_details_by_id = async (
   taskId: any,
   userId: string,
-  role: string,
+  role?: string,
 ) => {
   const task: any = await task_model
     .findById(taskId)

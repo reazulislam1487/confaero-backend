@@ -48,7 +48,7 @@ const eventAccess = () => async (req: any, res: any, next: NextFunction) => {
     status: { $in: ["PENDING", "ACCEPTED"] },
   });
 
-  if (req.user.role == "ATTENDEE" && !invitation) {
+  if (req.user.activeRole == "ATTENDEE" && !invitation) {
     const registration = await attendee_model.findOne({
       account: userId,
       event: eventId,

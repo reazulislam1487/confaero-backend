@@ -20,7 +20,6 @@ const auth = (...roles: Role[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authHeader = req.headers.authorization;
-      console.log(authHeader);
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
         throw new AppError("Unauthorized", 401);
       }
@@ -38,31 +37,32 @@ const auth = (...roles: Role[]) => {
         throw new AppError("Token expired or invalid", 401);
       }
 
-      console.log(roles, verifiedUser.activeRole);
-
-      if (!roles.length || !roles.includes(verifiedUser.activeRole)) {
-        throw new AppError("You are not authorize!!", 401);
-      }
-      // check user
+      // Check user exists and account status
       const isUserExist = await Account_Model.findOne({
         email: verifiedUser?.email,
       }).lean();
+      
       if (!isUserExist) {
-        throw new AppError("Account not found !", 404);
+        throw new AppError("Account not found", 404);
       }
+      
       if (isUserExist?.accountStatus == "SUSPENDED") {
-        throw new AppError("This Account is suspended !", 401);
+        throw new AppError("This account is suspended", 401);
       }
+      
       if (isUserExist?.accountStatus == "INACTIVE") {
-        throw new AppError("This Account is inactive !", 401);
+        throw new AppError("This account is inactive", 401);
       }
+      
       if (isUserExist?.isDeleted) {
         throw new AppError("This account is deleted", 401);
       }
-      // ! comment out verified check
-      // if (!isUserExist?.isVerified) {
-      //   throw new AppError("This account is not verified ", 401);
-      // }
+
+      // Check role authorization
+      if (!roles.length || !roles.includes(verifiedUser.activeRole)) {
+        throw new AppError("You are not authorized", 401);
+      }
+
       req.user = verifiedUser as JwtPayloadType;
       next();
     } catch (err) {

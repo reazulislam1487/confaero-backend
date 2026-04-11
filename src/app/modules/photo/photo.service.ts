@@ -14,9 +14,9 @@ const create_new_photo_into_db = async ({
   imageUrl: any;
   type: string;
   userId: string;
-  role: string;
+  role?: string;
 }) => {
- 
+
 
   return await photo_model.create({
     eventId: new Types.ObjectId(eventId),
@@ -72,7 +72,7 @@ const delete_photo_from_db = async ({
 }: {
   photoId: any;
   userId: string;
-  role: string;
+  role?: string;
 }) => {
  
 
