@@ -2,6 +2,7 @@ import catchAsync from "../../utils/catch_async";
 import manageResponse from "../../utils/manage_response";
 import httpStatus from "http-status";
 import { attendee_service } from "./attendee.service";
+import { AppError } from "../../utils/app_error";
 
 const get_all_upcoming_events = catchAsync(async (req, res) => {
   const result = await attendee_service.get_all_upcoming_events_from_db();
@@ -138,6 +139,27 @@ const join_event = catchAsync(async (req, res) => {
   });
 });
 
+const get_my_unified_events = catchAsync(async (req, res) => {
+  const userId = req.user?.id;
+  const userEmail = req.user?.email;
+
+  if (!userId || !userEmail) {
+    throw new AppError("User authentication required", httpStatus.UNAUTHORIZED);
+  }
+
+  const result = await attendee_service.get_my_unified_events_from_db(
+    userId,
+    userEmail,
+  );
+
+  manageResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "My events and invitations fetched successfully",
+    data: result,
+  });
+});
+
 export const attendee_controller = {
   get_all_upcoming_events,
   get_my_all_events,
@@ -148,4 +170,5 @@ export const attendee_controller = {
   generate_qr_token,
   initiate_attendee_registration,
   join_event,
+  get_my_unified_events,
 };

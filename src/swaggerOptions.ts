@@ -79,8 +79,14 @@ export const swaggerOptions = {
     },
     servers:
       configs.env === "production"
-        ? [{ url: "https://live-url.com" }, { url: "https://reazul8078.suplify.life" }]
-        : [{ url: "https://reazul8078.suplify.life" }, { url: "https://live-url.com" }],
+        ? [
+            { url: "http://10.10.11.30:8081" },
+            { url: "https://reazul8078.suplify.life" },
+          ]
+        : [
+            { url: "https://reazul8078.suplify.life" },
+            { url: "http://10.10.11.30:8081" },
+          ],
     components: {
       securitySchemes: {
         AuthorizationToken: {

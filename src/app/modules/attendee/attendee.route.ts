@@ -51,6 +51,23 @@ attendee_router.get(
   ), // eventAccess(),
   attendee_controller.get_my_all_events,
 );
+
+// 🆕 Unified endpoint: registered events + invitations (MUST be before /my-events/:eventId)
+attendee_router.get(
+  "/my-events",
+  auth(
+    "ATTENDEE",
+    "SPEAKER",
+    "EXHIBITOR",
+    "STAFF",
+    "SPONSOR",
+    "VOLUNTEER",
+    "ABSTRACT_REVIEWER",
+    "TRACK_CHAIR",
+  ),
+  attendee_controller.get_my_unified_events,
+);
+
 //
 attendee_router.get(
   "/my-events/:eventId",
@@ -145,4 +162,5 @@ attendee_router.patch(
   eventAccess(),
   attendee_controller.join_event,
 );
+
 export default attendee_router;

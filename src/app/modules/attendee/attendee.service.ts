@@ -10,6 +10,7 @@ import { verify_email_model } from "../verifyEmail/verifyEmail.schema";
 import { configs } from "../../configs";
 import { Account_Model } from "../auth/auth.schema";
 import { ObjectId } from "mongodb";
+import { invitation_model } from "../invitation/invitation.schema";
 
 const get_all_upcoming_events_from_db = async () => {
   const now = new Date();
@@ -390,6 +391,76 @@ const join_event_from_db = async (
   );
 };
 
+const get_my_unified_events_from_db = async (
+  userId: Types.ObjectId,
+  userEmail: string,
+) => {
+  const now = new Date();
+
+  // 1️⃣ Fetch registered events
+  const registeredEvents = await attendee_model
+    .find(
+      {
+        account: userId,
+        status: "VERIFIED",
+      },
+      { event: 1, status: 1 },
+    )
+    .populate({
+      path: "event",
+      match: { endDate: { $gte: now } },
+      select: "title startDate endDate bannerImageUrl location",
+    })
+    .lean();
+
+  // 2️⃣ Fetch invitations
+  const invitations = await invitation_model
+    .find({ email: userEmail.toLowerCase() })
+    .populate({
+      path: "eventId",
+      select: "title startDate endDate location bannerImageUrl",
+    })
+    .lean();
+
+  // 3️️ Build unified map (deduplicate by eventId)
+  const eventMap = new Map<
+    string,
+    {
+      event: any;
+      status: "REGISTERED" | "INVITED";
+      invitationRole?: string;
+    }
+  >();
+
+  // Add registered events
+  registeredEvents.forEach((item) => {
+    if (item.event) {
+      const eventId = item.event._id.toString();
+      eventMap.set(eventId, {
+        event: item.event,
+        status: "REGISTERED",
+      });
+    }
+  });
+
+  // Add invitations (only if not already registered)
+  invitations.forEach((inv) => {
+    if (inv.eventId) {
+      const eventId = inv.eventId._id.toString();
+      if (!eventMap.has(eventId)) {
+        eventMap.set(eventId, {
+          event: inv.eventId,
+          status: "INVITED",
+          invitationRole: inv.role,
+        });
+      }
+    }
+  });
+
+  // 4️⃣ Convert to array
+  return Array.from(eventMap.values());
+};
+
 export const attendee_service = {
   get_all_upcoming_events_from_db,
   get_my_all_registered_events_from_db,
@@ -400,4 +471,5 @@ export const attendee_service = {
   generate_qr_token_from_db,
   initiate_attendee_registration,
   join_event_from_db,
+  get_my_unified_events_from_db,
 };
