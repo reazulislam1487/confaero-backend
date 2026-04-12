@@ -77,6 +77,7 @@ export const swaggerOptions = {
 
       ...verifyEmailSwaggerDocs,
     },
+    // this is updated in production to point to the actual server URL, and in development it can point to localhost or the local network IP
     servers:
       configs.env === "production"
         ? [
