@@ -288,10 +288,19 @@ const get_attendee_details_from_db = async (
     throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
   }
 
-  const event = await Event_Model.findOne({
-    _id: eventId,
-    organizerEmails: user.email,
-  }).select("participants");
+  const isSuperAdmin = user.activeRole === "SUPER_ADMIN";
+
+  // ✅ super admin হলে ownership check নেই
+  const eventQuery = isSuperAdmin
+    ? { _id: eventId }
+    : { _id: eventId, organizerEmails: user.email };
+
+  const event = await Event_Model.findOne(eventQuery).select("participants");
+
+  // const event = await Event_Model.findOne({
+  //   _id: eventId,
+  //   organizerEmails: user.email,
+  // }).select("participants");
 
   if (!event) {
     throw new AppError("Event not found", httpStatus.NOT_FOUND);
