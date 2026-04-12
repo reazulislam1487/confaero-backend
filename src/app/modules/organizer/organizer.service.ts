@@ -15,7 +15,6 @@ const get_my_events_from_db = async (user: any) => {
   return event;
 };
 
-
 const update_my_event_in_db = async (
   user: any,
   eventId: string,
@@ -112,6 +111,7 @@ const get_all_register_from_db = async (
     role?: string;
     search?: string;
   },
+  eventId: any,
 ) => {
   if (!user?.email) {
     throw new AppError("Unauthorized", httpStatus.UNAUTHORIZED);
@@ -122,10 +122,17 @@ const get_all_register_from_db = async (
   const skip = (page - 1) * limit;
   const roleFilter = query.role;
   const search = query.search?.trim();
+  console.log(user);
+  const isSuperAdmin = user.activeRole === "SUPER_ADMIN"; // তোমার role value অনুযায়ী adjust করো
 
-  const events = await Event_Model.find({
-    organizerEmails: user.email,
-  }).select("_id participants");
+  const eventQuery = isSuperAdmin
+    ? { _id: eventId }
+    : { _id: eventId, organizerEmails: user.email };
+  const events = await Event_Model.find(eventQuery).select("_id participants");
+
+  // const events = await Event_Model.find({
+  //   organizerEmails: user.email,
+  // }).select("_id participants");
 
   if (!events.length) {
     return { data: [], meta: { page, limit, total: 0 } };

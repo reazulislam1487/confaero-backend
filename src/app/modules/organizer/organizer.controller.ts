@@ -75,6 +75,7 @@ const get_all_register = catchAsync(async (req, res) => {
   const result = await organizer_service.get_all_register_from_db(
     req.user,
     req.query,
+    req.params.eventId,
   );
   manageResponse(res, {
     statusCode: httpStatus.OK,

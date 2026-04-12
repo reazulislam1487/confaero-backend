@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport({
     user: configs.email.app_email!,
     pass: configs.email.app_password!,
   },
-}); 
+});
 // const transporter = nodemailer.createTransport({
 //   host: "smtp.gmail.com",
 //   port: 465,
