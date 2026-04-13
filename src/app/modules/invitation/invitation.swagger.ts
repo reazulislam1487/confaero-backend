@@ -25,7 +25,7 @@ export const invitationSwaggerDocs = {
                 email: { type: "string", format: "email", example: "invitee@example.com" },
                 role: {
                   type: "string",
-                  enum: ["SPEAKER", "EXHIBITOR", "SPONSOR", "VOLUNTEER", "ABSTRACT_REVIEWER", "TRACK_CHAIR"],
+                  enum: ["SPEAKER", "STAFF", "EXHIBITOR", "VOLUNTEER", "TRACK_CHAIR", "SPONSOR", "ABSTRACT_REVIEWER"],
                   example: "SPEAKER",
                 },
                 name: { type: "string", example: "John Doe" },

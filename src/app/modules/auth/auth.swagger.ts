@@ -285,7 +285,7 @@ export const authSwaggerDocs = {
           "application/json": {
             schema: {
               type: "object",
-              required: ["token", "email", "newPassword"],
+              required: ["token", "email", "newPassword", "confirmPassword"],
               properties: {
                 token: { type: "string", example: "eyJhbGciOiJIUz..." },
                 email: {
@@ -296,7 +296,12 @@ export const authSwaggerDocs = {
                 newPassword: {
                   type: "string",
                   format: "password",
-                  example: "newSecret123",
+                  example: "123456",
+                },
+                confirmPassword: {
+                  type: "string",
+                  format: "password",
+                  example: "123456  ",
                 },
               },
             },
@@ -374,8 +379,27 @@ export const authSwaggerDocs = {
       description:
         "Permanently delete the authenticated user's account. This action cannot be undone.",
       security: [{ AuthorizationToken: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              required: ["currentPassword"],
+              properties: {
+                currentPassword: {
+                  type: "string",
+                  format: "password",
+                  example: "myCurrentPass123",
+                },
+              },
+            },
+          },
+        },
+      },
       responses: {
         200: { description: "Account deleted successfully" },
+        400: { description: "Validation error or incorrect password" },
         401: { description: "Unauthorized" },
         500: { description: "Internal server error" },
       },

@@ -6,7 +6,8 @@ import { invitation_model } from "../modules/invitation/invitation.schema";
 
 const eventAccess = () => async (req: any, res: any, next: NextFunction) => {
   // ✅ Extract eventId from params or headers (as requested)
-  const eventId = req.params.eventId || req.params.eventid || req.headers.eventid;
+  const eventId =
+    req.params.eventId || req.params.eventid || req.headers.eventid;
 
   if (process.env.NODE_ENV === "development") {
     console.log("Backend Activity - EventID Check:", {
