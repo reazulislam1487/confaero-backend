@@ -3,19 +3,32 @@ export const authSwaggerDocs = {
     post: {
       tags: ["Auth"],
       summary: "Register a new user",
-      description: "Create a new user account with email, phone number, password, and name. A verification email will be sent.",
+      description:
+        "Create a new user account with email, phone number, password, and name. A verification email will be sent.",
       requestBody: {
         required: true,
         content: {
           "application/json": {
             schema: {
               type: "object",
-              required: ["email", "number", "password", "name"],
+              required: ["email", "name", "password", "confirmPassword"],
               properties: {
-                email: { type: "string", format: "email", example: "user@example.com" },
-                number: { type: "string", example: "+1234567890" },
-                password: { type: "string", format: "password", example: "secret123" },
                 name: { type: "string", example: "John Doe" },
+                email: {
+                  type: "string",
+                  format: "email",
+                  example: "user@example.com",
+                },
+                password: {
+                  type: "string",
+                  format: "password",
+                  example: "123456",
+                },
+                confirmPassword: {
+                  type: "string",
+                  format: "password",
+                  example: "123456",
+                },
               },
             },
           },
@@ -30,7 +43,10 @@ export const authSwaggerDocs = {
                 type: "object",
                 properties: {
                   status: { type: "string", example: "success" },
-                  message: { type: "string", example: "User registered successfully" },
+                  message: {
+                    type: "string",
+                    example: "User registered successfully",
+                  },
                   data: { type: "object" },
                 },
               },
@@ -47,7 +63,8 @@ export const authSwaggerDocs = {
     post: {
       tags: ["Auth"],
       summary: "Login a user",
-      description: "Authenticate user with email and password. Returns access token and refresh token (in cookie).",
+      description:
+        "Authenticate user with email and password. Returns access token and refresh token (in cookie).",
       requestBody: {
         required: true,
         content: {
@@ -56,8 +73,16 @@ export const authSwaggerDocs = {
               type: "object",
               required: ["email", "password"],
               properties: {
-                email: { type: "string", format: "email", example: "user@example.com" },
-                password: { type: "string", format: "password", example: "secret123" },
+                email: {
+                  type: "string",
+                  format: "email",
+                  example: "user@example.com",
+                },
+                password: {
+                  type: "string",
+                  format: "password",
+                  example: "secret123",
+                },
               },
             },
           },
@@ -95,7 +120,8 @@ export const authSwaggerDocs = {
     get: {
       tags: ["Auth"],
       summary: "Get logged-in user's profile",
-      description: "Fetch the authenticated user's profile details including active role and permissions.",
+      description:
+        "Fetch the authenticated user's profile details including active role and permissions.",
       security: [{ AuthorizationToken: [] }],
       responses: {
         200: {
@@ -122,7 +148,8 @@ export const authSwaggerDocs = {
     post: {
       tags: ["Auth"],
       summary: "Refresh JWT token",
-      description: "Refresh the access token using a valid refresh token stored in HTTP-only cookie.",
+      description:
+        "Refresh the access token using a valid refresh token stored in HTTP-only cookie.",
       responses: {
         200: {
           description: "Token refreshed successfully",
@@ -162,8 +189,16 @@ export const authSwaggerDocs = {
               type: "object",
               required: ["oldPassword", "newPassword"],
               properties: {
-                oldPassword: { type: "string", format: "password", example: "oldPass123" },
-                newPassword: { type: "string", format: "password", example: "newPass456" },
+                oldPassword: {
+                  type: "string",
+                  format: "password",
+                  example: "oldPass123",
+                },
+                newPassword: {
+                  type: "string",
+                  format: "password",
+                  example: "newPass456",
+                },
               },
             },
           },
@@ -190,7 +225,11 @@ export const authSwaggerDocs = {
               type: "object",
               required: ["email"],
               properties: {
-                email: { type: "string", format: "email", example: "user@example.com" },
+                email: {
+                  type: "string",
+                  format: "email",
+                  example: "user@example.com",
+                },
               },
             },
           },
@@ -207,7 +246,8 @@ export const authSwaggerDocs = {
     post: {
       tags: ["Auth"],
       summary: "Verify password reset OTP",
-      description: "Verify the OTP code sent to user's email for password reset.",
+      description:
+        "Verify the OTP code sent to user's email for password reset.",
       requestBody: {
         required: true,
         content: {
@@ -216,7 +256,11 @@ export const authSwaggerDocs = {
               type: "object",
               required: ["email", "code"],
               properties: {
-                email: { type: "string", format: "email", example: "user@example.com" },
+                email: {
+                  type: "string",
+                  format: "email",
+                  example: "user@example.com",
+                },
                 code: { type: "string", example: "123456" },
               },
             },
@@ -244,8 +288,16 @@ export const authSwaggerDocs = {
               required: ["token", "email", "newPassword"],
               properties: {
                 token: { type: "string", example: "eyJhbGciOiJIUz..." },
-                email: { type: "string", format: "email", example: "user@example.com" },
-                newPassword: { type: "string", format: "password", example: "newSecret123" },
+                email: {
+                  type: "string",
+                  format: "email",
+                  example: "user@example.com",
+                },
+                newPassword: {
+                  type: "string",
+                  format: "password",
+                  example: "newSecret123",
+                },
               },
             },
           },
@@ -262,7 +314,8 @@ export const authSwaggerDocs = {
     post: {
       tags: ["Auth"],
       summary: "Verify account using token",
-      description: "Verify a user's email account using a verification token from email link.",
+      description:
+        "Verify a user's email account using a verification token from email link.",
       requestBody: {
         required: true,
         content: {
@@ -297,7 +350,11 @@ export const authSwaggerDocs = {
               type: "object",
               required: ["email"],
               properties: {
-                email: { type: "string", format: "email", example: "user@example.com" },
+                email: {
+                  type: "string",
+                  format: "email",
+                  example: "user@example.com",
+                },
               },
             },
           },
@@ -314,7 +371,8 @@ export const authSwaggerDocs = {
     delete: {
       tags: ["Auth"],
       summary: "Delete user account",
-      description: "Permanently delete the authenticated user's account. This action cannot be undone.",
+      description:
+        "Permanently delete the authenticated user's account. This action cannot be undone.",
       security: [{ AuthorizationToken: [] }],
       responses: {
         200: { description: "Account deleted successfully" },
@@ -328,7 +386,8 @@ export const authSwaggerDocs = {
     post: {
       tags: ["Auth"],
       summary: "Switch active role",
-      description: "Change the user's active role for role-based access control.",
+      description:
+        "Change the user's active role for role-based access control.",
       security: [{ AuthorizationToken: [] }],
       requestBody: {
         required: true,
@@ -340,7 +399,16 @@ export const authSwaggerDocs = {
               properties: {
                 role: {
                   type: "string",
-                  enum: ["ATTENDEE", "SPEAKER", "EXHIBITOR", "STAFF", "SPONSOR", "VOLUNTEER", "ABSTRACT_REVIEWER", "TRACK_CHAIR"],
+                  enum: [
+                    "ATTENDEE",
+                    "SPEAKER",
+                    "EXHIBITOR",
+                    "STAFF",
+                    "SPONSOR",
+                    "VOLUNTEER",
+                    "ABSTRACT_REVIEWER",
+                    "TRACK_CHAIR",
+                  ],
                   example: "SPEAKER",
                 },
               },
@@ -390,7 +458,8 @@ export const authSwaggerDocs = {
     patch: {
       tags: ["Auth"],
       summary: "Toggle email notifications",
-      description: "Enable or disable email notifications for the authenticated user.",
+      description:
+        "Enable or disable email notifications for the authenticated user.",
       security: [{ AuthorizationToken: [] }],
       responses: {
         200: { description: "Notification preference updated successfully" },
