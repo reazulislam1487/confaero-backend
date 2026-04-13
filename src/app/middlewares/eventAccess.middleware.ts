@@ -46,6 +46,7 @@ const eventAccess = () => async (req: any, res: any, next: NextFunction) => {
 
   const invitation = await invitation_model.findOne({
     email: userEmail.toLowerCase(),
+    eventId,
     status: { $in: ["PENDING", "ACCEPTED"] },
   });
 
