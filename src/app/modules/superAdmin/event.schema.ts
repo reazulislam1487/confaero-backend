@@ -31,7 +31,7 @@ const eventSchema = new Schema(
       default: "STRIPE",
     },
     externalPaymentUrl: { type: String },
-    organizers: [{ type: Types.ObjectId, ref: "Account", required: true }],
+    organizers: [{ type: Types.ObjectId, ref: "account", required: true }],
     organizerEmails: [{ type: String }],
     bannerImageUrl: { type: String },
     latitude: { type: Number, default: null },
