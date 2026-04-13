@@ -51,7 +51,7 @@ export const attendeeSwaggerDocs = {
   //   },
   // },
 
-  "/api/v1/attendee/my-event": {
+  "/api/v1/attendee/my-events": {
     get: {
       tags: ["Attendee"],
       summary: "Get my events and invitations",
