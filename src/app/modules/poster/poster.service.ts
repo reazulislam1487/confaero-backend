@@ -78,8 +78,10 @@ const get_accepted_posters_from_db = async (query: {
     .sort({ updatedAt: -1 })
     .skip(skip)
     .limit(limit)
-    .select("_id eventId authorId title abstract banner dueDate ")
+    .select("_id eventId authorId title abstract banner dueDate attachments")
     .lean();
+
+  console.log("Posters fetched:", posters);
 
   // 2️⃣ author profiles
   const authorIds = posters.map((p) => p.authorId);

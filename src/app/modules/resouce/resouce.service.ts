@@ -179,56 +179,6 @@ const getSurveyAnalytics = async (eventId: any, page = 1, limit = 10) => {
     },
   };
 };
-// const getSurveyAnalytics = async (eventId: any, page = 1, limit = 10) => {
-//   const skip = (page - 1) * limit;
-//   const eventObjectId = new Types.ObjectId(eventId);
-
-//   const submissions = await SurveyResponse_Model.find({
-//     eventId: eventObjectId,
-//   })
-//     .populate("userId", "name email")
-//     .sort({ createdAt: -1 })
-//     .skip(skip)
-//     .limit(limit)
-//     .lean();
-
-//   const totalResponses = await SurveyResponse_Model.countDocuments({
-//     eventId: eventObjectId,
-//   });
-
-//   const avgAgg = await SurveyResponse_Model.aggregate([
-//     { $match: { eventId: eventObjectId } },
-//     {
-//       $group: {
-//         _id: null,
-//         avgRating: { $avg: "$rating" },
-//       },
-//     },
-//   ]);
-
-//   const positiveCount = await SurveyResponse_Model.countDocuments({
-//     eventId: eventObjectId,
-//     helpful: true,
-//   });
-
-//   return {
-//     summary: {
-//       totalResponses,
-//       averageRating:
-//         avgAgg.length > 0 ? Number(avgAgg[0].avgRating.toFixed(1)) : 0,
-//       positiveFeedback:
-//         totalResponses === 0
-//           ? 0
-//           : Math.round((positiveCount / totalResponses) * 100),
-//     },
-//     submissions,
-//     meta: {
-//       page,
-//       limit,
-//       total: totalResponses,
-//     },
-//   };
-// };
 
 /* ===================== FETCH ===================== */
 

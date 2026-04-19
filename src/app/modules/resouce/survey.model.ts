@@ -4,7 +4,7 @@ const surveyResponseSchema = new Schema(
   {
     eventId: {
       type: Schema.Types.ObjectId,
-      ref: "event",
+      ref: "Event",
       required: true,
       index: true,
     },
@@ -30,7 +30,7 @@ const surveyResponseSchema = new Schema(
     suggestion: {
       type: String,
       trim: true,
-      minlength: 80,
+      // minlength: 80,
     },
   },
   { timestamps: true },
