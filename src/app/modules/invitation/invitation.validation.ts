@@ -22,10 +22,8 @@ const reject = z.object({
 });
 
 const makeSpeaker = z.object({
-  body: z.object({
-    email: z.string().email(),
-    sessionIndex: z.array(z.number()),
-  }),
+  email: z.string().email(),
+  sessionIndex: z.array(z.number()),
 });
 
 export const invitation_validations = { create, accept, reject, makeSpeaker };
