@@ -117,13 +117,12 @@ const join_live_session = async ({
 
   // 5️⃣ Participant validation
   const participant = event.participants.find(
-    (p: any) => p.accountId.toString() === user.id,
-    // && p.sessionIndex.includes(sessionIndex),
+    (p: any) => p.accountId.toString() === user.id && p.role === user.role,
   );
 
   if (!participant) {
     throw new AppError(
-      "User is not assigned to this session",
+      "User is not assigned to this event with this role",
       httpStatus.FORBIDDEN,
     );
   }
@@ -137,7 +136,7 @@ const join_live_session = async ({
   // }
   // 7️⃣ Ensure roomId (create once)
   if (!session.roomId) {
-    session.roomId = `${eventId}_${sessionIndex}`;
+    session.roomId = `${eventId}_${Number(sessionIndex)}`;
     session.startedAt = new Date();
     await event.save();
   }
@@ -215,9 +214,11 @@ const end_live_session = async ({
 export const get_event_live_sessions = async ({
   eventId,
   userId,
+  activeRole,
 }: {
   eventId: string;
   userId: string;
+  activeRole: string;
 }) => {
   const event: any = await Event_Model.findById(eventId);
 
@@ -225,18 +226,21 @@ export const get_event_live_sessions = async ({
     throw new AppError("Event not found", 404);
   }
 
+  // Find participant matching both accountId and the active role
   const participant = event.participants.find(
-    (p: any) => p.accountId.toString() === userId,
+    (p: any) => p.accountId.toString() === userId && p.role === activeRole,
   );
 
   if (!participant) {
-    throw new AppError("User is not part of this event", 403);
+    throw new AppError("User is not part of this event with this role", 403);
   }
 
-  // 🟢 SPEAKER FLOW
-  if (participant.role === "SPEAKER") {
-    const sessions = (event.agenda?.sessions || [])
-      .map((s: any, index: number) => {
+  // 🟢 SPEAKER FLOW: Return all assigned sessions regardless of liveStatus
+  if (activeRole === "SPEAKER") {
+    const sessions = (participant.sessionIndex || [])
+      .map((index: number) => {
+        const s = event.agenda?.sessions?.[index];
+
         if (!s) return null;
 
         return {
@@ -244,7 +248,7 @@ export const get_event_live_sessions = async ({
           title: s.title,
           date: s.date,
           time: s.time,
-          liveStatus: s.liveStatus,
+          liveStatus: s.liveStatus, // Can be NOT_STARTED, LIVE, or ENDED
           startedAt: s.startedAt || null,
         };
       })
@@ -256,49 +260,26 @@ export const get_event_live_sessions = async ({
     };
   }
 
-  if (participant.role === "ATTENDEE") {
-    const allSessions = event.agenda?.sessions;
+  // 🔵 OTHER ROLES (ATTENDEE, VOLUNTEER, ORGANIZER, etc.): Return only LIVE sessions
+  const sessions = (event.agenda?.sessions || [])
+    .map((s: any, index: number) => {
+      if (!s || s.liveStatus !== "LIVE") return null;
 
-    if (!Array.isArray(allSessions) || allSessions.length === 0) {
       return {
-        role: "ATTENDEE",
-        message: "No live session is available right now",
-        sessions: [],
+        sessionIndex: index,
+        title: s.title,
+        date: s.date,
+        time: s.time,
+        roomId: s.roomId,
+        liveStatus: s.liveStatus,
+        startedAt: s.startedAt || null,
       };
-    }
-
-    const sessions = allSessions
-      .map((s: any, index: number) => {
-        if (!s) return null;
-
-        return {
-          sessionIndex: index,
-          title: s.title,
-          date: s.date,
-          time: s.time,
-          roomId: s.roomId,
-          liveStatus: s.liveStatus,
-        };
-      })
-      .filter((s: any) => s && s.liveStatus === "LIVE");
-
-    if (sessions.length === 0) {
-      return {
-        role: "ATTENDEE",
-        message: "No live session is available right now",
-        sessions: [],
-      };
-    }
-
-    return {
-      role: "ATTENDEE",
-      sessions,
-    };
-  }
+    })
+    .filter(Boolean);
 
   return {
-    role: participant.role,
-    sessions: [],
+    role: activeRole,
+    sessions,
   };
 };
 

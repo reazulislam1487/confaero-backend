@@ -31,7 +31,10 @@ const join_live_session = catchAsync(async (req, res) => {
   const result = await eventLive_service.join_live_session({
     eventId,
     sessionIndex,
-    user,
+    user: {
+      id: user.id,
+      role: user.activeRole,
+    },
   });
 
   manageResponse(res, {
@@ -68,6 +71,7 @@ const get_speaker_sessions = catchAsync(async (req, res) => {
   const result = await eventLive_service.get_event_live_sessions({
     eventId,
     userId: user.id,
+    activeRole: user.activeRole,
   });
 
   manageResponse(res, {
