@@ -775,7 +775,7 @@ const get_dashboard_overview_from_db = async () => {
 
 const get_single_event_details_from_db = async (eventId: any) => {
   const event = await Event_Model.findById(eventId).lean();
-
+  console.log(event);
   if (!event) {
     throw new AppError("Event not found", httpStatus.NOT_FOUND);
   }

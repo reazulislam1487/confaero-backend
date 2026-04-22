@@ -287,8 +287,9 @@ const get_single_event_from_db = async (
       eventType: 1,
       paymentType: 1,
       price: 1,
-      externalPaymentUrl: 1,
       createdAt: 1,
+      latitude: 1,
+      longitude: 1,
     },
   ).lean();
   if (!event) return null;
