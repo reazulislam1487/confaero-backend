@@ -19,7 +19,7 @@ const start_live_session = async ({
     throw new AppError("Event not found", 404);
   }
 
-  const session = event.agenda.sessions[sessionIndex];
+  const session = event.agenda.sessions[Number(sessionIndex)];
 
   if (!session) {
     throw new AppError("Session not found", 404);
@@ -29,14 +29,12 @@ const start_live_session = async ({
   }
 
   // only speaker can start
-  const participant = event.participants.find(
+  const isSpeaker = event.participants.some(
     (p: any) =>
-      p.accountId.toString() === user.id &&
-      p.sessionIndex.includes(sessionIndex) &&
-      p.role === "SPEAKER",
+      p.accountId?.toString() === String(user.id) && p.role === "SPEAKER",
   );
 
-  if (!participant) {
+  if (!isSpeaker) {
     throw new AppError("Only speaker can start live", 403);
   }
   // ✅ ENSURE roomId ONCE
@@ -53,7 +51,7 @@ const start_live_session = async ({
 
   return {
     roomId: session.roomId,
-    sessionIndex,
+    sessionIndex: Number(sessionIndex),
     liveStatus: "LIVE",
   };
 };
@@ -78,7 +76,7 @@ const join_live_session = async ({
   }
 
   // 2️⃣ Session fetch by index
-  const session = event.agenda?.sessions?.[sessionIndex];
+  const session = event.agenda?.sessions?.[Number(sessionIndex)];
 
   if (!session) {
     throw new AppError("Session not found", httpStatus.NOT_FOUND);
@@ -180,7 +178,7 @@ const end_live_session = async ({
     throw new AppError("Event not found", 404);
   }
 
-  const session = event.agenda.sessions[sessionIndex];
+  const session = event.agenda.sessions[Number(sessionIndex)];
 
   if (!session) {
     throw new AppError("Session not found", 404);
@@ -190,14 +188,13 @@ const end_live_session = async ({
     throw new AppError("Session is not live", 400);
   }
 
-  const participant = event.participants.find(
+  // only speaker can end
+  const isSpeaker = event.participants.some(
     (p: any) =>
-      p.accountId.toString() === user.id &&
-      p.sessionIndex.includes(sessionIndex) &&
-      p.role === "SPEAKER",
+      p.accountId?.toString() === String(user.id) && p.role === "SPEAKER",
   );
 
-  if (!participant) {
+  if (!isSpeaker) {
     throw new AppError("Only speaker can end live", 403);
   }
 
@@ -238,11 +235,9 @@ export const get_event_live_sessions = async ({
 
   // 🟢 SPEAKER FLOW
   if (participant.role === "SPEAKER") {
-    const sessions = participant.sessionIndex
-      .map((index: number) => {
-        const s = event.agenda?.sessions?.[index];
-
-        if (!s) return null; // 🔒 guard
+    const sessions = (event.agenda?.sessions || [])
+      .map((s: any, index: number) => {
+        if (!s) return null;
 
         return {
           sessionIndex: index,
@@ -253,7 +248,7 @@ export const get_event_live_sessions = async ({
           startedAt: s.startedAt || null,
         };
       })
-      .filter(Boolean); // 🔒 remove nulls
+      .filter(Boolean);
 
     return {
       role: "SPEAKER",

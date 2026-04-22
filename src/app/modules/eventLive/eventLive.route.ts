@@ -6,7 +6,7 @@ const router = Router();
 
 router.post(
   "/start/:eventid",
-  auth("SPEAKER", "ATTENDEE"),
+  auth("SPEAKER"),
   eventLive_controller.start_live_session,
 );
 
@@ -17,13 +17,8 @@ router.post(
   eventLive_controller.join_live_session,
 );
 router.post(
-  "/join/:eventid",
-  auth("SPEAKER", "ATTENDEE"),
-  eventLive_controller.join_live_session,
-);
-router.post(
   "/end/:eventid",
-  auth("SPEAKER", "ATTENDEE"),
+  auth("SPEAKER"),
   eventLive_controller.end_live_session,
 );
 // start or find session
