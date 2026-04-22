@@ -21,4 +21,11 @@ const reject = z.object({
   }),
 });
 
-export const invitation_validations = { create, accept, reject };
+const makeSpeaker = z.object({
+  body: z.object({
+    email: z.string().email(),
+    sessionIndex: z.array(z.number()),
+  }),
+});
+
+export const invitation_validations = { create, accept, reject, makeSpeaker };

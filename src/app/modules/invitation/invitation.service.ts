@@ -386,7 +386,7 @@ const make_speaker = async (
   organizerId: any,
   eventId: any,
   email: string,
-  sessionIndex: number,
+  sessionIndex: number[],
 ) => {
   const normalizedEmail = email.toLowerCase();
 
@@ -422,9 +422,11 @@ const make_speaker = async (
     throw new Error("Event sessions not found");
   }
 
-  // 4. Validate session index
-  if (sessionIndex < 0 || sessionIndex >= agenda.sessions.length) {
-    throw new Error("Invalid session selected");
+  // 4. Validate session indices
+  for (const index of sessionIndex) {
+    if (index < 0 || index >= agenda.sessions.length) {
+      throw new Error(`Invalid session index: ${index}`);
+    }
   }
 
   // 5. Check participant exists
@@ -439,7 +441,7 @@ const make_speaker = async (
   });
 
   if (participant) {
-    // 6. Add session to existing participant
+    // 6. Add sessions to existing participant
     await Event_Model.updateOne(
       {
         _id: eventId,
@@ -448,7 +450,7 @@ const make_speaker = async (
       },
       {
         $addToSet: {
-          "participants.$.sessionIndex": sessionIndex,
+          "participants.$.sessionIndex": { $each: sessionIndex },
         },
       },
     );
@@ -461,7 +463,7 @@ const make_speaker = async (
           participants: {
             accountId: account._id,
             role: "SPEAKER",
-            sessionIndex: [sessionIndex],
+            sessionIndex: sessionIndex,
           },
         },
       },
@@ -481,12 +483,43 @@ const make_speaker = async (
     email: normalizedEmail,
     role: "SPEAKER",
     status: "ACCEPTED",
+    sessionIndex: sessionIndex,
+  });
+
+  // 10. Send invitation email
+  const assignedSessions = sessionIndex.map((idx) => agenda.sessions[idx]);
+  const sessionsHtml = assignedSessions
+    .map(
+      (s) => `
+      <li>
+        <b>${s.title}</b><br>
+        Date: ${s.date}<br>
+        Time: ${s.time}<br>
+        Location: ${s.floorMapLocation || "N/A"}
+      </li>
+    `,
+    )
+    .join("");
+
+  await sendMail({
+    to: normalizedEmail,
+    subject: `Speaker Assignment: ${event.title}`,
+    textBody: `You have been assigned as a speaker for the event: ${event.title}.`,
+    htmlBody: `
+      <h2>Hello!</h2>
+      <p>You have been assigned as a <b>SPEAKER</b> for the event: <b>${event.title}</b>.</p>
+      <p>You are assigned to the following sessions:</p>
+      <ul>
+        ${sessionsHtml}
+      </ul>
+      <p>Please login to your dashboard for more details.</p>
+    `,
   });
 
   return {
     email: account.email,
     role: "SPEAKER",
-    session: agenda.sessions[sessionIndex],
+    sessions: assignedSessions,
   };
 };
 

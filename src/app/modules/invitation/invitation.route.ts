@@ -2,6 +2,8 @@ import { Router } from "express";
 import auth from "../../middlewares/auth";
 import { invitation_controller } from "./invitation.controller";
 import eventAccess from "../../middlewares/eventAccess.middleware";
+import request_validator from "../../middlewares/request_validator";
+import { invitation_validations } from "./invitation.validation";
 
 const invitation_router = Router();
 
@@ -104,6 +106,7 @@ invitation_router.post(
   "/:eventId/make-speaker",
   auth("ORGANIZER", "SUPER_ADMIN"),
   eventAccess(),
+  request_validator(invitation_validations.makeSpeaker),
   invitation_controller.make_speaker,
 );
 export default invitation_router;

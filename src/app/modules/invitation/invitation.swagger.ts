@@ -264,10 +264,15 @@ export const invitationSwaggerDocs = {
           "application/json": {
             schema: {
               type: "object",
-              required: ["email"],
+              required: ["email", "sessionIndex"],
               properties: {
                 email: { type: "string", format: "email", example: "speaker@example.com" },
-                name: { type: "string", example: "John Doe" },
+                sessionIndex: {
+                  type: "array",
+                  items: { type: "integer" },
+                  example: [0, 2, 3],
+                  description: "Array of session indices from the event agenda",
+                },
               },
             },
           },

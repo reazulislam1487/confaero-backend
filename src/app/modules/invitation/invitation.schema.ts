@@ -41,6 +41,11 @@ const invitation_schema = new Schema(
       enum: ["PENDING", "ACCEPTED", "REJECTED"],
       default: "PENDING",
     },
+
+    sessionIndex: {
+      type: [Number],
+      default: [],
+    },
   },
   { timestamps: true },
 );

@@ -21,4 +21,6 @@ export type T_Invitation = {
   token: string;
   status: TInvitationStatus;
   expiresAt: Date;
+
+  sessionIndex?: number[];
 };
