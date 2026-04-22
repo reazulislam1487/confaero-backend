@@ -22,8 +22,13 @@ const socketAuth = async (socket: Socket, next: any) => {
     // console.log("eventId", socket.handshake?.headers?.eventid);
     // console.log(socket.handshake.auth.token);
     // console.log(socket.handshake.auth.eventid);
-    const token = socket.handshake?.headers?.token;
-    const eventId = socket.handshake?.headers?.eventid;
+    // const token = socket.handshake?.headers?.token;
+    // const eventId = socket.handshake?.headers?.eventid;
+    const token =
+      socket.handshake.auth?.token || socket.handshake.headers?.token;
+
+    const eventId =
+      socket.handshake.auth?.eventId || socket.handshake.headers?.eventid;
 
     // const token = socket.handshake?.auth?.token;
     // const eventId = socket.handshake?.auth?.eventid;

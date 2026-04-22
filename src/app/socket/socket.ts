@@ -14,6 +14,7 @@ export const initSocket = (server: HTTPServer) => {
   io = new Server(server, {
     cors: {
       origin: "*", // later restrict
+      methods: ["GET", "POST"],
       credentials: true,
     },
   });
